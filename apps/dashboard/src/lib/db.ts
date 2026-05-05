@@ -1,5 +1,5 @@
-import { createCollection, localStorageCollectionOptions, BTreeIndex } from "@tanstack/db";
-import type { Wallet, Transaction, PaginatedTransactions } from "@expent/types";
+import type { PaginatedTransactions, Transaction, Wallet } from "@expent/types";
+import { BTreeIndex, createCollection, localStorageCollectionOptions } from "@tanstack/db";
 import { api } from "./api-client";
 
 // In @tanstack/db v0.6.5, we export an object with collections.

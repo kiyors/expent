@@ -82,19 +82,19 @@ describe("sortData", () => {
 
   it("should sort by numbers", () => {
     const sorted = sortData(data, "id", "asc");
-    expect(sorted.map(d => d.id)).toEqual([1, 2, 3, 4]);
+    expect(sorted.map((d) => d.id)).toEqual([1, 2, 3, 4]);
     const desc = sortData(data, "id", "desc");
-    expect(desc.map(d => d.id)).toEqual([4, 3, 2, 1]);
+    expect(desc.map((d) => d.id)).toEqual([4, 3, 2, 1]);
   });
 
   it("should sort by strings", () => {
     const sorted = sortData(data, "name", "asc");
-    expect(sorted.map(d => d.name)).toEqual(["Alice", "Bob", "Charlie", "Dave"]);
+    expect(sorted.map((d) => d.name)).toEqual(["Alice", "Bob", "Charlie", "Dave"]);
   });
 
   it("should sort by numeric-like strings", () => {
     const sorted = sortData(data, "value", "asc");
-    expect(sorted.map(d => d.value)).toEqual(["1", "2", "10", null]);
+    expect(sorted.map((d) => d.value)).toEqual(["1", "2", "10", null]);
   });
 
   it("should sort by dates", () => {
@@ -108,12 +108,12 @@ describe("sortData", () => {
   it("should sort by booleans", () => {
     const sorted = sortData(data, "active", "asc");
     // false < true
-    expect(sorted.map(d => d.active)).toEqual([false, true, true, null]);
+    expect(sorted.map((d) => d.active)).toEqual([false, true, true, null]);
   });
 
   it("should sort by arrays (length)", () => {
     const sorted = sortData(data, "tags", "asc");
-    expect(sorted.map(d => d.tags?.length ?? null)).toEqual([1, 2, 3, null]);
+    expect(sorted.map((d) => d.tags?.length ?? null)).toEqual([1, 2, 3, null]);
   });
 
   it("should handle ISO date strings", () => {
@@ -123,7 +123,7 @@ describe("sortData", () => {
       { id: 3, d: "2023-03-01" },
     ];
     const sorted = sortData(isoData, "d", "asc");
-    expect(sorted.map(d => d.id)).toEqual([2, 3, 1]);
+    expect(sorted.map((d) => d.id)).toEqual([2, 3, 1]);
   });
 });
 
@@ -151,7 +151,10 @@ describe("getRowIdentifier", () => {
 
 describe("createDataTableRowKeys", () => {
   it("should create deterministic keys based on identifier", () => {
-    const rows = [{ id: "1", name: "Alice" }, { id: "2", name: "Bob" }];
+    const rows = [
+      { id: "1", name: "Alice" },
+      { id: "2", name: "Bob" },
+    ];
     const keys = createDataTableRowKeys(rows);
     expect(keys).toEqual(["id:Alice", "id:Bob"]);
   });

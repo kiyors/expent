@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import * as React from "react";
 import { useBudgets } from "@/hooks/use-budgets";
 import { useCategories } from "@/hooks/use-categories";
-import { BudgetPeriod } from "@expent/types";
+import type { BudgetPeriod } from "@expent/types";
 
 interface CreateBudgetDialogProps {
   open: boolean;
