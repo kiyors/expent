@@ -4,13 +4,12 @@ import io
 from google import genai
 from google.genai import types
 import easyocr
-from typing import Dict, Any
 
 from routers.gpay.prompts import GPAY_SYSTEM_PROMPT
 from routers.gpay.schemas import GPayExtraction
 from routers.generic_receipt.prompts import SYSTEM_PROMPT as GENERIC_SYSTEM_PROMPT, USER_PROMPT as GENERIC_USER_PROMPT
 from routers.generic_receipt.schemas import OCRResponse as GenericOCRResponse
-from utils import get_media_type, rasterize_pdf_page, extract_pdf_text, parse_csv
+from utils import get_media_type
 
 
 class OCREngine:
