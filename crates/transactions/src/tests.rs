@@ -1,5 +1,7 @@
 use super::*;
-use ::db::entities::enums::{TransactionDirection, TransactionSource, TransactionStatus};
+use ::db::entities::enums::{
+    TransactionDirection, TransactionSource, TransactionStatus, TxnPartyRole, WalletType,
+};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection, EntityTrait, Set};
 
@@ -68,7 +70,7 @@ async fn test_get_dashboard_summary_with_data() {
         id: Set("wallet_1".to_string()),
         user_id: Set(user.id.clone()),
         name: Set("Cash".to_string()),
-        r#type: Set("CASH".to_string()),
+        r#type: Set(WalletType::Cash),
         balance: Set(Decimal::from(1000)),
         created_at: Set(now),
         updated_at: Set(now),
@@ -126,7 +128,7 @@ async fn test_list_transactions_with_relations() {
         id: Set("wallet_1".to_string()),
         user_id: Set(user.id.clone()),
         name: Set("Bank".to_string()),
-        r#type: Set("BANK".to_string()),
+        r#type: Set(WalletType::Bank),
         balance: Set(Decimal::from(5000)),
         created_at: Set(now),
         updated_at: Set(now),
@@ -181,7 +183,7 @@ async fn test_list_transactions_with_relations() {
         id: Set("party_1".to_string()),
         transaction_id: Set("txn_1".to_string()),
         contact_id: Set(Some("contact_1".to_string())),
-        role: Set("COUNTERPARTY".to_string()),
+        role: Set(TxnPartyRole::Counterparty),
         ..Default::default()
     };
     entities::txn_parties::Entity::insert(party)
