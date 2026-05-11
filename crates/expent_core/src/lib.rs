@@ -5,7 +5,7 @@ pub use db::GPayExtraction;
 pub use db::LineItem;
 pub use db::OcrResult;
 pub use db::OcrTransactionResponse;
-pub use db::P2PRequestWithSender;
+pub use db::P2pRequestWithSender;
 pub use db::ProcessedOcr;
 pub use db::SplitDetail;
 pub use db::TransactionWithDetail;

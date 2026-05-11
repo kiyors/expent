@@ -103,9 +103,11 @@ pub async fn get_contact_detail_handler(
     Ok(Json(detail))
 }
 
+use db::entities::enums::IdentifierType;
+
 #[derive(Deserialize, Validate)]
 pub struct AddIdentifierRequest {
-    pub r#type: String,
+    pub r#type: IdentifierType,
     #[validate(length(min = 1, max = 255))]
     pub value: String,
 }

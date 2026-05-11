@@ -2,6 +2,7 @@ use axum::Router;
 use axum::extract::{Json, Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, post};
+use db::entities::enums::{AlertChannel, SubscriptionCycle};
 use serde::Deserialize;
 
 use crate::middleware::error::ApiError;
@@ -43,7 +44,7 @@ pub async fn detect_subscriptions_handler(
 pub struct ConfirmSubscriptionRequest {
     pub name: String,
     pub amount: rust_decimal::Decimal,
-    pub cycle: String,
+    pub cycle: SubscriptionCycle,
     pub start_date: chrono::DateTime<chrono::FixedOffset>,
     pub next_charge_date: chrono::DateTime<chrono::FixedOffset>,
     pub keywords: Option<serde_json::Value>,
@@ -86,7 +87,7 @@ pub async fn stop_tracking_subscription_handler(
 #[derive(Deserialize)]
 pub struct ConfigureAlertRequest {
     pub days_before: i32,
-    pub channel: String,
+    pub channel: AlertChannel,
 }
 
 pub async fn configure_subscription_alert_handler(

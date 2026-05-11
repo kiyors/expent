@@ -24,7 +24,7 @@ pub fn router() -> Router<AppState> {
 pub async fn list_pending_p2p_handler(
     State(state): State<AppState>,
     session: AuthSession,
-) -> Result<Json<Vec<db::P2PRequestWithSender>>, ApiError> {
+) -> Result<Json<Vec<db::P2pRequestWithSender>>, ApiError> {
     let email = session
         .user
         .email

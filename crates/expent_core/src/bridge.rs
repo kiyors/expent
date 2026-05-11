@@ -1,7 +1,9 @@
 use ::contacts::ContactsManager;
 use chrono::{DateTime, Utc};
 use db::entities;
-use db::entities::enums::{TransactionDirection, TransactionSource, TransactionStatus};
+use db::entities::enums::{
+    IdentifierType, TransactionDirection, TransactionSource, TransactionStatus, TxnPartyRole,
+};
 use db::{AppError, GPayExtraction, OcrResult, OcrTransactionResponse, ProcessedOcr};
 use rust_decimal::Decimal;
 use sea_orm::{
@@ -95,7 +97,7 @@ pub async fn process_ocr(
                             let new_ident = entities::contact_identifiers::ActiveModel {
                                 id: Set(uuid::Uuid::now_v7().to_string()),
                                 contact_id: Set(c_result.id.clone()),
-                                r#type: Set("UPI".to_string()),
+                                r#type: Set(IdentifierType::Upi),
                                 value: Set(upi_id.clone()),
                                 linked_user_id: Set(None),
                             };
@@ -158,8 +160,8 @@ pub async fn process_ocr(
                         user_id: Set(None),
                         contact_id: Set(Some(c_id)),
                         role: Set(match direction {
-                            TransactionDirection::In => "SENDER".to_string(),
-                            TransactionDirection::Out => "RECEIVER".to_string(),
+                            TransactionDirection::In => TxnPartyRole::Sender,
+                            TransactionDirection::Out => TxnPartyRole::Receiver,
                         }),
                     };
                     party.insert(txn_db).await?;
@@ -247,7 +249,7 @@ pub async fn process_ocr(
                         transaction_id: Set(result.id.clone()),
                         user_id: Set(None),
                         contact_id: Set(Some(c_id)),
-                        role: Set("RECEIVER".to_string()),
+                        role: Set(TxnPartyRole::Receiver),
                     };
                     party.insert(txn_db).await?;
                 }

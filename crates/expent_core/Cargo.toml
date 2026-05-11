@@ -12,6 +12,7 @@ groups.workspace         = true
 ocr.workspace            = true
 reconciliation.workspace = true
 subscriptions.workspace  = true
+budgets.workspace        = true
 
 transactions.workspace = true
 upload.workspace       = true
