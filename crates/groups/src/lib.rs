@@ -125,7 +125,7 @@ impl GroupsManager {
     pub async fn list_pending_p2p_requests(
         &self,
         email: &str,
-    ) -> Result<Vec<db::P2PRequestWithSender>, AppError> {
+    ) -> Result<Vec<db::P2pRequestWithSender>, AppError> {
         p2p::list_pending_p2p_requests(&self.db, email).await
     }
 

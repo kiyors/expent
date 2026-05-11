@@ -4,7 +4,7 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 use db::entities::enums::BudgetPeriod;
-use expent_core::AuthSession;
+use expent_core::auth::AuthSession;
 use rust_decimal::Decimal;
 use serde::Deserialize;
 use validator::Validate;
@@ -45,11 +45,9 @@ fn validate_amount(amount: &Decimal) -> Result<(), validator::ValidationError> {
     Ok(())
 }
 
-fn validate_optional_amount(amount: &Option<Decimal>) -> Result<(), validator::ValidationError> {
-    if let Some(a) = amount {
-        if a <= &Decimal::ZERO {
-            return Err(validator::ValidationError::new("amount_must_be_positive"));
-        }
+fn validate_optional_amount(amount: &Decimal) -> Result<(), validator::ValidationError> {
+    if amount <= &Decimal::ZERO {
+        return Err(validator::ValidationError::new("amount_must_be_positive"));
     }
     Ok(())
 }
@@ -106,7 +104,7 @@ async fn delete_budget_handler(
 async fn get_budgets_health_handler(
     State(state): State<AppState>,
     session: AuthSession,
-) -> Result<Json<Vec<::budgets::BudgetHealth>>, ApiError> {
+) -> Result<Json<Vec<expent_core::budgets::BudgetHealth>>, ApiError> {
     let health = state
         .core
         .budgets
