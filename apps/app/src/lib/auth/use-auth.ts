@@ -55,7 +55,6 @@ export function useAuth() {
     setIsSubmitting(true);
     try {
       // Temporary stub for Better Auth integration
-      console.log("Signing in with:", email);
       const response = await client.post("/auth/sign-in/email", {
         email,
         password,
@@ -73,7 +72,6 @@ export function useAuth() {
   const signUp = async (email?: string, password?: string, name?: string) => {
     setIsSubmitting(true);
     try {
-      console.log("Signing up with:", email, name);
       // Temporary stub for Better Auth integration
       const response = await client.post("/auth/sign-up/email", {
         email,
