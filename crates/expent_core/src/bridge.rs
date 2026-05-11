@@ -87,6 +87,8 @@ pub async fn process_ocr(
                             name: Set(gpay.counterparty_name.clone()),
                             phone: Set(gpay.counterparty_phone.clone()),
                             is_pinned: Set(false),
+                            normalized_name: Set(Some(gpay.counterparty_name.to_lowercase())),
+                            phonetic_name: Set(None),
                         };
                         let c_result = new_contact.insert(txn_db).await?;
                         contact_id = Some(c_result.id.clone());
