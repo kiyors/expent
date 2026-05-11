@@ -102,12 +102,46 @@ export function useAuth() {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    setIsSubmitting(true);
+    try {
+      const response = await client.post("/auth/forget-password", {
+        email,
+        redirectTo: "expent://reset-password",
+      });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetPassword = async (newPassword: string, token: string) => {
+    setIsSubmitting(true);
+    try {
+      const response = await client.post("/auth/reset-password", {
+        newPassword,
+        token,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
     isAuthenticated,
     user,
     signIn,
     signUp,
     signOut,
+    forgotPassword,
+    resetPassword,
     isLoading: isLoading || isSubmitting,
     isInitialized: !isLoading,
   };

@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 import { showErrorMessage } from "@/components/ui/utils";
+import { useAuth } from "@/lib/auth/use-auth";
 
 export function ResetPasswordForm() {
   const [password, setPassword] = React.useState("");
   const [code, setCode] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { resetPassword, isLoading } = useAuth();
   const codeInputRef = React.useRef<TextInput>(null);
 
   function onPasswordSubmitEditing() {
@@ -24,16 +25,11 @@ export function ResetPasswordForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // TODO: Call your reset password API here
-      console.log("Resetting password with code:", code);
-      // Simulate success and navigate
+      await resetPassword(password, code);
       router.replace("/(auth)/sign-in");
     } catch (error) {
       showErrorMessage(error instanceof Error ? error.message : "Something went wrong");
-    } finally {
-      setIsLoading(false);
     }
   }
 

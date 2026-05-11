@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 import { showErrorMessage } from "@/components/ui/utils";
+import { useAuth } from "@/lib/auth/use-auth";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { forgotPassword, isLoading } = useAuth();
 
   async function onSubmit() {
     if (!email) {
@@ -18,16 +19,11 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // TODO: Call your forgot password API here
-      console.log("Forgot password for:", email);
-      // Simulate success and navigate
+      await forgotPassword(email);
       router.push("/(auth)/reset-password");
     } catch (error) {
       showErrorMessage(error instanceof Error ? error.message : "Something went wrong");
-    } finally {
-      setIsLoading(false);
     }
   }
 
