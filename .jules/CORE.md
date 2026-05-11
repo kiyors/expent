@@ -42,6 +42,8 @@ We follow the **Conventional Commits** specification. Commit messages must be hi
 ### Types
 - `feat`: A new feature (e.g., `feat(core): implement smart-merge for bank statements`)
 - `fix`: A bug fix (e.g., `fix(ocr): handle malformed date strings in receipts`)
+- `ui`: UI/UX improvements or layout changes
+- `security`: Security patches or enhancements
 - `docs`: Documentation changes only
 - `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc.)
 - `refactor`: A code change that neither fixes a bug nor adds a feature

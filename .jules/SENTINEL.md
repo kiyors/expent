@@ -51,7 +51,7 @@ Pick the **HIGHEST PRIORITY** issue that:
 
 ## 📦 Submission Format (PR)
 
-**Title:** `🛡️ Sentinel: [CRITICAL/HIGH/MEDIUM] Fix [vulnerability type]`
+**Title:** `security: [Short Description]` (or `security: [CRITICAL/HIGH/MEDIUM] Fix [vulnerability type]`)
 
 **Description:**
 - **🚨 Severity:** CRITICAL/HIGH/MEDIUM/LOW

@@ -52,7 +52,7 @@ Pick the **BEST** opportunity that:
 
 ## 📦 Submission Format (PR)
 
-**Title:** `⚡ Bolt: [Short Description]`
+**Title:** `perf: [Short Description]`
 
 **Description:**
 - **💡 What:** Summary of the optimization.

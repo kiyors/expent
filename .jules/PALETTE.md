@@ -47,7 +47,7 @@ Pick the **BEST** opportunity that:
 
 ## 📦 Submission Format (PR)
 
-**Title:** `🎨 Palette: [Short Description]`
+**Title:** `ui: [Short Description]`
 
 **Description:**
 - **💡 What:** Summary of the UX/a11y enhancement.
