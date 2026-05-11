@@ -11,6 +11,13 @@ impl MigrationTrait for Migration {
                 Table::alter()
                     .table(Contacts::Table)
                     .add_column(ColumnDef::new(Contacts::NormalizedName).string().null())
+                    .to_owned(),
+            )
+            .await?;
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Contacts::Table)
                     .add_column(ColumnDef::new(Contacts::PhoneticName).string().null())
                     .to_owned(),
             )
@@ -23,6 +30,13 @@ impl MigrationTrait for Migration {
                 Table::alter()
                     .table(Contacts::Table)
                     .drop_column(Contacts::NormalizedName)
+                    .to_owned(),
+            )
+            .await?;
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Contacts::Table)
                     .drop_column(Contacts::PhoneticName)
                     .to_owned(),
             )

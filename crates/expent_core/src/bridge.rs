@@ -85,6 +85,8 @@ pub async fn process_ocr(
                         let new_contact = entities::contacts::ActiveModel {
                             id: Set(uuid::Uuid::now_v7().to_string()),
                             name: Set(gpay.counterparty_name.clone()),
+                            normalized_name: Set(None),
+                            phonetic_name: Set(None),
                             phone: Set(gpay.counterparty_phone.clone()),
                             is_pinned: Set(false),
                             normalized_name: Set(Some(gpay.counterparty_name.to_lowercase())),

@@ -9,7 +9,7 @@ The `crates/upload` module operates as a deeply decoupled engine bridging the **
 - **Logic Path**: **`apps/api`** -> **`crates/expent_core`** -> `crates/upload` -> `S3 Bucket`.
 - **Core SDK**: `aws_sdk_s3` + `aws-config`.
 - **Centralized Hub Integration**: The **`expent_core::Core`** struct initializes the `UploadClient` and provides it to all internal services (like OCR processing).
-- **Media Processing**: `image` crate for standardizing and compressing uploads.
+- **Media Processing**: Uses the `image` crate formats natively within the `UploadProcessor` to validate and re-compress bytes to standardize payloads via `compress_opts`.
 - **Security Modules**: `infer` crate for deep byte-level MIME inspections.
 
 ---
@@ -62,4 +62,4 @@ Integrated into the **`expent_core`** upload workflow:
 ## 4. Security & Validation
 
 - **IDOR Protection**: The **`apps/api`** routing layer validates that every file `key` requested for processing or download starts with the authenticated user's ID.
-- **Path Traversal Mitigation**: Filenames are sanitized using `Path::new().file_name()` to strip malicious segments like `../`.
+- **Path Traversal Mitigation**: Filenames are strictly sanitized within `crates/upload` using `Path::new(name).file_name()` before being incorporated into S3 paths. This strips any malicious segments like `../` to prevent bucket-level traversal.

@@ -10,14 +10,14 @@ Reconciliation follows a three-step pipeline: **Ingestion**, **Fuzzy Matching**,
 Raw statement data is uploaded and parsed into `bank_statement_rows`. Each row represents a single line in a bank statement, containing a date, description, and debit/credit amount.
 
 ### Step 2: Fuzzy Matching
-The `get_row_matches` engine attempts to find existing `transactions` that correspond to a statement row using a weighted scoring system:
+The `get_row_matches` engine attempts to find existing `transactions` that correspond to a statement row using a weighted scoring system. It initially filters transactions by `amount.abs()` matching exactly and date being within `+/- 3 days` using `Duration::days(3)`. Then it applies scoring:
 
 | Factor | Weight/Logic |
 |--------|--------------|
-| **Amount** | Must be an exact match (absolute value). |
-| **Date Range** | Within +/- 3 days of the statement date. |
-| **Description** | Weighted match if the transaction `purpose_tag` appears in the statement narration. |
-| **Base Score** | Starts at 70 if amount and date range match. |
+| **Base Score** | Starts at 70 for falling into the initial filter (`amount` + `date` range). |
+| **Exact Amount Match** | `+10` points if `txn.amount == amount.abs()`. |
+| **Exact Date Match** | `+10` points if `txn.date == row.date`. |
+| **Description Tag Match** | `+10` points if `row.description.to_lowercase()` contains the transaction's `purpose_tag`. |
 
 ### Step 3: Confirmation
 When a user confirms a match, the system:
