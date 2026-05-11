@@ -199,10 +199,27 @@ async fn get_monthly_trends(
     let now = Utc::now();
     let six_months_ago = now - Duration::days(180);
 
-    let txns = entities::transactions::Entity::find()
+    #[derive(FromQueryResult)]
+    struct TrendResult {
+        date_key: String,
+        direction: TransactionDirection,
+        total_amount: Decimal,
+    }
+
+    let trends = entities::transactions::Entity::find()
         .filter(entities::transactions::Column::UserId.eq(user_id))
         .filter(entities::transactions::Column::Date.gte(six_months_ago))
         .filter(entities::transactions::Column::DeletedAt.is_null())
+        .select_only()
+        .column_as(
+            sea_orm::sea_query::Expr::cust("strftime('%Y-%m', date)"),
+            "date_key",
+        )
+        .column(entities::transactions::Column::Direction)
+        .column_as(entities::transactions::Column::Amount.sum(), "total_amount")
+        .group_by(sea_orm::sea_query::Expr::cust("strftime('%Y-%m', date)"))
+        .group_by(entities::transactions::Column::Direction)
+        .into_model::<TrendResult>()
         .all(db)
         .await?;
 
@@ -215,12 +232,11 @@ async fn get_monthly_trends(
         trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
-    for t in txns {
-        let key = format!("{}-{:02}", t.date.year(), t.date.month());
-        if let Some(entry) = trends_map.get_mut(&key) {
+    for t in trends {
+        if let Some(entry) = trends_map.get_mut(&t.date_key) {
             match t.direction {
-                TransactionDirection::In => entry.0 += t.amount,
-                TransactionDirection::Out => entry.1 += t.amount,
+                TransactionDirection::In => entry.0 += t.total_amount,
+                TransactionDirection::Out => entry.1 += t.total_amount,
             }
         }
     }
@@ -260,10 +276,27 @@ async fn get_weekly_trends(
     let now = Utc::now();
     let seven_days_ago = now - Duration::days(7);
 
-    let txns = entities::transactions::Entity::find()
+    #[derive(FromQueryResult)]
+    struct TrendResult {
+        date_key: String,
+        direction: TransactionDirection,
+        total_amount: Decimal,
+    }
+
+    let trends = entities::transactions::Entity::find()
         .filter(entities::transactions::Column::UserId.eq(user_id))
         .filter(entities::transactions::Column::Date.gte(seven_days_ago))
         .filter(entities::transactions::Column::DeletedAt.is_null())
+        .select_only()
+        .column_as(
+            sea_orm::sea_query::Expr::cust("strftime('%Y-%m-%d', date)"),
+            "date_key",
+        )
+        .column(entities::transactions::Column::Direction)
+        .column_as(entities::transactions::Column::Amount.sum(), "total_amount")
+        .group_by(sea_orm::sea_query::Expr::cust("strftime('%Y-%m-%d', date)"))
+        .group_by(entities::transactions::Column::Direction)
+        .into_model::<TrendResult>()
         .all(db)
         .await?;
 
@@ -276,17 +309,11 @@ async fn get_weekly_trends(
         trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
-    for t in txns {
-        let key = format!(
-            "{}-{:02}-{:02}",
-            t.date.year(),
-            t.date.month(),
-            t.date.day()
-        );
-        if let Some(entry) = trends_map.get_mut(&key) {
+    for t in trends {
+        if let Some(entry) = trends_map.get_mut(&t.date_key) {
             match t.direction {
-                TransactionDirection::In => entry.0 += t.amount,
-                TransactionDirection::Out => entry.1 += t.amount,
+                TransactionDirection::In => entry.0 += t.total_amount,
+                TransactionDirection::Out => entry.1 += t.total_amount,
             }
         }
     }
