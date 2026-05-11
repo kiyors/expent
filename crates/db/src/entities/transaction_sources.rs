@@ -60,10 +60,8 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::TransactionId => ColumnType::String(StringLen::None).def(),
-            Self::SourceType => ColumnType::String(StringLen::None).def(),
-            Self::R2FileUrl => ColumnType::String(StringLen::None).def().null(),
+            Self::Id | Self::R2FileUrl => ColumnType::String(StringLen::None).def().null(),
+            Self::TransactionId | Self::SourceType => ColumnType::String(StringLen::None).def(),
             Self::RawMetadata => ColumnType::Json.def().null(),
         }
     }

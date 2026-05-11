@@ -61,12 +61,12 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def(),
-            Self::OcrJobId => ColumnType::String(StringLen::None).def(),
-            Self::UserId => ColumnType::String(StringLen::None).def(),
-            Self::FieldName => ColumnType::String(StringLen::None).def(),
-            Self::OriginalValue => ColumnType::String(StringLen::None).def().null(),
-            Self::CorrectedValue => ColumnType::String(StringLen::None).def().null(),
+            Self::Id | Self::OcrJobId | Self::UserId | Self::FieldName => {
+                ColumnType::String(StringLen::None).def()
+            }
+            Self::OriginalValue | Self::CorrectedValue => {
+                ColumnType::String(StringLen::None).def().null()
+            }
             Self::CreatedAt => ColumnType::DateTime.def(),
         }
     }

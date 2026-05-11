@@ -60,8 +60,7 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::RowId => ColumnType::String(StringLen::None).def(),
-            Self::TransactionId => ColumnType::String(StringLen::None).def(),
+            Self::RowId | Self::TransactionId => ColumnType::String(StringLen::None).def(),
             Self::Confidence => ColumnType::Decimal(None).def(),
             Self::MatchedAt => ColumnType::TimestampWithTimeZone.def(),
         }

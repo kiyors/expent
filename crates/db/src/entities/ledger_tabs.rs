@@ -71,16 +71,14 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::CreatorId => ColumnType::String(StringLen::None).def(),
-            Self::CounterpartyId => ColumnType::String(StringLen::None).def().null(),
-            Self::TabType => ColumnType::String(StringLen::None).def(),
-            Self::Title => ColumnType::String(StringLen::None).def(),
+            Self::Id | Self::CounterpartyId | Self::Description => {
+                ColumnType::String(StringLen::None).def().null()
+            }
+            Self::CreatorId | Self::TabType | Self::Title | Self::Status => {
+                ColumnType::String(StringLen::None).def()
+            }
             Self::TargetAmount => ColumnType::Decimal(None).def(),
-            Self::Status => ColumnType::String(StringLen::None).def(),
-            Self::CreatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::Description => ColumnType::String(StringLen::None).def().null(),
+            Self::CreatedAt | Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
         }
     }
 }

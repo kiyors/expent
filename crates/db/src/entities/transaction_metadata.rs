@@ -59,11 +59,11 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::TransactionId => ColumnType::String(StringLen::None).def().null(),
-            Self::UpiTxnId => ColumnType::String(StringLen::None).def().null(),
-            Self::AppTxnId => ColumnType::String(StringLen::None).def().null(),
-            Self::AppName => ColumnType::String(StringLen::None).def().null(),
-            Self::ContactNumber => ColumnType::String(StringLen::None).def().null(),
+            Self::TransactionId
+            | Self::UpiTxnId
+            | Self::AppTxnId
+            | Self::AppName
+            | Self::ContactNumber => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

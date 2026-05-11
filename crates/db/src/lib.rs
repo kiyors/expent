@@ -79,6 +79,59 @@ pub struct GPayExtraction {
     pub confidence_score: f32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(
+    export,
+    rename = "BankTransaction",
+    export_to = "../../../packages/types/src/db/BankTransaction.ts"
+)]
+pub struct BankTransaction {
+    pub transaction_date: String,
+    pub description: String,
+    pub mode: Option<String>,
+    #[ts(type = "string | null")]
+    #[serde(with = "rust_decimal::serde::str_option")]
+    pub debit_amount: Option<Decimal>,
+    #[ts(type = "string | null")]
+    #[serde(with = "rust_decimal::serde::str_option")]
+    pub credit_amount: Option<Decimal>,
+    #[ts(type = "string | null")]
+    #[serde(with = "rust_decimal::serde::str_option")]
+    pub balance: Option<Decimal>,
+    pub contact_name: Option<String>,
+    pub upi_id: Option<String>,
+    pub reference_number: Option<String>,
+    pub category_id: Option<String>,
+    pub wallet_id: Option<String>,
+    pub metadata: Option<ExportedJsonValue>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(
+    export,
+    rename = "BankStatementResponse",
+    export_to = "../../../packages/types/src/db/BankStatementResponse.ts"
+)]
+pub struct BankStatementResponse {
+    pub transactions: Vec<BankTransaction>,
+    pub bank_name: String,
+    pub account_number: Option<String>,
+    pub statement_period: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(
+    export,
+    rename = "BankExtractionResult",
+    export_to = "../../../packages/types/src/db/BankExtractionResult.ts"
+)]
+pub struct BankExtractionResult {
+    pub raw_text: String,
+    pub doc_type: String,
+    pub confidence_score: f32,
+    pub bank_data: BankStatementResponse,
+}
+
 /// Unified OCR data from the Python worker.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
 #[ts(
@@ -145,6 +198,12 @@ pub struct P2pRequestWithSender {
 pub struct OcrTransactionResponse {
     pub transaction: entities::transactions::Model,
     pub contact_created: bool,
+    #[serde(default = "default_batch_count")]
+    pub batch_count: i32,
+}
+
+fn default_batch_count() -> i32 {
+    1
 }
 
 /// Transaction with optional wallet and contact info.

@@ -89,21 +89,21 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
+            Self::Id
+            | Self::PurposeTag
+            | Self::GroupId
+            | Self::SourceWalletId
+            | Self::DestinationWalletId
+            | Self::LedgerTabId
+            | Self::Notes
+            | Self::CategoryId => ColumnType::String(StringLen::None).def().null(),
             Self::UserId => ColumnType::String(StringLen::None).def(),
             Self::Amount => ColumnType::Decimal(None).def(),
-            Self::Direction => ColumnType::String(StringLen::N(20)).def(),
+            Self::Direction | Self::Source | Self::Status => {
+                ColumnType::String(StringLen::N(20)).def()
+            }
             Self::Date => ColumnType::TimestampWithTimeZone.def(),
-            Self::Source => ColumnType::String(StringLen::N(20)).def(),
-            Self::Status => ColumnType::String(StringLen::N(20)).def(),
-            Self::PurposeTag => ColumnType::String(StringLen::None).def().null(),
-            Self::GroupId => ColumnType::String(StringLen::None).def().null(),
-            Self::SourceWalletId => ColumnType::String(StringLen::None).def().null(),
-            Self::DestinationWalletId => ColumnType::String(StringLen::None).def().null(),
-            Self::LedgerTabId => ColumnType::String(StringLen::None).def().null(),
             Self::DeletedAt => ColumnType::TimestampWithTimeZone.def().null(),
-            Self::Notes => ColumnType::String(StringLen::None).def().null(),
-            Self::CategoryId => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

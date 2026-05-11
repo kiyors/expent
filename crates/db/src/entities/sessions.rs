@@ -65,13 +65,13 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::ExpiresAt => ColumnType::TimestampWithTimeZone.def(),
+            Self::Id | Self::IpAddress | Self::UserAgent => {
+                ColumnType::String(StringLen::None).def().null()
+            }
+            Self::ExpiresAt | Self::CreatedAt | Self::UpdatedAt => {
+                ColumnType::TimestampWithTimeZone.def()
+            }
             Self::Token => ColumnType::String(StringLen::None).def().unique(),
-            Self::CreatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::IpAddress => ColumnType::String(StringLen::None).def().null(),
-            Self::UserAgent => ColumnType::String(StringLen::None).def().null(),
             Self::UserId => ColumnType::String(StringLen::None).def(),
         }
     }

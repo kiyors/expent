@@ -55,8 +55,7 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::UserId => ColumnType::String(StringLen::None).def(),
-            Self::ContactId => ColumnType::String(StringLen::None).def(),
+            Self::UserId | Self::ContactId => ColumnType::String(StringLen::None).def(),
         }
     }
 }

@@ -63,12 +63,10 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::SenderUserId => ColumnType::String(StringLen::None).def(),
-            Self::ReceiverEmail => ColumnType::String(StringLen::None).def(),
+            Self::Id | Self::LinkedTxnId => ColumnType::String(StringLen::None).def().null(),
+            Self::SenderUserId | Self::ReceiverEmail => ColumnType::String(StringLen::None).def(),
             Self::TransactionData => ColumnType::Json.def(),
             Self::Status => ColumnType::String(StringLen::N(20)).def(),
-            Self::LinkedTxnId => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

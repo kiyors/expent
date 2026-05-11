@@ -70,17 +70,14 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def(),
-            Self::UserId => ColumnType::String(StringLen::None).def(),
-            Self::OcrJobId => ColumnType::String(StringLen::None).def(),
-            Self::Name => ColumnType::String(StringLen::None).def(),
-            Self::Phone => ColumnType::String(StringLen::None).def().null(),
-            Self::Email => ColumnType::String(StringLen::None).def().null(),
-            Self::UpiId => ColumnType::String(StringLen::None).def().null(),
-            Self::Status => ColumnType::String(StringLen::None).def(),
+            Self::Id | Self::UserId | Self::OcrJobId | Self::Name | Self::Status => {
+                ColumnType::String(StringLen::None).def()
+            }
+            Self::Phone | Self::Email | Self::UpiId => {
+                ColumnType::String(StringLen::None).def().null()
+            }
             Self::Candidates => ColumnType::Json.def().null(),
-            Self::CreatedAt => ColumnType::DateTime.def(),
-            Self::UpdatedAt => ColumnType::DateTime.def(),
+            Self::CreatedAt | Self::UpdatedAt => ColumnType::DateTime.def(),
         }
     }
 }

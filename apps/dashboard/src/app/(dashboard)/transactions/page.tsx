@@ -410,15 +410,21 @@ export default function TransactionsPage() {
               </div>
               <div>
                 <p className="text-sm font-medium">Quick Upload</p>
-                <p className="text-xs text-muted-foreground">Drop a receipt, PDF, or CSV here to auto-import</p>
+                <p className="text-xs text-muted-foreground">
+                  Drop receipts, PDFs, CSVs or Excel files here to auto-import
+                </p>
               </div>
               <input
                 type="file"
+                multiple
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 aria-label="Quick upload receipt"
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleUpload(file);
+                  const files = e.target.files;
+                  if (files && files.length > 0) {
+                    // Process them sequentially for now, or we could map them to a queue
+                    Array.from(files).forEach((file) => handleUpload(file));
+                  }
                 }}
               />
             </CardContent>

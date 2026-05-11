@@ -59,11 +59,10 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
+            Self::Id | Self::Label => ColumnType::String(StringLen::None).def().null(),
             Self::UserId => ColumnType::String(StringLen::None).def(),
             Self::UpiId => ColumnType::String(StringLen::None).def().unique(),
             Self::IsPrimary => ColumnType::Boolean.def(),
-            Self::Label => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

@@ -11,6 +11,7 @@ export interface UploadStep {
   id: string;
   label: string;
   status: UploadStepStatus;
+  description?: string;
 }
 
 export function useOcrUpload() {
@@ -18,13 +19,54 @@ export function useOcrUpload() {
   const [uploadSteps, setUploadSteps] = useState<UploadStep[]>([]);
   const [processedOcr, setProcessedOcr] = useState<TypedProcessedOcr | null>(null);
 
+  const pollJobStatus = async (jobId: string): Promise<TypedProcessedOcr> => {
+    const maxAttempts = 60; // 2 minutes with 2s intervals
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      const job = await api.get<any>(`/api/ocr/status/${jobId}`);
+
+      if (job.status === "COMPLETED") {
+        return job.processed_data as TypedProcessedOcr;
+      }
+
+      if (job.status === "FAILED" || job.status === "DEAD_LETTER") {
+        throw new Error(job.error_message || "OCR processing failed");
+      }
+
+      if (job.status === "CONTACT_COLLISION") {
+        // This is a special state where we have data but need contact resolution
+        // The processed_data should still be there but flagged
+        return job.processed_data as TypedProcessedOcr;
+      }
+
+      // Update progress description if we have information
+      if (job.status === "PROCESSING") {
+        setUploadSteps((prev) =>
+          prev.map((s) =>
+            s.id === "2"
+              ? { ...s, status: "completed" }
+              : s.id === "3"
+                ? { ...s, status: "in-progress", description: "Thinking hard..." }
+                : s,
+          ),
+        );
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      attempts++;
+    }
+
+    throw new Error("OCR processing timed out. It might still finish in the background.");
+  };
+
   const uploadFile = useCallback(async (file: File) => {
     setIsUploading(true);
     setProcessedOcr(null);
 
     const steps: UploadStep[] = [
       { id: "1", label: "Uploading file…", status: "in-progress" },
-      { id: "2", label: "Classifying document…", status: "pending" },
+      { id: "2", label: "Queuing document…", status: "pending" },
       { id: "3", label: "Extracting transaction data…", status: "pending" },
     ];
     setUploadSteps(steps);
@@ -33,8 +75,6 @@ export function useOcrUpload() {
       const formData = new FormData();
       formData.append("file", file);
 
-      // Using the base fetch for multipart upload since api.post expects JSON by default
-      // and we want to ensure credentials/headers are handled correctly for the proxy.
       const uploadRes = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -52,13 +92,15 @@ export function useOcrUpload() {
         ),
       );
 
-      const result = await api.post<TypedProcessedOcr>("/api/ocr/process", { key });
+      const { job_id } = await api.post<any>("/api/ocr/process", { key });
 
       setUploadSteps((prev) =>
         prev.map((s) =>
           s.id === "2" ? { ...s, status: "completed" } : s.id === "3" ? { ...s, status: "in-progress" } : s,
         ),
       );
+
+      const result = await pollJobStatus(job_id);
 
       setUploadSteps((prev) => prev.map((s) => (s.id === "3" ? { ...s, status: "completed" } : s)));
 

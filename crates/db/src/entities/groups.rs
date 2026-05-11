@@ -57,9 +57,8 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
+            Self::Id | Self::Description => ColumnType::String(StringLen::None).def().null(),
             Self::Name => ColumnType::String(StringLen::None).def(),
-            Self::Description => ColumnType::String(StringLen::None).def().null(),
             Self::CreatedAt => ColumnType::TimestampWithTimeZone.def(),
         }
     }

@@ -102,26 +102,24 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
+            Self::Id
+            | Self::Image
+            | Self::Phone
+            | Self::Username
+            | Self::DisplayUsername
+            | Self::Role
+            | Self::BanReason
+            | Self::PhoneNumber
+            | Self::AssociatedContactId => ColumnType::String(StringLen::None).def().null(),
             Self::Name => ColumnType::String(StringLen::None).def(),
             Self::Email => ColumnType::String(StringLen::None).def().unique(),
-            Self::EmailVerified => ColumnType::Boolean.def(),
-            Self::Image => ColumnType::String(StringLen::None).def().null(),
-            Self::Phone => ColumnType::String(StringLen::None).def().null(),
-            Self::IsActive => ColumnType::Boolean.def(),
-            Self::CreatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::Username => ColumnType::String(StringLen::None).def().null(),
-            Self::DisplayUsername => ColumnType::String(StringLen::None).def().null(),
-            Self::Role => ColumnType::String(StringLen::None).def().null(),
-            Self::Banned => ColumnType::Boolean.def().null(),
-            Self::BanReason => ColumnType::String(StringLen::None).def().null(),
+            Self::EmailVerified | Self::IsActive => ColumnType::Boolean.def(),
+            Self::CreatedAt | Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
+            Self::Banned | Self::TwoFactorEnabled | Self::PhoneNumberVerified => {
+                ColumnType::Boolean.def().null()
+            }
             Self::BanExpires => ColumnType::TimestampWithTimeZone.def().null(),
-            Self::TwoFactorEnabled => ColumnType::Boolean.def().null(),
-            Self::PhoneNumber => ColumnType::String(StringLen::None).def().null(),
-            Self::PhoneNumberVerified => ColumnType::Boolean.def().null(),
             Self::Metadata => ColumnType::Json.def().null(),
-            Self::AssociatedContactId => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

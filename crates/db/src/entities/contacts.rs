@@ -62,12 +62,11 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
+            Self::Id | Self::Phone | Self::NormalizedName | Self::PhoneticName => {
+                ColumnType::String(StringLen::None).def().null()
+            }
             Self::Name => ColumnType::String(StringLen::None).def(),
-            Self::Phone => ColumnType::String(StringLen::None).def().null(),
             Self::IsPinned => ColumnType::Boolean.def(),
-            Self::NormalizedName => ColumnType::String(StringLen::None).def().null(),
-            Self::PhoneticName => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

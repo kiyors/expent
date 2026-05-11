@@ -1,15 +1,29 @@
 import os
 import json
 import io
+import asyncio
+from typing import Union, Literal, Optional, Any, List
+from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
 import easyocr
 
-from routers.gpay.prompts import GPAY_SYSTEM_PROMPT
+# Import schemas
 from routers.gpay.schemas import GPayExtraction
-from routers.generic_receipt.prompts import SYSTEM_PROMPT as GENERIC_SYSTEM_PROMPT, USER_PROMPT as GENERIC_USER_PROMPT
 from routers.generic_receipt.schemas import OCRResponse as GenericOCRResponse
-from utils import get_media_type
+from routers.bank.schemas import BankStatementResponse, BankExtractionResult
+from utils import get_media_type, extract_pdf_text, parse_csv, parse_excel
+
+
+class UnifiedExtraction(BaseModel):
+    doc_type: Literal["GPAY", "BANK_STATEMENT", "GENERIC"]
+    confidence_score: float = Field(default=1.0)
+    raw_text: Optional[str] = Field(None, description="The full raw text extracted from the document")
+
+    # Specific data fields (only one will be populated based on doc_type)
+    gpay_data: Optional[GPayExtraction] = Field(None, description="Populated if doc_type is GPAY")
+    bank_data: Optional[BankStatementResponse] = Field(None, description="Populated if doc_type is BANK_STATEMENT")
+    generic_data: Optional[GenericOCRResponse] = Field(None, description="Populated if doc_type is GENERIC")
 
 
 class OCREngine:
@@ -26,61 +40,84 @@ class OCREngine:
             self._reader = easyocr.Reader(["en"])
         return self._reader
 
-    async def classify_image(self, data: bytes, media_type: str) -> str:
-        """Classify the image/document type."""
-        classification_prompt = "Look at this image. Is it a generic paper retail receipt, an invoice, a bank statement, or a Google Pay digital screenshot? Reply with exactly 'GENERIC' or 'GPAY'."
+    def get_system_prompt(self) -> str:
+        return """
+You are an advanced financial data extraction engine. Your task is to analyze the provided document (image, PDF, CSV, or Excel) and extract structured information.
 
-        try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=[classification_prompt, types.Part.from_bytes(data=data, mime_type=media_type)],
-            )
-            result = response.text.strip().upper()
-            if "GPAY" in result:
-                return "GPAY"
-            return "GENERIC"
-        except Exception as e:
-            print(f"Classification error: {e}")
-            # If it's a quota error, we want to re-raise it so the main app handles it as 429
-            if "429" in str(e) or "quota" in str(e).lower():
-                raise e
-            return "GENERIC"
+STEP 1: CLASSIFY THE DOCUMENT
+- GPAY: Google Pay payment confirmation screenshots (digital).
+- BANK_STATEMENT: Monthly bank statements (PDF, CSV, or Image tables).
+- GENERIC: Retail receipts, invoices, or other payment proofs.
+
+STEP 2: EXTRACT DATA BASED ON TYPE
+
+--- RULES FOR GPAY ---
+- Extract 'amount', 'direction' (IN if 'From', OUT if 'To'), 'status' (COMPLETED/PENDING/FAILED), 'counterparty_name', and transaction IDs.
+- 'is_merchant' is true if the name sounds like a business or UPI has 'vyapar'.
+
+--- RULES FOR BANK_STATEMENT ---
+- Identify the bank (e.g., ICICI, HDFC, SBI).
+- Extract ALL transactions. 
+- For ICICI: Stitch multi-line 'PARTICULARS' into a single description.
+- Extract 'contact_name' and 'upi_id' from transaction descriptions if available.
+- Map withdrawals to 'debit_amount' and deposits to 'credit_amount'.
+
+--- RULES FOR GENERIC ---
+- Extract 'vendor', total 'amount', 'date', and 'items' (if visible).
+- Normalize date to YYYY-MM-DD if possible.
+
+STEP 3: FORMAT OUTPUT
+- Return ONLY a valid JSON object matching the requested schema.
+- Use snake_case for all keys.
+- If a field is missing, set it to null.
+- Ensure 'confidence_score' reflects your certainty (0.0 to 1.0).
+"""
 
     async def extract_from_bytes(self, data: bytes, filename: str) -> dict:
         media_type = get_media_type(filename)
-        extracted_text = ""
 
-        if media_type.startswith("image/"):
-            # Try to get some text context
+        # 1. Augment with text extraction for non-image formats
+        extracted_text = ""
+        if media_type == "application/pdf":
+            extracted_text = extract_pdf_text(data)
+        elif media_type == "text/csv":
+            extracted_text = parse_csv(data)
+        elif media_type in [
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ]:
+            extracted_text = parse_excel(data)
+
+        # 2. Performance optimization: Image-based OCR only if needed
+        # We'll skip EasyOCR by default and let Gemini handle vision,
+        # unless it's a very complex bank statement image.
+        # For now, we only run it for images to provide context.
+        ocr_context = ""
+        if media_type.startswith("image/") and len(data) < 5 * 1024 * 1024:  # Only for reasonable size images
             try:
+                # We do this in a thread to not block the event loop
                 from PIL import Image
                 import numpy as np
 
                 img = Image.open(io.BytesIO(data))
                 img_np = np.array(img)
-                results = self.reader.readtext(img_np, detail=0)
-                extracted_text = " ".join(results)
+                # detail=0 returns only text list
+                loop = asyncio.get_event_loop()
+                results = await loop.run_in_executor(None, lambda: self.reader.readtext(img_np, detail=0))
+                ocr_context = " ".join(results)
             except Exception as e:
                 print(f"EasyOCR error: {e}")
 
-        # Classification
-        doc_type = "GENERIC"
-        if media_type.startswith("image/"):
-            doc_type = await self.classify_image(data, media_type)
+        # 3. Prepare Gemini request
+        content_items = ["Extract data from this document."]
 
-        if doc_type == "GPAY":
-            system_prompt = GPAY_SYSTEM_PROMPT
-            response_schema = GPayExtraction
-            user_prompt = "Extract Google Pay transaction data."
-        else:
-            system_prompt = GENERIC_SYSTEM_PROMPT
-            response_schema = GenericOCRResponse
-            user_prompt = GENERIC_USER_PROMPT
-
-        content_items = [user_prompt]
         if extracted_text:
-            content_items.append(f"EXTRACTED CONTEXT (FROM OCR/PARSER):\n{extracted_text}")
+            content_items.append(f"EXTRACTED TEXT CONTENT:\n{extracted_text}")
+        if ocr_context:
+            content_items.append(f"OCR CONTEXT (HEURISTIC):\n{ocr_context}")
 
+        # Add the media part (vision)
+        # Gemini 1.5+ handles PDF directly too, but we provide text for better accuracy
         content_items.append(types.Part.from_bytes(data=data, mime_type=media_type))
 
         try:
@@ -88,21 +125,43 @@ class OCREngine:
                 model=self.model_name,
                 contents=content_items,
                 config=types.GenerateContentConfig(
-                    system_instruction=system_prompt,
+                    system_instruction=self.get_system_prompt(),
                     response_mime_type="application/json",
-                    response_schema=response_schema,
+                    response_schema=UnifiedExtraction,
                     temperature=0.0,
                 ),
             )
-            result_data = self._parse_json(response.text)
 
-            # Ensure raw_text is populated for Generic results if Gemini skipped it
-            if doc_type == "GENERIC" and not result_data.get("raw_text") and extracted_text:
-                result_data["raw_text"] = extracted_text
-            elif doc_type == "GENERIC" and not result_data.get("raw_text"):
-                result_data["raw_text"] = "No text extracted"
+            raw_result = self._parse_json(response.text)
 
-            return {"doc_type": doc_type, "data": result_data}
+            # Map UnifiedExtraction back to the format Rust expects
+            doc_type = raw_result.get("doc_type", "GENERIC")
+            confidence = raw_result.get("confidence_score", 1.0)
+
+            final_data = {}
+            if doc_type == "GPAY":
+                final_data = raw_result.get("gpay_data") or {}
+            elif doc_type == "BANK_STATEMENT":
+                # Rust expects a nested bank_data or the flat result?
+                # Based on crates/db/src/lib.rs, it expects a structure that matches BankExtractionResult
+                # which has bank_data field.
+                final_data = {
+                    "raw_text": extracted_text or ocr_context or "Extracted from vision",
+                    "doc_type": "bank_statement",
+                    "confidence_score": confidence,
+                    "bank_data": raw_result.get("bank_data") or {},
+                }
+            else:
+                final_data = raw_result.get("generic_data") or {}
+
+            # Ensure confidence score is present in the data too
+            if isinstance(final_data, dict):
+                final_data["confidence_score"] = confidence
+                if not final_data.get("raw_text"):
+                    final_data["raw_text"] = extracted_text or ocr_context or "Extracted from vision"
+
+            return {"doc_type": doc_type, "data": final_data}
+
         except Exception as e:
             print(f"Extraction error: {e}")
             raise e

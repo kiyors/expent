@@ -1,10 +1,10 @@
 use ::contacts::ContactsManager;
 use chrono::{DateTime, Utc};
 use db::entities;
-use db::entities::enums::{
-    IdentifierType, TransactionDirection, TransactionSource, TransactionStatus, TxnPartyRole,
+use db::entities::enums::{IdentifierType, TransactionDirection, TransactionStatus, TxnPartyRole};
+use db::{
+    AppError, BankExtractionResult, GPayExtraction, OcrResult, OcrTransactionResponse, ProcessedOcr,
 };
-use db::{AppError, GPayExtraction, OcrResult, OcrTransactionResponse, ProcessedOcr};
 use rust_decimal::Decimal;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set,
@@ -18,9 +18,7 @@ pub async fn process_ocr(
     user_id: &str,
     processed: ProcessedOcr,
 ) -> Result<OcrTransactionResponse, AppError> {
-    let user_id = user_id.to_string();
-
-    // 3.2 Idempotency check: if r2_key is provided, check if we already have a transaction for it
+    // 3.2 Idempotency check
     if let Some(ref key) = processed.r2_key {
         let existing_source = entities::transaction_sources::Entity::find()
             .filter(entities::transaction_sources::Column::R2FileUrl.eq(Some(key.to_string())))
@@ -38,17 +36,148 @@ pub async fn process_ocr(
             return Ok(OcrTransactionResponse {
                 transaction: txn,
                 contact_created: false,
+                batch_count: 1,
             });
         }
     }
 
-    db.transaction::<_, OcrTransactionResponse, AppError>(|txn_db| {
-        let contacts_manager = contacts_manager.clone();
-        let user_id = user_id.clone();
+    let user_id_owned = user_id.to_string();
+
+    db.transaction::<_, OcrTransactionResponse, AppError>(move |txn_db| {
+        let user_id = user_id_owned;
         Box::pin(async move {
             let mut contact_created = false;
 
-            if processed.doc_type == "GPAY" {
+            if processed.doc_type == "BANK_STATEMENT" {
+                let bank_result: BankExtractionResult =
+                    serde_json::from_value(processed.data.0.clone()).map_err(|e| {
+                        AppError::Ocr(format!("Failed to parse bank statement data: {}", e))
+                    })?;
+
+                let mut last_txn = None;
+                let mut total_processed = 0;
+
+                for bt in bank_result.bank_data.transactions {
+                    let mut current_contact_id = None;
+
+                    // Contact Resolution
+                    if let Some(contact_name) = &bt.contact_name {
+                        let resolution = contacts_manager
+                            .resolve(
+                                txn_db,
+                                &user_id,
+                                ::contacts::ops::ResolveParams {
+                                    name: Some(contact_name.clone()),
+                                    phone: None,
+                                    email: None,
+                                    upi_id: bt.upi_id.clone(),
+                                },
+                            )
+                            .await?;
+
+                        if resolution.is_collision {
+                            // For batch processing, we might want to skip or flag collisions
+                            // but for now let's just create a new one if it's not clear
+                        }
+
+                        if let Some(c_id) = resolution.contact_id {
+                            current_contact_id = Some(c_id);
+                        } else {
+                            // Create new contact
+                            let c_result = ::contacts::ops::create_contact(
+                                txn_db,
+                                &user_id,
+                                contact_name.clone(),
+                                None,
+                            )
+                            .await?;
+                            current_contact_id = Some(c_result.id.clone());
+                            contact_created = true;
+
+                            // Add UPI identifier if present
+                            if let Some(upi) = &bt.upi_id {
+                                let _ = ::contacts::ops::add_contact_identifier(
+                                    txn_db,
+                                    &user_id,
+                                    &c_result.id,
+                                    IdentifierType::Upi,
+                                    upi.clone(),
+                                )
+                                .await;
+                            }
+                        }
+                    }
+
+                    let amount = bt
+                        .debit_amount
+                        .or(bt.credit_amount)
+                        .unwrap_or(Decimal::ZERO);
+                    let direction = if bt.debit_amount.is_some() {
+                        TransactionDirection::Out
+                    } else {
+                        TransactionDirection::In
+                    };
+
+                    let timestamp = parse_bank_date(&bt.transaction_date).unwrap_or_else(Utc::now);
+
+                    let txn = entities::transactions::ActiveModel {
+                        id: Set(uuid::Uuid::now_v7().to_string()),
+                        user_id: Set(user_id.clone()),
+                        amount: Set(amount),
+                        direction: Set(direction),
+                        status: Set(TransactionStatus::Completed),
+                        date: Set(timestamp.into()),
+                        source_wallet_id: Set(bt.wallet_id.clone()),
+                        category_id: Set(bt.category_id.clone()),
+                        notes: Set(Some(bt.description.clone())),
+                        ..Default::default()
+                    };
+
+                    let result = txn.insert(txn_db).await?;
+
+                    // Party Link
+                    if let Some(c_id) = current_contact_id {
+                        let party = entities::txn_parties::ActiveModel {
+                            id: Set(uuid::Uuid::now_v7().to_string()),
+                            transaction_id: Set(result.id.clone()),
+                            contact_id: Set(Some(c_id)),
+                            role: Set(match direction {
+                                TransactionDirection::In => TxnPartyRole::Sender,
+                                TransactionDirection::Out => TxnPartyRole::Receiver,
+                            }),
+                            ..Default::default()
+                        };
+                        party.insert(txn_db).await?;
+                    }
+
+                    // Source record for the first transaction in batch
+                    if total_processed == 0 {
+                        if let Some(r2_key) = processed.r2_key.clone() {
+                            let source = entities::transaction_sources::ActiveModel {
+                                id: Set(uuid::Uuid::now_v7().to_string()),
+                                transaction_id: Set(result.id.clone()),
+                                source_type: Set("OCR".to_string()),
+                                r2_file_url: Set(Some(r2_key)),
+                                raw_metadata: Set(Some(processed.data.0.clone())),
+                            };
+                            source.insert(txn_db).await?;
+                        }
+                    }
+
+                    last_txn = Some(result);
+                    total_processed += 1;
+                }
+
+                let final_txn = last_txn.ok_or_else(|| {
+                    AppError::Ocr("No transactions found in bank statement".to_string())
+                })?;
+
+                Ok(OcrTransactionResponse {
+                    transaction: final_txn,
+                    contact_created,
+                    batch_count: total_processed,
+                })
+            } else if processed.doc_type == "GPAY" {
                 let gpay: GPayExtraction = serde_json::from_value(processed.data.0.clone())
                     .map_err(|e| AppError::Ocr(format!("Failed to parse GPAY data: {}", e)))?;
 
@@ -56,7 +185,6 @@ pub async fn process_ocr(
                 let wallet_id = gpay.wallet_id.clone();
                 let category_id = gpay.category_id.clone();
 
-                // 2.6 Robust Contact Resolution
                 if contact_id.is_none() {
                     let resolution = contacts_manager
                         .resolve(
@@ -80,38 +208,26 @@ pub async fn process_ocr(
                     if let Some(c_id) = resolution.contact_id {
                         contact_id = Some(c_id);
                     } else {
-                        // Create new contact using manager if possible (currently manager uses self.db, but we are inside txn_db)
-                        // For now we keep manual entity insertion but we use the resolution logic from manager
-                        let new_contact = entities::contacts::ActiveModel {
-                            id: Set(uuid::Uuid::now_v7().to_string()),
-                            name: Set(gpay.counterparty_name.clone()),
-                            phone: Set(gpay.counterparty_phone.clone()),
-                            is_pinned: Set(false),
-                            normalized_name: Set(Some(gpay.counterparty_name.to_lowercase())),
-                            phonetic_name: Set(None),
-                        };
-                        let c_result = new_contact.insert(txn_db).await?;
+                        let c_result = ::contacts::ops::create_contact(
+                            txn_db,
+                            &user_id,
+                            gpay.counterparty_name.clone(),
+                            gpay.counterparty_phone.clone(),
+                        )
+                        .await?;
                         contact_id = Some(c_result.id.clone());
                         contact_created = true;
 
-                        // Create identifier
                         if let Some(upi_id) = &gpay.counterparty_upi_id {
-                            let new_ident = entities::contact_identifiers::ActiveModel {
-                                id: Set(uuid::Uuid::now_v7().to_string()),
-                                contact_id: Set(c_result.id.clone()),
-                                r#type: Set(IdentifierType::Upi),
-                                value: Set(upi_id.clone()),
-                                linked_user_id: Set(None),
-                            };
-                            new_ident.insert(txn_db).await?;
+                            let _ = ::contacts::ops::add_contact_identifier(
+                                txn_db,
+                                &user_id,
+                                &c_result.id,
+                                IdentifierType::Upi,
+                                upi_id.clone(),
+                            )
+                            .await;
                         }
-
-                        // Create link for user
-                        let new_link = entities::contact_links::ActiveModel {
-                            user_id: Set(user_id.clone()),
-                            contact_id: Set(c_result.id),
-                        };
-                        new_link.insert(txn_db).await?;
                     }
                 }
 
@@ -120,7 +236,6 @@ pub async fn process_ocr(
                     _ => TransactionDirection::Out,
                 };
 
-                // Parse status
                 let status = match gpay.status.as_deref() {
                     Some("COMPLETED") => TransactionStatus::Completed,
                     Some("PENDING") => TransactionStatus::Pending,
@@ -148,28 +263,25 @@ pub async fn process_ocr(
                         "Extracted via Google Pay OCR. UPI: {:?}",
                         gpay.upi_transaction_id
                     ))),
-                    source: Set(TransactionSource::Ocr),
                     ..Default::default()
                 };
 
                 let result = txn.insert(txn_db).await?;
 
-                // Create transaction party record for the contact
                 if let Some(c_id) = contact_id {
                     let party = entities::txn_parties::ActiveModel {
                         id: Set(uuid::Uuid::now_v7().to_string()),
                         transaction_id: Set(result.id.clone()),
-                        user_id: Set(None),
                         contact_id: Set(Some(c_id)),
                         role: Set(match direction {
                             TransactionDirection::In => TxnPartyRole::Sender,
                             TransactionDirection::Out => TxnPartyRole::Receiver,
                         }),
+                        ..Default::default()
                     };
                     party.insert(txn_db).await?;
                 }
 
-                // Create transaction source record
                 if let Some(r2_key) = processed.r2_key {
                     let source = entities::transaction_sources::ActiveModel {
                         id: Set(uuid::Uuid::now_v7().to_string()),
@@ -184,9 +296,9 @@ pub async fn process_ocr(
                 Ok(OcrTransactionResponse {
                     transaction: result,
                     contact_created,
+                    batch_count: 1,
                 })
             } else {
-                // Generic OCR path
                 let generic: OcrResult = serde_json::from_value(processed.data.0.clone())
                     .map_err(|e| AppError::Ocr(format!("Failed to parse generic data: {}", e)))?;
 
@@ -194,7 +306,6 @@ pub async fn process_ocr(
                 let wallet_id = generic.wallet_id.clone();
                 let category_id = generic.category_id.clone();
 
-                // 2.6 Robust Contact Resolution for Generic OCR
                 if contact_id.is_none() && generic.vendor.is_some() {
                     let resolution = contacts_manager
                         .resolve(
@@ -238,25 +349,22 @@ pub async fn process_ocr(
                         "Extracted via Generic OCR. Vendor: {:?}",
                         generic.vendor
                     ))),
-                    source: Set(TransactionSource::Ocr),
                     ..Default::default()
                 };
 
                 let result = txn.insert(txn_db).await?;
 
-                // Create transaction party record for the contact
                 if let Some(c_id) = contact_id {
                     let party = entities::txn_parties::ActiveModel {
                         id: Set(uuid::Uuid::now_v7().to_string()),
                         transaction_id: Set(result.id.clone()),
-                        user_id: Set(None),
                         contact_id: Set(Some(c_id)),
                         role: Set(TxnPartyRole::Receiver),
+                        ..Default::default()
                     };
                     party.insert(txn_db).await?;
                 }
 
-                // Create transaction source record
                 if let Some(r2_key) = processed.r2_key {
                     let source = entities::transaction_sources::ActiveModel {
                         id: Set(uuid::Uuid::now_v7().to_string()),
@@ -271,6 +379,7 @@ pub async fn process_ocr(
                 Ok(OcrTransactionResponse {
                     transaction: result,
                     contact_created: false,
+                    batch_count: 1,
                 })
             }
         })
@@ -280,4 +389,17 @@ pub async fn process_ocr(
         sea_orm::TransactionError::Connection(ce) => AppError::Db(ce),
         sea_orm::TransactionError::Transaction(te) => te,
     })
+}
+
+fn parse_bank_date(date_str: &str) -> Option<DateTime<Utc>> {
+    let formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d"];
+    for fmt in formats {
+        if let Ok(dt) = chrono::NaiveDate::parse_from_str(date_str, fmt) {
+            return Some(DateTime::from_naive_utc_and_offset(
+                dt.and_hms_opt(0, 0, 0)?,
+                Utc,
+            ));
+        }
+    }
+    None
 }

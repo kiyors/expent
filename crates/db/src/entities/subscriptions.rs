@@ -71,12 +71,9 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::UserId => ColumnType::String(StringLen::None).def(),
-            Self::Name => ColumnType::String(StringLen::None).def(),
+            Self::UserId | Self::Name | Self::Cycle => ColumnType::String(StringLen::None).def(),
             Self::Amount => ColumnType::Decimal(None).def(),
-            Self::Cycle => ColumnType::String(StringLen::None).def(),
-            Self::StartDate => ColumnType::TimestampWithTimeZone.def(),
-            Self::NextChargeDate => ColumnType::TimestampWithTimeZone.def(),
+            Self::StartDate | Self::NextChargeDate => ColumnType::TimestampWithTimeZone.def(),
             Self::DetectionKeywords => ColumnType::Json.def().null(),
         }
     }

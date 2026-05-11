@@ -56,8 +56,7 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::PdfUrl => ColumnType::String(StringLen::None).def(),
-            Self::Vendor => ColumnType::String(StringLen::None).def(),
+            Self::PdfUrl | Self::Vendor => ColumnType::String(StringLen::None).def(),
             Self::RawContent => ColumnType::Text.def().null(),
         }
     }

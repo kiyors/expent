@@ -70,16 +70,16 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::TransactionId => ColumnType::String(StringLen::None).def(),
-            Self::Direction => ColumnType::String(StringLen::None).def(),
-            Self::CounterpartyName => ColumnType::String(StringLen::None).def(),
-            Self::CounterpartyPhone => ColumnType::String(StringLen::None).def().null(),
-            Self::CounterpartyUpiId => ColumnType::String(StringLen::None).def().null(),
+            Self::Id
+            | Self::CounterpartyPhone
+            | Self::CounterpartyUpiId
+            | Self::UpiTransactionId
+            | Self::GoogleTransactionId
+            | Self::SourceBankAccount => ColumnType::String(StringLen::None).def().null(),
+            Self::TransactionId | Self::Direction | Self::CounterpartyName => {
+                ColumnType::String(StringLen::None).def()
+            }
             Self::IsMerchant => ColumnType::Boolean.def(),
-            Self::UpiTransactionId => ColumnType::String(StringLen::None).def().null(),
-            Self::GoogleTransactionId => ColumnType::String(StringLen::None).def().null(),
-            Self::SourceBankAccount => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

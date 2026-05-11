@@ -61,10 +61,9 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::SubscriptionId => ColumnType::String(StringLen::None).def(),
+            Self::SubscriptionId | Self::Channel => ColumnType::String(StringLen::None).def(),
             Self::DaysBefore => ColumnType::Integer.def(),
             Self::SentAt => ColumnType::TimestampWithTimeZone.def().null(),
-            Self::Channel => ColumnType::String(StringLen::None).def(),
         }
     }
 }

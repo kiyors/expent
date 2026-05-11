@@ -93,28 +93,22 @@ impl ColumnTrait for Column {
     type EntityName = Entity;
     fn def(&self) -> ColumnDef {
         match self {
-            Self::Id => ColumnType::String(StringLen::None).def(),
-            Self::UserId => ColumnType::String(StringLen::None).def(),
-            Self::Status => ColumnType::String(StringLen::None).def(),
-            Self::R2Key => ColumnType::String(StringLen::None).def(),
-            Self::ProcessedData => ColumnType::Json.def().null(),
-            Self::Error => ColumnType::String(StringLen::None).def().null(),
-            Self::CreatedAt => ColumnType::DateTime.def(),
-            Self::UpdatedAt => ColumnType::DateTime.def(),
-            Self::PHash => ColumnType::String(StringLen::None).def().null(),
-            Self::AutoConfirm => ColumnType::Boolean.def(),
-            Self::WalletId => ColumnType::String(StringLen::None).def().null(),
-            Self::CategoryId => ColumnType::String(StringLen::None).def().null(),
-            Self::TransactionId => ColumnType::String(StringLen::None).def().null(),
-            Self::StartedAt => ColumnType::DateTime.def().null(),
-            Self::RetryCount => ColumnType::Integer.def(),
-            Self::LastError => ColumnType::String(StringLen::None).def().null(),
-            Self::ScheduledAt => ColumnType::DateTime.def().null(),
-            Self::RawKey => ColumnType::String(StringLen::None).def().null(),
-            Self::IsHighRes => ColumnType::Boolean.def(),
-            Self::SchemaVersion => ColumnType::Integer.def(),
-            Self::ResolutionCandidates => ColumnType::Json.def().null(),
-            Self::TraceId => ColumnType::String(StringLen::None).def().null(),
+            Self::Id | Self::UserId | Self::Status | Self::R2Key => {
+                ColumnType::String(StringLen::None).def()
+            }
+            Self::ProcessedData | Self::ResolutionCandidates => ColumnType::Json.def().null(),
+            Self::Error
+            | Self::PHash
+            | Self::WalletId
+            | Self::CategoryId
+            | Self::TransactionId
+            | Self::LastError
+            | Self::RawKey
+            | Self::TraceId => ColumnType::String(StringLen::None).def().null(),
+            Self::CreatedAt | Self::UpdatedAt => ColumnType::DateTime.def(),
+            Self::AutoConfirm | Self::IsHighRes => ColumnType::Boolean.def(),
+            Self::StartedAt | Self::ScheduledAt => ColumnType::DateTime.def().null(),
+            Self::RetryCount | Self::SchemaVersion => ColumnType::Integer.def(),
         }
     }
 }

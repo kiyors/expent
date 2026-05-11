@@ -63,8 +63,7 @@ impl ColumnTrait for Column {
         match self {
             Self::Id => ColumnType::String(StringLen::None).def().null(),
             Self::TransactionId => ColumnType::String(StringLen::None).def(),
-            Self::OldAmount => ColumnType::Decimal(None).def(),
-            Self::NewAmount => ColumnType::Decimal(None).def(),
+            Self::OldAmount | Self::NewAmount => ColumnType::Decimal(None).def(),
             Self::EditedAt => ColumnType::TimestampWithTimeZone.def(),
         }
     }

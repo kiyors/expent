@@ -60,11 +60,9 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::Identifier => ColumnType::String(StringLen::None).def(),
-            Self::Value => ColumnType::String(StringLen::None).def(),
+            Self::Identifier | Self::Value => ColumnType::String(StringLen::None).def(),
             Self::ExpiresAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::CreatedAt => ColumnType::TimestampWithTimeZone.def().null(),
-            Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def().null(),
+            Self::CreatedAt | Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def().null(),
         }
     }
 }

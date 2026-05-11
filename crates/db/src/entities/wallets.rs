@@ -66,12 +66,9 @@ impl ColumnTrait for Column {
     fn def(&self) -> ColumnDef {
         match self {
             Self::Id => ColumnType::String(StringLen::None).def().null(),
-            Self::UserId => ColumnType::String(StringLen::None).def(),
-            Self::Name => ColumnType::String(StringLen::None).def(),
-            Self::Type => ColumnType::String(StringLen::None).def(),
+            Self::UserId | Self::Name | Self::Type => ColumnType::String(StringLen::None).def(),
             Self::Balance => ColumnType::Decimal(None).def(),
-            Self::CreatedAt => ColumnType::TimestampWithTimeZone.def(),
-            Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
+            Self::CreatedAt | Self::UpdatedAt => ColumnType::TimestampWithTimeZone.def(),
         }
     }
 }
