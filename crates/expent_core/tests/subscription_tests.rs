@@ -2,7 +2,7 @@ mod common;
 
 use chrono::{Duration, Utc};
 use common::{create_test_user, create_test_wallet, setup_test_core};
-use db::entities::enums::{TransactionDirection, TransactionSource};
+use db::entities::enums::{SubscriptionCycle, TransactionDirection, TransactionSource};
 use rstest::*;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
@@ -49,7 +49,7 @@ async fn test_detect_subscriptions_monthly() {
         .find(|s| s.name == "Netflix")
         .expect("Netflix subscription not found");
     assert_eq!(netflix.amount, Decimal::from_i32(199).unwrap());
-    assert_eq!(netflix.cycle, "Monthly");
+    assert_eq!(netflix.cycle, SubscriptionCycle::Monthly);
 }
 
 #[rstest]
@@ -93,5 +93,5 @@ async fn test_detect_subscriptions_fuzzy_date() {
         .iter()
         .find(|s| s.name == "Spotify")
         .expect("Spotify subscription not found");
-    assert_eq!(spotify.cycle, "Monthly");
+    assert_eq!(spotify.cycle, SubscriptionCycle::Monthly);
 }

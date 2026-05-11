@@ -66,7 +66,7 @@ pub async fn create_test_wallet(
         user_id: Set(user_id.to_string()),
         name: Set("Test Wallet".to_string()),
         balance: Set(balance),
-        r#type: Set("DEFAULT".to_string()),
+        r#type: Set(db::entities::enums::WalletType::Cash),
         created_at: Set(Utc::now().into()),
         updated_at: Set(Utc::now().into()),
         ..Default::default()
