@@ -25,7 +25,7 @@ const MIN_CONFIDENCE_THRESHOLD: f32 = 0.3;
 
 /// Normalizes a name for fuzzy matching by transliterating and removing extra spaces/special chars.
 /// Explicitly preserves spaces between words for better phonetic encoding.
-fn normalize_name(name: &str) -> String {
+pub(crate) fn normalize_name(name: &str) -> String {
     any_ascii(name)
         .to_lowercase()
         .chars()
@@ -37,7 +37,7 @@ fn normalize_name(name: &str) -> String {
 }
 
 /// Generates a phonetic representation of a name using Metaphone.
-fn phonetic_encode(name: &str) -> String {
+pub(crate) fn phonetic_encode(name: &str) -> String {
     let normalized = normalize_name(name);
     let metaphone = Metaphone::default();
     normalized
@@ -112,7 +112,10 @@ where
             .await?;
 
         for c in contacts {
-            let normalized_target = normalize_name(&c.name);
+            let normalized_target = c
+                .normalized_name
+                .as_ref()
+                .map_or_else(|| normalize_name(&c.name), |n| n.clone());
             let similarity = jaro_winkler(&normalized_input, &normalized_target) as f32;
 
             let mut match_score = 0.0;
@@ -122,7 +125,10 @@ where
             }
 
             // Phonetic check
-            let phonetic_target = phonetic_encode(&c.name);
+            let phonetic_target = c
+                .phonetic_name
+                .as_ref()
+                .map_or_else(|| phonetic_encode(&c.name), |p| p.clone());
             if !phonetic_input.is_empty()
                 && !phonetic_target.is_empty()
                 && phonetic_input == phonetic_target

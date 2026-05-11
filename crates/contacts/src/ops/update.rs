@@ -1,3 +1,4 @@
+use crate::ops::resolve::{normalize_name, phonetic_encode};
 use db::AppError;
 use db::entities;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
@@ -24,7 +25,11 @@ pub async fn update_contact(
             .into();
 
     if let Some(n) = name {
+        let normalized_name = normalize_name(&n);
+        let phonetic_name = phonetic_encode(&n);
         contact.name = Set(n);
+        contact.normalized_name = Set(Some(normalized_name));
+        contact.phonetic_name = Set(Some(phonetic_name));
     }
     if let Some(p) = phone {
         contact.phone = Set(Some(p));
