@@ -34,25 +34,9 @@ impl SubscriptionsManager {
 
     pub async fn confirm(
         &self,
-        user_id: &str,
-        name: String,
-        amount: Decimal,
-        cycle: SubscriptionCycle,
-        start_date: DateTime<FixedOffset>,
-        next_charge_date: DateTime<FixedOffset>,
-        keywords: Option<serde_json::Value>,
+        params: ops::ConfirmSubscriptionParams,
     ) -> Result<entities::subscriptions::Model, AppError> {
-        ops::confirm_subscription(
-            &self.db,
-            user_id,
-            name,
-            amount,
-            cycle,
-            start_date,
-            next_charge_date,
-            keywords,
-        )
-        .await
+        ops::confirm_subscription(&self.db, params).await
     }
 
     pub async fn stop_tracking(&self, user_id: &str, sub_id: &str) -> Result<(), AppError> {

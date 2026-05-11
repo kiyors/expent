@@ -114,38 +114,42 @@ pub async fn list_confirmed_subscriptions(
         .map_err(AppError::from)
 }
 
+pub struct ConfirmSubscriptionParams {
+    pub user_id: String,
+    pub name: String,
+    pub amount: Decimal,
+    pub cycle: SubscriptionCycle,
+    pub start_date: DateTime<FixedOffset>,
+    pub next_charge_date: DateTime<FixedOffset>,
+    pub keywords: Option<serde_json::Value>,
+}
+
 pub async fn confirm_subscription(
     db: &DatabaseConnection,
-    user_id: &str,
-    name: String,
-    amount: Decimal,
-    cycle: SubscriptionCycle,
-    start_date: DateTime<FixedOffset>,
-    next_charge_date: DateTime<FixedOffset>,
-    keywords: Option<serde_json::Value>,
+    params: ConfirmSubscriptionParams,
 ) -> Result<entities::subscriptions::Model, AppError> {
     // Idempotency check: don't create duplicate subscriptions
     let existing = entities::subscriptions::Entity::find()
-        .filter(entities::subscriptions::Column::UserId.eq(user_id))
-        .filter(entities::subscriptions::Column::Name.eq(name.clone()))
-        .filter(entities::subscriptions::Column::Cycle.eq(cycle))
+        .filter(entities::subscriptions::Column::UserId.eq(&params.user_id))
+        .filter(entities::subscriptions::Column::Name.eq(params.name.clone()))
+        .filter(entities::subscriptions::Column::Cycle.eq(params.cycle))
         .one(db)
         .await?;
 
     if let Some(sub) = existing {
-        tracing::info!("⏭️ Subscription already confirmed: {}", name);
+        tracing::info!("⏭️ Subscription already confirmed: {}", params.name);
         return Ok(sub);
     }
 
     let sub = entities::subscriptions::ActiveModel {
         id: Set(uuid::Uuid::now_v7().to_string()),
-        user_id: Set(user_id.to_string()),
-        name: Set(name),
-        amount: Set(amount),
-        cycle: Set(cycle),
-        start_date: Set(start_date),
-        next_charge_date: Set(next_charge_date),
-        detection_keywords: Set(keywords),
+        user_id: Set(params.user_id),
+        name: Set(params.name),
+        amount: Set(params.amount),
+        cycle: Set(params.cycle),
+        start_date: Set(params.start_date),
+        next_charge_date: Set(params.next_charge_date),
+        detection_keywords: Set(params.keywords),
     };
     sub.insert(db).await.map_err(AppError::from)
 }

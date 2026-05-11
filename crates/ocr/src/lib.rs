@@ -94,42 +94,49 @@ pub struct OcrManager {
     pub ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
 }
 
+#[derive(Debug)]
+pub struct OcrJobCreateParams {
+    pub user_id: String,
+    pub trace_id: Option<String>,
+    pub key: String,
+    pub raw_key: Option<String>,
+    pub p_hash: Option<String>,
+    pub auto_confirm: bool,
+    pub wallet_id: Option<String>,
+    pub category_id: Option<String>,
+}
+
 impl OcrManager {
     pub fn new(
         service: Arc<OcrService>,
         db: DatabaseConnection,
         upload: upload::UploadClient,
         ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
+        semaphore: Arc<tokio::sync::Semaphore>,
     ) -> Self {
         Self {
             service,
             db,
             upload,
             ocr_tx,
+            semaphore,
         }
     }
 
     pub async fn start_job(
         &self,
-        user_id: &str,
-        trace_id: Option<String>,
-        key: &str,
-        raw_key: Option<String>,
-        p_hash: Option<String>,
-        auto_confirm: bool,
-        wallet_id: Option<String>,
-        category_id: Option<String>,
+        params: OcrJobCreateParams,
     ) -> Result<db::entities::ocr_jobs::Model, db::AppError> {
-        create_ocr_job(
+        ops::lifecycle::create_ocr_job(
             &self.db,
-            user_id,
-            trace_id,
-            key,
-            raw_key,
-            p_hash,
-            auto_confirm,
-            wallet_id,
-            category_id,
+            &params.user_id,
+            params.trace_id,
+            &params.key,
+            params.raw_key,
+            params.p_hash,
+            params.auto_confirm,
+            params.wallet_id,
+            params.category_id,
         )
         .await
     }
@@ -148,13 +155,14 @@ impl OcrManager {
     }
 
     pub fn spawn_workers(&self, processor: Arc<dyn OcrProcessor>) {
-        tokio::spawn(start_recovery_worker(self.db.clone()));
-        tokio::spawn(start_processor_worker(
+        tokio::spawn(ops::workers::start_recovery_worker(self.db.clone()));
+        tokio::spawn(ops::workers::start_processor_worker(
             self.db.clone(),
-            self.service.clone(),
+            Arc::clone(&self.service),
             self.upload.clone(),
             self.ocr_tx.clone(),
             processor,
+            Arc::clone(&self.semaphore),
         ));
     }
 
