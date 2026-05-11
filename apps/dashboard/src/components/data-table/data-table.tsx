@@ -361,7 +361,7 @@ interface DataTableHeadProps {
   totalColumns?: number;
 }
 
-function DataTableHead({ column, columnIndex = 0, totalColumns = 1 }: DataTableHeadProps) {
+const DataTableHead = React.memo(({ column, columnIndex = 0, totalColumns = 1 }: DataTableHeadProps) => {
   const { sortBy, sortDirection, toggleSort } = useDataTable();
   const isFirstColumn = columnIndex === 0;
   const isLastColumn = columnIndex === totalColumns - 1;
@@ -443,7 +443,9 @@ function DataTableHead({ column, columnIndex = 0, totalColumns = 1 }: DataTableH
       </Button>
     </TableHead>
   );
-}
+});
+
+DataTableHead.displayName = "DataTableHead";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 
@@ -594,7 +596,7 @@ function getDataTableRowDomId(rowKey: string): string {
   return encodeURIComponent(rowKey).replace(/%/g, "_");
 }
 
-function DataTableAccordionCard({ row, index, rowKey, isFirst = false }: DataTableAccordionCardProps) {
+const DataTableAccordionCard = React.memo(({ row, index, rowKey, isFirst = false }: DataTableAccordionCardProps) => {
   const { columns, locale } = useDataTable();
 
   const { primary, secondary } = React.useMemo(() => categorizeColumns(columns), [columns]);
@@ -720,69 +722,75 @@ function DataTableAccordionCard({ row, index, rowKey, isFirst = false }: DataTab
       </AccordionItem>
     </Accordion>
   );
-}
+});
+
+DataTableAccordionCard.displayName = "DataTableAccordionCard";
 
 /**
  * Simple card with no accordion,   for when there are only primary columns
  */
-function SimpleCard({
-  row,
-  columns,
-  index,
-  rowKey,
-  isFirst = false,
-}: {
-  row: DataTableRowData;
-  columns: Column[];
-  index: number;
-  rowKey: string;
-  isFirst?: boolean;
-}) {
-  const { locale } = useDataTable();
-  const primaryColumn = columns[0];
-  const otherColumns = columns.slice(1);
+const SimpleCard = React.memo(
+  ({
+    row,
+    columns,
+    index,
+    rowKey,
+    isFirst = false,
+  }: {
+    row: DataTableRowData;
+    columns: Column[];
+    index: number;
+    rowKey: string;
+    isFirst?: boolean;
+  }) => {
+    const { locale } = useDataTable();
+    const primaryColumn = columns[0];
+    const otherColumns = columns.slice(1);
 
-  const stableRowId = getDataTableRowDomId(rowKey);
+    const stableRowId = getDataTableRowDomId(rowKey);
 
-  const primaryValue = primaryColumn ? String(row[primaryColumn.key] ?? "") : "";
-  const rowLabel = `Row ${index + 1}: ${primaryValue}`;
+    const primaryValue = primaryColumn ? String(row[primaryColumn.key] ?? "") : "";
+    const rowLabel = `Row ${index + 1}: ${primaryValue}`;
 
-  return (
-    <div className={cn("flex flex-col gap-2 p-4", !isFirst && "border-t")} role="listitem" aria-label={rowLabel}>
-      {primaryColumn && (
-        <div role="heading" aria-level={3} aria-label={`${primaryColumn.label}: ${row[primaryColumn.key]}`}>
-          {renderFormattedValue({
-            value: row[primaryColumn.key],
-            column: primaryColumn,
-            row,
-            locale,
-          })}
-        </div>
-      )}
-
-      {otherColumns.map((col) => (
-        <div key={col.key} className="flex items-start justify-between gap-4" role="group">
-          <span className="text-muted-foreground" id={`row-${stableRowId}-${String(col.key)}-label`}>
-            {col.label}:
-          </span>
-          <span
-            className={cn(
-              "min-w-0 wrap-break-word",
-              col.align === "right" && "text-right",
-              col.align === "center" && "text-center",
-            )}
-            role="cell"
-            aria-labelledby={`row-${stableRowId}-${String(col.key)}-label`}
-          >
+    return (
+      <div className={cn("flex flex-col gap-2 p-4", !isFirst && "border-t")} role="listitem" aria-label={rowLabel}>
+        {primaryColumn && (
+          <div role="heading" aria-level={3} aria-label={`${primaryColumn.label}: ${row[primaryColumn.key]}`}>
             {renderFormattedValue({
-              value: row[col.key],
-              column: col,
+              value: row[primaryColumn.key],
+              column: primaryColumn,
               row,
               locale,
             })}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
+          </div>
+        )}
+
+        {otherColumns.map((col) => (
+          <div key={col.key} className="flex items-start justify-between gap-4" role="group">
+            <span className="text-muted-foreground" id={`row-${stableRowId}-${String(col.key)}-label`}>
+              {col.label}:
+            </span>
+            <span
+              className={cn(
+                "min-w-0 wrap-break-word",
+                col.align === "right" && "text-right",
+                col.align === "center" && "text-center",
+              )}
+              role="cell"
+              aria-labelledby={`row-${stableRowId}-${String(col.key)}-label`}
+            >
+              {renderFormattedValue({
+                value: row[col.key],
+                column: col,
+                row,
+                locale,
+              })}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  },
+);
+
+SimpleCard.displayName = "SimpleCard";

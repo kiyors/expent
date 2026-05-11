@@ -32,10 +32,22 @@ export default function ActivityScreen() {
         <View className="px-6 py-6 flex-row items-center justify-between">
           <Text className="text-3xl font-bold text-foreground tracking-tight">Activity</Text>
           <View className="flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full bg-muted/50" onPress={handlePress}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 rounded-full bg-muted/50"
+              onPress={handlePress}
+              accessibilityLabel="Search transactions"
+            >
               <Search size={20} color="hsl(var(--foreground))" />
             </Button>
-            <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full bg-muted/50" onPress={handlePress}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 rounded-full bg-muted/50"
+              onPress={handlePress}
+              accessibilityLabel="Filter activity"
+            >
               <SlidersHorizontal size={20} color="hsl(var(--foreground))" />
             </Button>
           </View>

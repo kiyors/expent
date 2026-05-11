@@ -80,7 +80,7 @@ pub async fn process_image_ocr_handler(
         ));
     }
 
-    // Security check: Ensure the key starts with the user ID to prevent IDOR
+    // Security check: Ensure the keys start with the user ID to prevent IDOR
     let user_id_prefix = format!("{}/", session.user.id);
     if !payload.key.starts_with(&user_id_prefix) {
         tracing::warn!(
@@ -91,6 +91,19 @@ pub async fn process_image_ocr_handler(
         return Err(ApiError::Unauthorized(
             "You do not have permission to access this file".to_string(),
         ));
+    }
+
+    if let Some(ref raw_key) = payload.raw_key {
+        if !raw_key.starts_with(&user_id_prefix) {
+            tracing::warn!(
+                "🔒 Potential IDOR attempt by user {} for raw_key {}",
+                session.user.id,
+                raw_key
+            );
+            return Err(ApiError::Unauthorized(
+                "You do not have permission to access this file".to_string(),
+            ));
+        }
     }
 
     // 1. Create a record in ocr_jobs table (QUEUED)
