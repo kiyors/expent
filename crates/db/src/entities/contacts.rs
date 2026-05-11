@@ -26,6 +26,8 @@ pub struct Model {
     pub name: String,
     pub phone: Option<String>,
     pub is_pinned: bool,
+    pub normalized_name: Option<String>,
+    pub phonetic_name: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -34,6 +36,8 @@ pub enum Column {
     Name,
     Phone,
     IsPinned,
+    NormalizedName,
+    PhoneticName,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -62,6 +66,8 @@ impl ColumnTrait for Column {
             Self::Name => ColumnType::String(StringLen::None).def(),
             Self::Phone => ColumnType::String(StringLen::None).def().null(),
             Self::IsPinned => ColumnType::Boolean.def(),
+            Self::NormalizedName => ColumnType::String(StringLen::None).def().null(),
+            Self::PhoneticName => ColumnType::String(StringLen::None).def().null(),
         }
     }
 }

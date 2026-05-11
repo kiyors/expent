@@ -1,0 +1,37 @@
+use std::time::Instant;
+
+// Mocking the functions since I might have trouble compiling with real ones
+// in a standalone script without proper setup, but I'll try to use the real ones
+// if I can run it via cargo.
+
+fn normalize_name(name: &str) -> String {
+    // Simulated work
+    name.to_lowercase()
+        .chars()
+        .filter(|c| c.is_alphanumeric() || c.is_whitespace())
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn main() {
+    let names = vec![
+        "John Doe", "Jane Smith", "Robert De Niro", "Al Pacino",
+        "Christopher Nolan", "Quentin Tarantino", "Steven Spielberg",
+        "Martin Scorsese", "Leonardo DiCaprio", "Brad Pitt"
+    ];
+
+    let iterations = 10000;
+    let start = Instant::now();
+
+    for _ in 0..iterations {
+        for name in &names {
+            let _ = normalize_name(name);
+        }
+    }
+
+    let duration = start.elapsed();
+    println!("Time taken for {} iterations of {} names: {:?}", iterations, names.len(), duration);
+    println!("Average time per normalization: {:?}", duration / (iterations * names.len() as u32));
+}

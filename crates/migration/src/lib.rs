@@ -21,6 +21,7 @@ pub mod m20260417_000006_add_contact_staging;
 pub mod m20260417_000007_create_ocr_job_edits;
 pub mod m20260417_000008_add_ocr_trace_id;
 pub mod m20260422_000001_create_budgets_table;
+pub mod m20260423_000001_add_cached_names_to_contacts;
 
 pub struct Migrator;
 
@@ -49,6 +50,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260417_000007_create_ocr_job_edits::Migration),
             Box::new(m20260417_000008_add_ocr_trace_id::Migration),
             Box::new(m20260422_000001_create_budgets_table::Migration),
+            Box::new(m20260423_000001_add_cached_names_to_contacts::Migration),
         ]
     }
 }
