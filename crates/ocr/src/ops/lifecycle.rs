@@ -27,6 +27,7 @@ pub async fn create_ocr_job(
     wallet_id: Option<String>,
     category_id: Option<String>,
 ) -> Result<entities::ocr_jobs::Model, AppError> {
+    let now = chrono::Utc::now().naive_utc();
     let job = entities::ocr_jobs::ActiveModel {
         id: Set(uuid::Uuid::now_v7().to_string()),
         user_id: Set(user_id.to_string()),
@@ -39,6 +40,8 @@ pub async fn create_ocr_job(
         category_id: Set(category_id),
         schema_version: Set(CURRENT_SCHEMA_VERSION),
         trace_id: Set(trace_id),
+        created_at: Set(now),
+        updated_at: Set(now),
         ..Default::default()
     };
     Ok(job.insert(db).await?)
@@ -73,6 +76,7 @@ pub async fn update_ocr_job(
         .into();
 
     job.status = Set(params.status.to_string());
+    job.updated_at = Set(chrono::Utc::now().naive_utc());
     if let Some(data) = params.processed_data {
         job.processed_data = Set(Some(data.into()));
     }

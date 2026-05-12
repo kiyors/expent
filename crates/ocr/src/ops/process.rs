@@ -76,20 +76,60 @@ pub async fn process_job(
     let process_res = async {
         let bytes = upload_client.get_file(&key).await?;
 
-        // Determine filename and mime type from the key
-        let filename = key.split("/").last().unwrap_or("upload");
-        let mime_type = if filename.ends_with(".pdf") {
+        // Determine filename and mime type from magic bytes or key extension
+        let mut filename = key.split("/").last().unwrap_or("upload").to_string();
+
+        let mime_type = if bytes.starts_with(b"%PDF-") {
+            if !filename.to_lowercase().ends_with(".pdf") {
+                filename.push_str(".pdf");
+            }
             "application/pdf"
-        } else if filename.ends_with(".csv") {
-            "text/csv"
-        } else if filename.ends_with(".webp") {
-            "image/webp"
-        } else {
+        } else if bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+            if !filename.to_lowercase().ends_with(".png") {
+                filename.push_str(".png");
+            }
             "image/png"
+        } else if bytes.starts_with(b"\xFF\xD8\xFF") {
+            if !filename.to_lowercase().ends_with(".jpg") {
+                filename.push_str(".jpg");
+            }
+            "image/jpeg"
+        } else if bytes.starts_with(b"PK\x03\x04") {
+            // PK\x03\x04 is common for ZIP-based formats like .xlsx or .docx
+            if !filename.to_lowercase().ends_with(".xlsx") {
+                filename.push_str(".xlsx");
+            }
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        } else {
+            // Fallback to filename extension check or default to text/csv if it looks like text
+            let ext = filename.split('.').last().unwrap_or("").to_lowercase();
+            match ext.as_str() {
+                "pdf" => "application/pdf",
+                "csv" => "text/csv",
+                "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "xls" => "application/vnd.ms-excel",
+                "webp" => "image/webp",
+                "png" => "image/png",
+                "jpg" | "jpeg" => "image/jpeg",
+                _ => {
+                    // If no extension, check if it looks like CSV
+                    if bytes.len() > 10
+                        && (bytes.contains(&b',') || bytes.contains(&b'\t'))
+                        && bytes.iter().take(100).all(|&b| b.is_ascii() || b > 127)
+                    {
+                        if !filename.to_lowercase().ends_with(".csv") {
+                            filename.push_str(".csv");
+                        }
+                        "text/csv"
+                    } else {
+                        "image/png" // Default fallback
+                    }
+                }
+            }
         };
 
         let ocr_json = ocr_service
-            .process_file(&bytes, filename, mime_type)
+            .process_file(&bytes, &filename, mime_type)
             .await?;
 
         let mut processed_ocr: db::ProcessedOcr = serde_json::from_value(ocr_json.clone())?;

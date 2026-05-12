@@ -73,6 +73,68 @@ STEP 3: FORMAT OUTPUT
 - Ensure 'confidence_score' reflects your certainty (0.0 to 1.0).
 """
 
+    def _clean_schema(self, schema: Any, definitions: dict = None) -> Any:
+        """Recursively inline $ref and remove keys not supported by Gemini API schema."""
+        if not isinstance(schema, dict):
+            return schema
+
+        # Initialize definitions from the root schema
+        if definitions is None:
+            definitions = schema.get("$defs", {})
+
+        # Resolve references immediately
+        if "$ref" in schema:
+            ref_path = schema["$ref"]
+            ref_name = ref_path.split("/")[-1]
+            ref_def = definitions.get(ref_name)
+            if ref_def:
+                # Recursively resolve and clean the referenced definition
+                return self._clean_schema(ref_def, definitions)
+            else:
+                return {}
+
+        # Keys to remove for Gemini compatibility
+        forbidden = [
+            "additionalProperties",
+            "title",
+            "description",
+            "default",
+            "definitions",
+            "$defs",
+        ]
+
+        cleaned = {}
+        for k, v in schema.items():
+            if k not in forbidden:
+                if k == "properties":
+                    cleaned[k] = {pk: self._clean_schema(pv, definitions) for pk, pv in v.items()}
+                elif k == "items":
+                    cleaned[k] = self._clean_schema(v, definitions)
+                elif k in ["anyOf", "allOf", "oneOf"]:
+                    # Gemini doesn't support complex unions.
+                    # For Optional[T], Pydantic uses anyOf: [T, {"type": "null"}].
+                    items = [self._clean_schema(item, definitions) for item in v]
+
+                    # 1. Filter out null types to get the actual data type
+                    non_null = [i for i in items if i.get("type") != "null" and i != {}]
+
+                    if non_null:
+                        # 2. If we have a concrete type, return it directly (stripping the anyOf wrapper)
+                        return non_null[0]
+                    elif items:
+                        # 3. Fallback to the first item if everything is null/empty
+                        return items[0]
+                    else:
+                        return {}
+                else:
+                    cleaned[k] = v
+
+        # Gemini often requires 'type' to be present if 'properties' is present
+        if "properties" in cleaned and "type" not in cleaned:
+            cleaned["type"] = "object"
+
+        return cleaned
+
     async def extract_from_bytes(self, data: bytes, filename: str) -> dict:
         media_type = get_media_type(filename)
 
@@ -89,19 +151,14 @@ STEP 3: FORMAT OUTPUT
             extracted_text = parse_excel(data)
 
         # 2. Performance optimization: Image-based OCR only if needed
-        # We'll skip EasyOCR by default and let Gemini handle vision,
-        # unless it's a very complex bank statement image.
-        # For now, we only run it for images to provide context.
         ocr_context = ""
-        if media_type.startswith("image/") and len(data) < 5 * 1024 * 1024:  # Only for reasonable size images
+        if media_type.startswith("image/") and len(data) < 5 * 1024 * 1024:
             try:
-                # We do this in a thread to not block the event loop
                 from PIL import Image
                 import numpy as np
 
                 img = Image.open(io.BytesIO(data))
                 img_np = np.array(img)
-                # detail=0 returns only text list
                 loop = asyncio.get_event_loop()
                 results = await loop.run_in_executor(None, lambda: self.reader.readtext(img_np, detail=0))
                 ocr_context = " ".join(results)
@@ -116,18 +173,20 @@ STEP 3: FORMAT OUTPUT
         if ocr_context:
             content_items.append(f"OCR CONTEXT (HEURISTIC):\n{ocr_context}")
 
-        # Add the media part (vision)
-        # Gemini 1.5+ handles PDF directly too, but we provide text for better accuracy
         content_items.append(types.Part.from_bytes(data=data, mime_type=media_type))
 
         try:
+            # Generate schema from Pydantic model and CLEAN (inline) it
+            raw_schema = UnifiedExtraction.model_json_schema()
+            cleaned_schema = self._clean_schema(raw_schema)
+
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=content_items,
                 config=types.GenerateContentConfig(
                     system_instruction=self.get_system_prompt(),
                     response_mime_type="application/json",
-                    response_schema=UnifiedExtraction,
+                    response_schema=cleaned_schema,
                     temperature=0.0,
                 ),
             )
@@ -142,9 +201,6 @@ STEP 3: FORMAT OUTPUT
             if doc_type == "GPAY":
                 final_data = raw_result.get("gpay_data") or {}
             elif doc_type == "BANK_STATEMENT":
-                # Rust expects a nested bank_data or the flat result?
-                # Based on crates/db/src/lib.rs, it expects a structure that matches BankExtractionResult
-                # which has bank_data field.
                 final_data = {
                     "raw_text": extracted_text or ocr_context or "Extracted from vision",
                     "doc_type": "bank_statement",
@@ -154,7 +210,6 @@ STEP 3: FORMAT OUTPUT
             else:
                 final_data = raw_result.get("generic_data") or {}
 
-            # Ensure confidence score is present in the data too
             if isinstance(final_data, dict):
                 final_data["confidence_score"] = confidence
                 if not final_data.get("raw_text"):

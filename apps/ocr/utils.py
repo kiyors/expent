@@ -37,14 +37,14 @@ def extract_pdf_text(pdf_bytes: bytes) -> str:
     text = ""
     try:
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            if pdf.is_encrypted:
-                return "ERROR: PDF is password protected. Please remove the password before uploading."
             for page in pdf.pages:
                 page_text = page.extract_text()
                 if page_text:
                     text += page_text + "\n"
     except Exception as e:
         print(f"PDF extraction error: {e}")
+        if "encrypted" in str(e).lower() or "password" in str(e).lower():
+            return "ERROR: PDF is password protected. Please remove the password before uploading."
         return f"ERROR: Failed to parse PDF: {str(e)}"
     return text.strip()
 

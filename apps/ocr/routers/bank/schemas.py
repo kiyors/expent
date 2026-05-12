@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
 
 class BankTransaction(BaseModel):
-    transaction_date: str = Field(description="The date of the transaction (e.g., DD/MM/YYYY)")
+    transaction_date: str = Field(description="The date of the transaction. MUST ALWAYS be in YYYY-MM-DD format.")
     description: str = Field(description="The full particulars or description of the transaction")
     mode: Optional[str] = Field(None, description="The mode of transaction, e.g., UPI, NEFT, INF, IMPS")
     debit_amount: Optional[float] = Field(None, description="Amount withdrawn/debited. Null if deposit.")
@@ -16,9 +16,7 @@ class BankTransaction(BaseModel):
     reference_number: Optional[str] = Field(None, description="Bank reference number or transaction ID")
     category_id: Optional[str] = Field(None, description="Assigned category ID")
     wallet_id: Optional[str] = Field(None, description="Assigned wallet ID")
-    metadata: Optional[Dict[str, Any]] = Field(
-        default_factory=dict, description="Any additional metadata or raw text to prevent data loss"
-    )
+    raw_particulars: Optional[str] = Field(None, description="The original un-truncated particulars string")
 
 
 class BankStatementResponse(BaseModel):
@@ -31,7 +29,6 @@ class BankStatementResponse(BaseModel):
 class BankExtractionResult(BaseModel):
     """The final object returned to Rust after processing a bank statement."""
 
-    # These fields are for the frontend review UI and internal classification
     raw_text: str = Field(description="The full raw text extracted from the document")
     doc_type: str = Field(default="bank_statement")
     confidence_score: float = Field(default=1.0)
