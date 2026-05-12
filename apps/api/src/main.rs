@@ -26,6 +26,9 @@ pub struct AppState {
     pub ocr_limiter: UserRateLimiter,
 }
 
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 impl FromRef<AppState> for DatabaseConnection {
     fn from_ref(state: &AppState) -> Self {
         state.core.db.clone()

@@ -12,6 +12,7 @@ import easyocr
 from routers.gpay.schemas import GPayExtraction
 from routers.generic_receipt.schemas import OCRResponse as GenericOCRResponse
 from routers.bank.schemas import BankStatementResponse, BankExtractionResult
+from routers.bank.icici.prompts import ICICI_PROMPT
 from utils import get_media_type, extract_pdf_text, parse_csv, parse_excel
 
 
@@ -41,7 +42,7 @@ class OCREngine:
         return self._reader
 
     def get_system_prompt(self) -> str:
-        return """
+        return f"""
 You are an advanced financial data extraction engine. Your task is to analyze the provided document (image, PDF, CSV, or Excel) and extract structured information.
 
 STEP 1: CLASSIFY THE DOCUMENT
@@ -58,9 +59,8 @@ STEP 2: EXTRACT DATA BASED ON TYPE
 --- RULES FOR BANK_STATEMENT ---
 - Identify the bank (e.g., ICICI, HDFC, SBI).
 - Extract ALL transactions. 
-- For ICICI: Stitch multi-line 'PARTICULARS' into a single description.
-- Extract 'contact_name' and 'upi_id' from transaction descriptions if available.
-- Map withdrawals to 'debit_amount' and deposits to 'credit_amount'.
+
+{ICICI_PROMPT}
 
 --- RULES FOR GENERIC ---
 - Extract 'vendor', total 'amount', 'date', and 'items' (if visible).

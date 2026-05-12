@@ -36,6 +36,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
   // Bank Statement State
   const [bankTransactions, setBankTransactions] = React.useState<any[]>([]);
   const [selectedIndices, setSelectedIndices] = React.useState<Set<number>>(new Set());
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   const { categories } = useCategories();
   const { wallets } = useWallets();
@@ -90,12 +91,16 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
 
   const applyGlobalCategory = (catId: string) => {
     setCategoryId(catId);
-    setBankTransactions((prev) => prev.map((tx) => ({ ...tx, category_id: catId === "none" ? null : catId })));
+    setBankTransactions((prev) =>
+      prev.map((tx, i) => (selectedIndices.has(i) ? { ...tx, category_id: catId === "none" ? null : catId } : tx)),
+    );
   };
 
   const applyGlobalWallet = (wId: string) => {
     setWalletId(wId);
-    setBankTransactions((prev) => prev.map((tx) => ({ ...tx, wallet_id: wId === "none" ? null : wId })));
+    setBankTransactions((prev) =>
+      prev.map((tx, i) => (selectedIndices.has(i) ? { ...tx, wallet_id: wId === "none" ? null : wId } : tx)),
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -150,7 +155,19 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
   };
 
   if (processedOcr.doc_type === "BANK_STATEMENT") {
-    const totalSelected = bankTransactions.filter((_, i) => selectedIndices.has(i)).length;
+    const selectedTransactions = bankTransactions.filter((_, i) => selectedIndices.has(i));
+    const totalSelected = selectedTransactions.length;
+
+    const totalDebit = selectedTransactions.reduce((acc, tx) => acc + parseFloat(tx.debit_amount || "0"), 0);
+    const totalCredit = selectedTransactions.reduce((acc, tx) => acc + parseFloat(tx.credit_amount || "0"), 0);
+
+    const filteredTransactions = bankTransactions
+      .map((tx, i) => ({ ...tx, originalIndex: i }))
+      .filter(
+        (tx) =>
+          tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tx.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
 
     return (
       <Card className="w-full max-w-5xl mx-auto shadow-xl border-primary/20 overflow-hidden">
@@ -163,15 +180,25 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               <div>
                 <CardTitle className="text-xl">Review Bank Statement</CardTitle>
                 <CardDescription className="font-medium text-primary/80">
-                  {bankTransactions.length} transactions found • {totalSelected} selected for import
+                  {bankTransactions.length} transactions found • {totalSelected} selected
                 </CardDescription>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 self-end md:self-auto bg-background/50 p-2 rounded-lg border border-primary/10 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3 self-end md:self-auto bg-background/50 p-2 rounded-lg border border-primary/10 shadow-sm">
+              <div className="flex items-center gap-2 px-2 border-r pr-4">
+                <FilterIcon className="size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Filter transactions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 w-40 border-none bg-transparent focus-visible:ring-0 text-xs p-0"
+                />
+              </div>
+
               <div className="flex flex-col gap-1.5">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">
-                  Default Account
+                  Selected Account
                 </Label>
                 <Select value={walletId} onValueChange={applyGlobalWallet}>
                   <SelectTrigger className="h-9 w-40 bg-background border-primary/20">
@@ -189,7 +216,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">
-                  Default Category
+                  Selected Category
                 </Label>
                 <Select value={categoryId} onValueChange={applyGlobalCategory}>
                   <SelectTrigger className="h-9 w-40 bg-background border-primary/20">
@@ -226,7 +253,8 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {bankTransactions.map((tx, i) => {
+              {filteredTransactions.map((tx) => {
+                const i = tx.originalIndex;
                 const isSelected = selectedIndices.has(i);
                 const isDebit = !!tx.debit_amount;
                 return (
@@ -317,7 +345,18 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               Cancel
             </Button>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex gap-6 border-r pr-6">
+              <div className="text-right">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Debit</p>
+                <p className="text-sm font-bold text-red-500">-₹{totalDebit.toLocaleString("en-IN")}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold">Total Credit</p>
+                <p className="text-sm font-bold text-emerald-500">+₹{totalCredit.toLocaleString("en-IN")}</p>
+              </div>
+            </div>
+
             <div className="text-right">
               <p className="text-[10px] text-muted-foreground uppercase font-bold">Import Summary</p>
               <p className="text-sm font-bold">{totalSelected} Transactions</p>

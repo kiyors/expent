@@ -1,9 +1,15 @@
-use db::entities;
+use crate::OcrService;
+use crate::OcrUpdate;
+use crate::ops::lifecycle::{OcrJobUpdateParams, update_ocr_job};
 use db::AppError;
-use sea_orm::{DatabaseConnection, EntityTrait, Set};
+use db::entities;
+use rand::Rng;
+use sea_orm::{DatabaseConnection, EntityTrait};
 use std::sync::Arc;
 use upload::UploadClient;
 
+/// Helper function to bridge with expent_core for processing transactions.
+/// This will be provided by a trait or callback to keep the ocr crate decoupled.
 pub trait OcrProcessor: Send + Sync {
     fn process_ocr(
         &self,
@@ -19,199 +25,325 @@ pub async fn process_job(
     db: &DatabaseConnection,
     ocr_service: Arc<OcrService>,
     upload_client: &UploadClient,
-    ocr_tx: tokio::sync::broadcast::Sender<crate::OcrUpdate>,
+    ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
     processor: Arc<dyn OcrProcessor>,
     job_id: String,
-) -> Result<(), anyhow::Error> {
-    let mut job = super::lifecycle::get_ocr_job(db, &job_id)
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let job = entities::ocr_jobs::Entity::find_by_id(job_id.clone())
+        .one(db)
         .await?
-        .ok_or_else(|| anyhow::anyhow!("OCR Job not found"))?;
+        .ok_or_else(|| AppError::not_found("OCR Job not found"))?;
 
-    super::lifecycle::update_ocr_job(
+    if job.status != "QUEUED" && job.status != "PENDING" {
+        return Ok(());
+    }
+
+    let user_id = job.user_id.clone();
+    let trace_id = job.trace_id.clone();
+
+    // Use raw_key if it's already a high-res attempt or if we want to try high-res
+    let key = if job.is_high_res {
+        job.raw_key.as_ref().unwrap_or(&job.r2_key).clone()
+    } else {
+        job.r2_key.clone()
+    };
+
+    // 1. Update status to PROCESSING
+    update_ocr_job(
         db,
-        &job.id,
-        "PROCESSING",
-        None,
-        None,
-        None,
-        Some(chrono::Utc::now()),
-        None,
-        None,
-        None,
-        None,
+        &job_id,
+        OcrJobUpdateParams {
+            status: "PROCESSING".to_string(),
+            processed_data: None,
+            error_message: None,
+            transaction_id: None,
+            started_at: Some(chrono::Utc::now()),
+            retry_count: None,
+            last_error: None,
+            scheduled_at: None,
+            resolution_candidates: None,
+        },
     )
     .await?;
 
-    let bytes = upload_client.get_file(&job.r2_key).await?;
+    let _ = ocr_tx.send(OcrUpdate {
+        user_id: user_id.clone(),
+        job_id: job_id.clone(),
+        status: "PROCESSING".to_string(),
+        trace_id: trace_id.clone(),
+    });
 
-    let filename = job.r2_key.split('/').last().unwrap_or("upload");
-    let mime_type = super::process::determine_mime_type(filename);
+    let process_res = async {
+        let bytes = upload_client.get_file(&key).await?;
 
-    let ocr_json = ocr_service
-        .process_file(bytes, filename, mime_type)
-        .await?;
+        // Determine filename and mime type from the key
+        let filename = key.split("/").last().unwrap_or("upload");
+        let mime_type = if filename.ends_with(".pdf") {
+            "application/pdf"
+        } else if filename.ends_with(".csv") {
+            "text/csv"
+        } else if filename.ends_with(".webp") {
+            "image/webp"
+        } else {
+            "image/png"
+        };
 
-    let mut processed_ocr: db::ProcessedOcr = serde_json::from_value(ocr_json)?;
-    processed_ocr.r2_key = Some(job.r2_key.clone());
-    processed_ocr.is_high_res = job.is_high_res;
-
-    let confidence_score = super::process::extract_confidence(&processed_ocr);
-
-    if confidence_score < 0.5 {
-        super::lifecycle::update_ocr_job(
-            db,
-            &job.id,
-            super::lifecycle::OcrJobUpdateParams {
-                status: "FAILED".to_string(),
-                processed_data: None,
-                error_message: Some("Low confidence score".to_string()),
-                transaction_id: None,
-                started_at: None,
-                retry_count: None,
-                last_error: None,
-                scheduled_at: None,
-                resolution_candidates: None,
-            },
-        )
-        .await?;        return Ok(());
-    }
-
-    if job.auto_confirm && confidence_score > 0.8 {
-        // Apply wallet and category if auto-confirm is enabled and confident enough
-        super::process::prepare_auto_confirm(&mut processed_ocr, &job);
-
-        // Try to process immediately and create transaction
-        let transaction_response = processor
-            .process_ocr(db, &job.user_id, processed_ocr.clone())
+        let ocr_json = ocr_service
+            .process_file(&bytes, filename, mime_type)
             .await?;
 
-        super::lifecycle::update_ocr_job(
-            db,
-            &job.id,
-            super::lifecycle::OcrJobUpdateParams {
-                status: "COMPLETED".to_string(),
-                processed_data: Some(serde_json::to_value(processed_ocr)?),
-                error_message: None,
-                transaction_id: Some(transaction_response.transaction.id),
-                started_at: None,
-                retry_count: None,
-                last_error: None,
-                scheduled_at: None,
-                resolution_candidates: None,
-            },
-        )
-        .await?;
-    } else {
-        super::lifecycle::update_ocr_job(
-            db,
-            &job.id,
-            "PROCESSED",
-            Some(serde_json::to_value(processed_ocr)?),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .await?;
-    }
+        let mut processed_ocr: db::ProcessedOcr = serde_json::from_value(ocr_json.clone())?;
+        processed_ocr.r2_key = Some(job.r2_key.clone());
+        processed_ocr.is_high_res = job.is_high_res;
 
-    ocr_tx
-        .send(crate::OcrUpdate {
-            user_id: job.user_id.clone(),
-            job_id: job.id.clone(),
-            status: "PROCESSED".to_string(),
-            trace_id: job.trace_id,
-        })
-        .ok();
-
-    Ok(())
-}
-
-fn determine_mime_type(filename: &str) -> &str {
-    match filename.split('.').last().unwrap_or("").to_lowercase().as_str() {
-        "png" => "image/png",
-        "jpg" | "jpeg" => "image/jpeg",
-        "pdf" => "application/pdf",
-        "csv" => "text/csv",
-        "xls" | "xlsx" => "application/vnd.ms-excel",
-        _ => "application/octet-stream",
-    }
-}
-
-fn extract_confidence(processed: &db::ProcessedOcr) -> f32 {
-    let json_value = &processed.data.0;
-    if processed.doc_type == "BANK_STATEMENT" {
-        json_value
-            .get("bank_data")
-            .and_then(|bd| bd.get("confidence_score"))
-            .and_then(|cs| cs.as_f64())
-            .map(|cs| cs as f32)
-            .unwrap_or(1.0)
-    } else {
-        json_value
-            .get("confidence_score")
-            .and_then(|cs| cs.as_f64())
-            .map(|cs| cs as f32)
-            .unwrap_or(1.0)
-    }
-}
-
-fn prepare_auto_confirm(processed: &mut db::ProcessedOcr, job: &entities::ocr_jobs::Model) {
-    if let Some(w_id) = job.wallet_id.clone() {
-        let val = std::mem::take(&mut processed.data.0);
-        match processed.doc_type.as_str() {
+        // Extract confidence from the inner data
+        let confidence_score = match processed_ocr.doc_type.as_str() {
             "GPAY" => {
-                if let Ok(mut gpay) = serde_json::from_value::<db::GPayExtraction>(val) {
-                    gpay.wallet_id = Some(w_id);
-                    if let Some(c_id) = job.category_id.clone() {
-                        gpay.category_id = Some(c_id);
-                    }
-                    if let Ok(new_val) = serde_json::to_value(gpay) {
-                        processed.data.0 = new_val;
-                    }
-                }
+                let gpay: db::GPayExtraction =
+                    serde_json::from_value(processed_ocr.data.0.clone())?;
+                gpay.confidence_score
             }
             "GENERIC" => {
-                if let Ok(mut generic) = serde_json::from_value::<db::OcrResult>(val) {
-                    generic.wallet_id = Some(w_id);
-                    if let Some(c_id) = job.category_id.clone() {
-                        generic.category_id = Some(c_id);
-                    }
-                    if let Ok(new_val) = serde_json::to_value(generic) {
-                        processed.data.0 = new_val;
-                    }
-                }
+                let generic: db::OcrResult = serde_json::from_value(processed_ocr.data.0.clone())?;
+                generic.confidence_score
             }
             "BANK_STATEMENT" => {
-                if let Ok(mut bank_extraction) =
-                    serde_json::from_value::<db::BankExtractionResult>(val)
-                {
-                    // Apply wallet_id and category_id to all transactions in the batch
-                    for tx in &mut bank_extraction.bank_data.transactions {
-                        if tx.wallet_id.is_none() {
-                            tx.wallet_id = Some(w_id.clone());
-                        }
-                        if tx.category_id.is_none() {
+                let bank: db::BankExtractionResult =
+                    serde_json::from_value(processed_ocr.data.0.clone())?;
+                bank.confidence_score
+            }
+            _ => 1.0,
+        };
+
+        // 3. Progressive Quality Fallback
+        if confidence_score < 0.8 && !job.is_high_res && job.raw_key.is_some() {
+            tracing::info!(
+                "⚠️ Low confidence ({}) for job {}, triggering high-res retry",
+                confidence_score,
+                job_id
+            );
+            return Ok::<
+                (
+                    db::ProcessedOcr,
+                    String,
+                    Option<String>,
+                    Option<serde_json::Value>,
+                ),
+                Box<dyn std::error::Error + Send + Sync>,
+            >((processed_ocr, "RETRY_HIGH_RES".to_string(), None, None));
+        }
+
+        let mut transaction_id = None;
+        let mut final_status = "COMPLETED";
+        let mut collision_data = None;
+
+        if job.auto_confirm {
+            if let Some(w_id) = job.wallet_id {
+                match processed_ocr.doc_type.as_str() {
+                    "GPAY" => {
+                        if let Ok(mut gpay) = serde_json::from_value::<db::GPayExtraction>(
+                            processed_ocr.data.0.clone(),
+                        ) {
+                            gpay.wallet_id = Some(w_id);
                             if let Some(c_id) = job.category_id.clone() {
-                                tx.category_id = Some(c_id);
+                                gpay.category_id = Some(c_id);
                             }
+                            processed_ocr.data.0 = serde_json::to_value(gpay).map_err(|e| {
+                                AppError::Ocr(format!("Failed to serialize GPAY data: {}", e))
+                            })?;
                         }
                     }
-                    if let Ok(new_val) = serde_json::to_value(bank_extraction) {
-                        processed.data.0 = new_val;
+                    "GENERIC" => {
+                        if let Ok(mut generic) =
+                            serde_json::from_value::<db::OcrResult>(processed_ocr.data.0.clone())
+                        {
+                            generic.wallet_id = Some(w_id);
+                            if let Some(c_id) = job.category_id.clone() {
+                                generic.category_id = Some(c_id);
+                            }
+                            processed_ocr.data.0 = serde_json::to_value(generic).map_err(|e| {
+                                AppError::Ocr(format!("Failed to serialize GENERIC data: {}", e))
+                            })?;
+                        }
+                    }
+                    "BANK_STATEMENT" => {
+                        if let Ok(mut bank) = serde_json::from_value::<db::BankExtractionResult>(
+                            processed_ocr.data.0.clone(),
+                        ) {
+                            for tx in &mut bank.bank_data.transactions {
+                                tx.wallet_id = Some(w_id.clone());
+                                if let Some(c_id) = job.category_id.clone() {
+                                    tx.category_id = Some(c_id);
+                                }
+                            }
+                            processed_ocr.data.0 = serde_json::to_value(bank).map_err(|e| {
+                                AppError::Ocr(format!("Failed to serialize bank data: {}", e))
+                            })?;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            match processor
+                .process_ocr(db, &user_id, processed_ocr.clone())
+                .await
+            {
+                Ok(res) => {
+                    transaction_id = Some(res.transaction.id);
+                }
+                Err(e) => {
+                    if let db::AppError::ContactCollision(candidates) = e {
+                        tracing::warn!(
+                            "⚠️ Contact collision for job {}, needs manual review",
+                            job_id
+                        );
+                        final_status = "CONTACT_COLLISION";
+                        collision_data = Some(candidates);
+                    } else {
+                        tracing::error!("❌ Auto-confirmation failed for job {}: {}", job_id, e);
+                        final_status = "PENDING_REVIEW";
                     }
                 }
             }
-            _ => {
-                processed.data.0 = val;
+        } else {
+            final_status = "PENDING_REVIEW";
+        }
+
+        Ok::<
+            (
+                db::ProcessedOcr,
+                String,
+                Option<String>,
+                Option<serde_json::Value>,
+            ),
+            Box<dyn std::error::Error + Send + Sync>,
+        >((
+            processed_ocr,
+            final_status.to_string(),
+            transaction_id,
+            collision_data,
+        ))
+    }
+    .await;
+
+    match process_res {
+        Ok((processed, status, tx_id, candidates)) => {
+            if status == "RETRY_HIGH_RES" {
+                update_ocr_job(
+                    db,
+                    &job_id,
+                    OcrJobUpdateParams {
+                        status: "QUEUED".to_string(),
+                        processed_data: None,
+                        error_message: None,
+                        transaction_id: None,
+                        started_at: None,
+                        retry_count: None,
+                        last_error: None,
+                        scheduled_at: Some(chrono::Utc::now()),
+                        resolution_candidates: None,
+                    },
+                )
+                .await?;
+
+                let _ = ocr_tx.send(OcrUpdate {
+                    user_id: user_id.clone(),
+                    job_id: job_id.clone(),
+                    status: "QUEUED".to_string(),
+                    trace_id: trace_id.clone(),
+                });
+            } else {
+                update_ocr_job(
+                    db,
+                    &job_id,
+                    OcrJobUpdateParams {
+                        status: status.to_string(),
+                        processed_data: Some(serde_json::to_value(processed).map_err(|e| {
+                            AppError::Ocr(format!("Failed to serialize processed OCR data: {}", e))
+                        })?),
+                        error_message: None,
+                        transaction_id: tx_id,
+                        started_at: None,
+                        retry_count: None,
+                        last_error: None,
+                        scheduled_at: None,
+                        resolution_candidates: candidates,
+                    },
+                )
+                .await?;
+
+                let _ = ocr_tx.send(OcrUpdate {
+                    user_id,
+                    job_id: job_id.clone(),
+                    status: status.to_string(),
+                    trace_id,
+                });
+            }
+        }
+        Err(e) => {
+            tracing::error!("❌ OCR Background Job {} failed: {}", job_id, e);
+
+            let new_retry_count = job.retry_count + 1;
+            let max_retries = 5;
+
+            if new_retry_count < max_retries {
+                let base_delay = 10;
+                let backoff_secs = base_delay * (2_i64.pow(new_retry_count as u32));
+                let jitter = rand::thread_rng().gen_range(0..5);
+                let next_run =
+                    chrono::Utc::now() + chrono::Duration::seconds(backoff_secs + jitter);
+
+                update_ocr_job(
+                    db,
+                    &job_id,
+                    OcrJobUpdateParams {
+                        status: "QUEUED".to_string(),
+                        processed_data: None,
+                        error_message: None,
+                        transaction_id: None,
+                        started_at: None,
+                        retry_count: Some(new_retry_count),
+                        last_error: Some(e.to_string()),
+                        scheduled_at: Some(next_run),
+                        resolution_candidates: None,
+                    },
+                )
+                .await?;
+
+                let _ = ocr_tx.send(OcrUpdate {
+                    user_id: user_id.clone(),
+                    job_id: job_id.clone(),
+                    status: "QUEUED".to_string(),
+                    trace_id,
+                });
+            } else {
+                update_ocr_job(
+                    db,
+                    &job_id,
+                    OcrJobUpdateParams {
+                        status: "DEAD_LETTER".to_string(),
+                        processed_data: None,
+                        error_message: Some(e.to_string()),
+                        transaction_id: None,
+                        started_at: None,
+                        retry_count: Some(new_retry_count),
+                        last_error: Some(e.to_string()),
+                        scheduled_at: None,
+                        resolution_candidates: None,
+                    },
+                )
+                .await?;
+
+                let _ = ocr_tx.send(OcrUpdate {
+                    user_id,
+                    job_id: job_id.clone(),
+                    status: "DEAD_LETTER".to_string(),
+                    trace_id,
+                });
             }
         }
     }
-}
-            }
-        }
-    }
+
+    Ok(())
 }

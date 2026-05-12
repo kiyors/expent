@@ -16,6 +16,7 @@ expent_core.workspace        = true
 futures.workspace            = true
 governor.workspace           = true
 http.workspace               = true
+mimalloc.workspace           = true
 rand                         = "0.8"
 reqwest.workspace            = true
 rust_decimal.workspace       = true

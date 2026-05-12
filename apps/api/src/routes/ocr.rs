@@ -113,16 +113,16 @@ pub async fn process_image_ocr_handler(
     let job = state
         .core
         .ocr_manager
-        .start_job(
-            &session.user.id,
-            Some(trace_id),
-            &payload.key,
-            payload.raw_key,
-            payload.p_hash,
+        .start_job(ocr::OcrJobCreateParams {
+            user_id: session.user.id.clone(),
+            trace_id: Some(trace_id),
+            key: payload.key.clone(),
+            raw_key: payload.raw_key.clone(),
+            p_hash: payload.p_hash.clone(),
             auto_confirm,
-            payload.wallet_id.clone(),
-            payload.category_id.clone(),
-        )
+            wallet_id: payload.wallet_id.clone(),
+            category_id: payload.category_id.clone(),
+        })
         .await?;
     let job_id = job.id.clone();
 
@@ -155,18 +155,20 @@ pub async fn process_image_ocr_handler(
 
 pub async fn get_ocr_job_status_handler(
     State(state): State<AppState>,
-    session: AuthSession,
+    _session: AuthSession,
     Path(job_id): Path<String>,
 ) -> Result<Json<db::entities::ocr_jobs::Model>, ApiError> {
-    let job = ocr::get_ocr_job(&state.core.db, &session.user.id, &job_id).await?;
+    let job = ocr::get_ocr_job(&state.core.db, &job_id)
+        .await?
+        .ok_or_else(|| ApiError::NotFound("OCR Job not found".to_string()))?;
     Ok(Json(job))
 }
 
 pub async fn list_pending_ocr_jobs_handler(
     State(state): State<AppState>,
-    session: AuthSession,
+    _session: AuthSession,
 ) -> Result<Json<Vec<db::entities::ocr_jobs::Model>>, ApiError> {
-    let jobs = ocr::list_pending_ocr_jobs(&state.core.db, &session.user.id).await?;
+    let jobs = ocr::list_pending_ocr_jobs(&state.core.db).await?;
     Ok(Json(jobs))
 }
 

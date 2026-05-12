@@ -1,154 +1,165 @@
-use db::entities;
+use crate::OcrUpdate;
+use crate::ops::lifecycle::{OcrJobUpdateParams, update_ocr_job};
+use crate::ops::process::OcrProcessor;
+use chrono::Utc;
 use db::AppError;
-use sea_orm::{DatabaseConnection, TransactionTrait};
+use db::entities;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
-use upload::UploadClient;
+
+pub async fn log_ocr_edits(
+    db: &DatabaseConnection,
+    user_id: &str,
+    job_id: &str,
+    original: &serde_json::Value,
+    corrected: &serde_json::Value,
+) -> Result<(), AppError> {
+    if let (Some(orig_obj), Some(corr_obj)) = (original.as_object(), corrected.as_object()) {
+        for (key, corr_val) in corr_obj {
+            let orig_val = orig_obj.get(key).unwrap_or(&serde_json::Value::Null);
+            if orig_val != corr_val && !corr_val.is_object() && !corr_val.is_array() {
+                let edit = entities::ocr_job_edits::ActiveModel {
+                    id: Set(uuid::Uuid::now_v7().to_string()),
+                    ocr_job_id: Set(job_id.to_string()),
+                    user_id: Set(user_id.to_string()),
+                    field_name: Set(key.clone()),
+                    original_value: Set(Some(orig_val.to_string())),
+                    corrected_value: Set(Some(corr_val.to_string())),
+                    created_at: Set(Utc::now().naive_utc()),
+                };
+                edit.insert(db).await?;
+            }
+        }
+    }
+    Ok(())
+}
 
 pub async fn confirm_ocr_job(
     db: &DatabaseConnection,
-    upload_client: &UploadClient,
-    processor: Arc<dyn crate::OcrProcessor>,
+    ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
+    processor: Arc<dyn OcrProcessor>,
     user_id: &str,
     job_id: &str,
-    manual_data: Option<db::ProcessedOcr>,
+    corrected_data: serde_json::Value,
 ) -> Result<db::OcrTransactionResponse, AppError> {
-    db.transaction::<_, db::OcrTransactionResponse, AppError>(|txn_db| {
-        let upload_client = upload_client.clone();
-        let processor = processor.clone();
-        let user_id = user_id.to_string();
-        let job_id = job_id.to_string();
-        Box::pin(async move {
-            let job = super::lifecycle::get_ocr_job(txn_db, &job_id)
-                .await?
-                .ok_or_else(|| AppError::NotFound)?;
+    let job = entities::ocr_jobs::Entity::find_by_id(job_id.to_string())
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("OCR Job not found"))?;
 
-            let mut processed_ocr = if let Some(data) = manual_data {
-                data
-            } else {
-                job.processed_data
-                    .map(|v| serde_json::from_value(v.0).ok())
-                    .flatten()
-                    .ok_or_else(|| AppError::Generic("Processed data not found".to_string()))?
-            };
+    if job.user_id != user_id {
+        return Err(AppError::unauthorized("You don't own this job"));
+    }
 
-            // Log edits if any
-            // TODO: Compare manual_data with original processed_data and log diffs
+    // 1. Log edits if original data exists
+    if let Some(original) = job.processed_data.clone() {
+        let _ = log_ocr_edits(db, user_id, job_id, &original, &corrected_data).await;
+    }
 
-            let transaction_response = processor
-                .process_ocr(txn_db, &user_id, processed_ocr.clone())
-                .await?;
+    // 2. Process the transaction
+    let processed: db::ProcessedOcr = serde_json::from_value(corrected_data.clone())
+        .map_err(|e| AppError::Ocr(format!("Invalid corrected data: {}", e)))?;
 
-            super::lifecycle::update_ocr_job(
-                txn_db,
-                &job.id,
-                super::lifecycle::OcrJobUpdateParams {
-                    status: "COMPLETED".to_string(),
-                    processed_data: Some(serde_json::to_value(processed_ocr)?),
-                    error_message: None,
-                    transaction_id: Some(transaction_response.transaction.id.clone()),
-                    started_at: None,
-                    retry_count: None,
-                    last_error: None,
-                    scheduled_at: None,
-                    resolution_candidates: None,
-                },
-            )
-            .await?;
+    let res = processor.process_ocr(db, user_id, processed).await?;
 
-            Ok(transaction_response)
-        })
-    })
-    .await
+    // 3. Update job status
+    update_ocr_job(
+        db,
+        job_id,
+        OcrJobUpdateParams {
+            status: "COMPLETED".to_string(),
+            processed_data: Some(corrected_data),
+            error_message: None,
+            transaction_id: Some(res.transaction.id.clone()),
+            started_at: None,
+            retry_count: None,
+            last_error: None,
+            scheduled_at: None,
+            resolution_candidates: None,
+        },
+    )
+    .await?;
+
+    let _ = ocr_tx.send(OcrUpdate {
+        user_id: user_id.to_string(),
+        job_id: job_id.to_string(),
+        status: "COMPLETED".to_string(),
+        trace_id: job.trace_id,
+    });
+
+    Ok(res)
 }
 
 pub async fn resolve_contact_collision(
     db: &DatabaseConnection,
-    upload_client: &UploadClient,
-    processor: Arc<dyn crate::OcrProcessor>,
+    ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
+    processor: Arc<dyn OcrProcessor>,
     user_id: &str,
     job_id: &str,
     contact_id: &str,
 ) -> Result<db::OcrTransactionResponse, AppError> {
-    db.transaction::<_, db::OcrTransactionResponse, AppError>(|txn_db| {
-        let upload_client = upload_client.clone();
-        let processor = processor.clone();
-        let user_id = user_id.to_string();
-        let job_id = job_id.to_string();
-        let contact_id = contact_id.to_string();
-        Box::pin(async move {
-            let job = super::lifecycle::get_ocr_job(txn_db, &job_id)
-                .await?
-                .ok_or_else(|| AppError::NotFound)?;
+    let job = entities::ocr_jobs::Entity::find_by_id(job_id.to_string())
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("OCR Job not found"))?;
 
-            let mut processed_ocr: db::ProcessedOcr = job
-                .processed_data
-                .map(|v| serde_json::from_value(v.0).ok())
-                .flatten()
-                .ok_or_else(|| AppError::Generic("Processed data not found".to_string()))?;
+    if job.user_id != user_id {
+        return Err(AppError::unauthorized("You don't own this job"));
+    }
 
-            // Apply resolved contact_id to the OCR result
-            match processed_ocr.doc_type.as_str() {
-                "GPAY" => {
-                    if let Ok(mut gpay) =
-                        serde_json::from_value::<db::GPayExtraction>(processed_ocr.data.0.clone())
-                    {
-                        gpay.contact_id = Some(contact_id.clone());
-                        processed_ocr.data.0 = serde_json::to_value(gpay)?;
-                    }
-                }
-                "BANK_STATEMENT" => {
-                    if let Ok(mut bank_extraction) = serde_json::from_value::<
-                        db::BankExtractionResult,
-                    >(processed_ocr.data.0.clone())
-                    {
-                        // Apply resolved contact_id to all transactions if needed
-                        for tx in &mut bank_extraction.bank_data.transactions {
-                            // This might need more sophisticated logic to apply to the correct transactions
-                            // For simplicity, we assume the resolution applies to the whole statement for now
-                            if tx.contact_name.is_some() {
-                                tx.metadata
-                                    .get_or_insert(serde_json::json!({}))
-                                    .as_object_mut()
-                                    .map(|obj| obj.insert("resolved_contact_id".to_string(), serde_json::json!(contact_id.clone())));
-                            }
-                        }
-                        processed_ocr.data.0 = serde_json::to_value(bank_extraction)?;
-                    }
-                }
-                "GENERIC" => {
-                    if let Ok(mut generic) =
-                        serde_json::from_value::<db::OcrResult>(processed_ocr.data.0.clone())
-                    {
-                        generic.contact_id = Some(contact_id.clone());
-                        processed_ocr.data.0 = serde_json::to_value(generic)?;
-                    }
-                }
-                _ => {}
-            }
+    let mut processed: db::ProcessedOcr = job
+        .processed_data
+        .clone()
+        .map(serde_json::from_value)
+        .transpose()
+        .map_err(|e| AppError::Ocr(format!("Corrupt job data: {}", e)))?
+        .ok_or_else(|| AppError::not_found("No processed data found"))?;
 
-            let transaction_response = processor
-                .process_ocr(txn_db, &user_id, processed_ocr.clone())
-                .await?;
+    // Inject the selected contact_id into the extraction data
+    match processed.doc_type.as_str() {
+        "GPAY" => {
+            let mut gpay: db::GPayExtraction = serde_json::from_value(processed.data.0.clone())
+                .map_err(|e| AppError::Ocr(format!("Invalid GPAY data: {}", e)))?;
+            gpay.contact_id = Some(contact_id.to_string());
+            processed.data.0 = serde_json::to_value(gpay).unwrap();
+        }
+        "GENERIC" => {
+            let mut generic: db::OcrResult = serde_json::from_value(processed.data.0.clone())
+                .map_err(|e| AppError::Ocr(format!("Invalid GENERIC data: {}", e)))?;
+            generic.contact_id = Some(contact_id.to_string());
+            processed.data.0 = serde_json::to_value(generic).unwrap();
+        }
+        _ => {}
+    }
 
-            super::lifecycle::update_ocr_job(
-                txn_db,
-                &job.id,
-                super::lifecycle::OcrJobUpdateParams {
-                    status: "COMPLETED".to_string(),
-                    processed_data: Some(serde_json::to_value(processed_ocr)?),
-                    error_message: None,
-                    transaction_id: Some(transaction_response.transaction.id.clone()),
-                    started_at: None,
-                    retry_count: None,
-                    last_error: None,
-                    scheduled_at: None,
-                    resolution_candidates: None,
-                },
-            )
-            .await?;
+    let res = processor
+        .process_ocr(db, user_id, processed.clone())
+        .await?;
 
-            Ok(transaction_response)
-        })
-    })
-    .await
+    // Update job status
+    update_ocr_job(
+        db,
+        job_id,
+        OcrJobUpdateParams {
+            status: "COMPLETED".to_string(),
+            processed_data: Some(serde_json::to_value(processed).unwrap()),
+            error_message: None,
+            transaction_id: Some(res.transaction.id.clone()),
+            started_at: None,
+            retry_count: None,
+            last_error: None,
+            scheduled_at: None,
+            resolution_candidates: None,
+        },
+    )
+    .await?;
+
+    let _ = ocr_tx.send(OcrUpdate {
+        user_id: user_id.to_string(),
+        job_id: job_id.to_string(),
+        status: "COMPLETED".to_string(),
+        trace_id: job.trace_id,
+    });
+
+    Ok(res)
 }

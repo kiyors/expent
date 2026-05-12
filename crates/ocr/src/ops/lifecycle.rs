@@ -1,8 +1,6 @@
-use db::entities;
 use db::AppError;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set,
-};
+use db::entities;
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
 pub const CURRENT_SCHEMA_VERSION: i32 = 1;
 
@@ -69,8 +67,10 @@ pub async fn update_ocr_job(
     job_id: &str,
     params: OcrJobUpdateParams,
 ) -> Result<entities::ocr_jobs::Model, AppError> {
-    let mut job: entities::ocr_jobs::ActiveModel =
-        get_ocr_job(db, job_id).await?.ok_or_else(|| AppError::NotFound)?;
+    let mut job: entities::ocr_jobs::ActiveModel = get_ocr_job(db, job_id)
+        .await?
+        .ok_or_else(|| AppError::not_found("OCR Job not found"))?
+        .into();
 
     job.status = Set(params.status.to_string());
     if let Some(data) = params.processed_data {

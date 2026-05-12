@@ -7,8 +7,6 @@
       url = "https://flakehub.com/f/nix-community/fenix/0.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-
   };
 
   outputs =
@@ -60,7 +58,7 @@
         let
           # Select Python Version
           python = pkgs.python313;
-
+          # python = pkgs.python313FreeThreading;
 
         in
         {

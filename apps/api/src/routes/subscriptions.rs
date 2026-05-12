@@ -58,15 +58,15 @@ pub async fn confirm_subscription_handler(
     let result = state
         .core
         .subscriptions
-        .confirm(
-            &session.user.id,
-            payload.name,
-            payload.amount,
-            payload.cycle,
-            payload.start_date,
-            payload.next_charge_date,
-            payload.keywords,
-        )
+        .confirm(expent_core::subscriptions::ops::ConfirmSubscriptionParams {
+            user_id: session.user.id.clone(),
+            name: payload.name,
+            amount: payload.amount,
+            cycle: payload.cycle,
+            start_date: payload.start_date,
+            next_charge_date: payload.next_charge_date,
+            keywords: payload.keywords,
+        })
         .await?;
     Ok(Json(result))
 }
