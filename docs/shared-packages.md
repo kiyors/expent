@@ -4,10 +4,10 @@ To maintain consistency and reduce duplication across the Dashboard and Mobile a
 
 ## 1. UI Component Library (`packages/ui`)
 
-A design-system-first library built with **Tailwind CSS v4** and **Base UI**.
+A design-system-first library built with **Tailwind CSS v4** and headless component libraries.
 
 - **Structure**:
-  - **`src/components/`**: Atomic UI components (Buttons, Inputs, Dialogs, etc.) styled with a consistent design language.
+  - **`src/components/`**: Atomic UI components (Buttons, Inputs, Dialogs, etc.) styled with a consistent design language. For instance, `button.tsx` utilizes `@base-ui/react/button` as an accessible primitive and applies robust variant styling using `cva` from `class-variance-authority`.
   - **`src/styles/globals.css`**: The central Tailwind configuration and CSS variables for the entire ecosystem.
   - **`src/lib/utils.ts`**: Common styling utilities like `cn` (clsx + tailwind-merge).
 - **Consumption**:

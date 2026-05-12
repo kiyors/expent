@@ -6,7 +6,7 @@ The Smart Budgeting System allows users to set spending limits per category (or 
 
 Managed by **`expent_core::services::budgets`** (via the `budgets` crate).
 
-- **Logic Hub**: The `BudgetsManager` in `crates/budgets` calculates "Budget Health" by aggregating actual outbound transactions against user-defined limits.
+- **Logic Hub**: The `BudgetsManager` in `crates/budgets` calculates "Budget Health" by aggregating actual outbound transactions against user-defined limits. In the `get_all_budget_health` function, this relies on a precise SeaORM query that sums amounts: `transactions::Entity::find().filter(transactions::Column::Direction.eq("OUT"))`, specifically bounded by the calculated start and end dates.
 - **Period Handling**: Supports dynamic date range calculation for Weekly (Monday-start), Monthly, and Yearly cycles.
 - **Consumption Tracking**: Calculates `percentage_consumed` to drive visual indicators (Green/Amber/Red) in the UI.
 
@@ -49,11 +49,11 @@ Managed by **`expent_core::services::budgets`** (via the `budgets` crate).
 
 ### `GET /api/budgets/health`
 - **Purpose**: Fetch calculated spending progress for all budgets.
-- **Response**: Array of `BudgetHealth` objects:
+- **Response**: Array of `BudgetHealth` objects exported seamlessly to TypeScript via `ts-rs`:
   ```typescript
   {
     budget_id: string;
-    category_name: string;
+    category_name: string | null;
     limit_amount: string;
     spent_amount: string;
     remaining_amount: string;
