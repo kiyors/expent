@@ -106,20 +106,23 @@ async fn process_queued_jobs(
 async fn recover_stale_jobs(db: &DatabaseConnection) -> Result<(), anyhow::Error> {
     let ten_minutes_ago = Utc::now() - chrono::Duration::minutes(10);
 
-    // Find jobs that have been PROCESSING for more than 10 minutes
-    let stale_jobs = entities::ocr_jobs::Entity::find()
+    // Re-queue jobs that have been PROCESSING for more than 10 minutes
+    let result = entities::ocr_jobs::Entity::update_many()
+        .col_expr(
+            entities::ocr_jobs::Column::Status,
+            sea_orm::sea_query::Expr::value("QUEUED".to_string()),
+        )
+        .col_expr(
+            entities::ocr_jobs::Column::StartedAt,
+            sea_orm::sea_query::Expr::value(Option::<chrono::DateTime<chrono::Utc>>::None),
+        )
         .filter(entities::ocr_jobs::Column::Status.eq("PROCESSING"))
         .filter(entities::ocr_jobs::Column::StartedAt.lt(ten_minutes_ago))
-        .all(db)
+        .exec(db)
         .await?;
 
-    for job in stale_jobs {
-        tracing::warn!("🔄 Re-queuing stale OCR job: {}", job.id);
-
-        let mut active_job: entities::ocr_jobs::ActiveModel = job.into();
-        active_job.status = Set("QUEUED".to_string());
-        active_job.started_at = Set(None);
-        active_job.update(db).await?;
+    if result.rows_affected > 0 {
+        tracing::warn!("🔄 Re-queued {} stale OCR jobs", result.rows_affected);
     }
 
     Ok(())
