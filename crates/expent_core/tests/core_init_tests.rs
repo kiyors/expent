@@ -14,19 +14,9 @@ fn default_core_config() -> CoreConfig {
         s3_access_key_id: "test_access_key".to_string(),
         s3_secret_access_key: "test_secret_key".to_string(),
         s3_bucket_name: "test_bucket".to_string(),
-    }
-}
-
-// Ensure environment variables are set for tests
-#[fixture]
-fn setup_env() {
-    unsafe {
-        env::set_var("OCR_WORKER_URL", "http://localhost:8090");
-        env::set_var(
-            "BETTER_AUTH_SECRET",
-            "test_secret_key_at_least_32_chars_long_12345",
-        );
-        env::set_var("BETTER_AUTH_URL", "http://localhost:3000");
+        ocr_worker_url: Some("http://localhost:8090".to_string()),
+        better_auth_secret: "test_secret_key_at_least_32_chars_long_12345".to_string(),
+        better_auth_base_url: "http://localhost:3000".to_string(),
     }
 }
 
@@ -42,7 +32,6 @@ fn broadcast_channel() -> tokio::sync::broadcast::Sender<::ocr::OcrUpdate> {
 #[allow(unused_variables)]
 async fn test_core_init_happy_path(
     default_core_config: CoreConfig,
-    setup_env: (),
     broadcast_channel: tokio::sync::broadcast::Sender<::ocr::OcrUpdate>,
 ) {
     let core = Core::init(default_core_config, broadcast_channel).await;
@@ -73,16 +62,10 @@ async fn test_core_init_db_connection_failure(
         s3_access_key_id: "test_access_key".to_string(),
         s3_secret_access_key: "test_secret_key".to_string(),
         s3_bucket_name: "test_bucket".to_string(),
+        ocr_worker_url: Some("http://localhost:8090".to_string()),
+        better_auth_secret: "test_secret_key_at_least_32_chars_long_12345".to_string(),
+        better_auth_base_url: "http://localhost:3000".to_string(),
     };
-
-    unsafe {
-        env::set_var("OCR_WORKER_URL", "http://localhost:8090");
-        env::set_var(
-            "BETTER_AUTH_SECRET",
-            "test_secret_key_at_least_32_chars_long_12345",
-        );
-        env::set_var("BETTER_AUTH_URL", "http://localhost:3000");
-    }
 
     let core = Core::init(config, broadcast_channel).await;
     assert!(

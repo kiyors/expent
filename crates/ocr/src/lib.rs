@@ -28,9 +28,10 @@ pub struct OcrService {
 }
 
 impl OcrService {
-    pub async fn new() -> Result<Self> {
-        let mut url =
-            std::env::var("OCR_WORKER_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
+    pub async fn new(worker_url: Option<String>) -> Result<Self> {
+        let mut url = worker_url.unwrap_or_else(|| {
+            std::env::var("OCR_WORKER_URL").unwrap_or_else(|_| "http://localhost:8090".to_string())
+        });
 
         if !url.contains("/extract") && !url.contains("/ocr") && !url.contains("/process") {
             if !url.ends_with('/') {

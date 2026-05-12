@@ -132,6 +132,9 @@ pub struct CoreConfig {
     pub s3_access_key_id: String,
     pub s3_secret_access_key: String,
     pub s3_bucket_name: String,
+    pub ocr_worker_url: Option<String>,
+    pub better_auth_secret: String,
+    pub better_auth_base_url: String,
 }
 
 impl Core {
@@ -172,13 +175,17 @@ impl Core {
         };
 
         // Initialize Auth
-        let auth = auth::init_auth(db.clone())
-            .await
-            .map_err(|e| anyhow::anyhow!("Auth init failed: {e}"))?;
+        let auth = auth::init_auth(
+            db.clone(),
+            config.better_auth_secret,
+            config.better_auth_base_url,
+        )
+        .await
+        .map_err(|e| anyhow::anyhow!("Auth init failed: {e}"))?;
 
         // Initialize OCR Service
         let ocr_service = Arc::new(
-            OcrService::new()
+            OcrService::new(config.ocr_worker_url)
                 .await
                 .map_err(|e| anyhow::anyhow!("OCR init failed: {e}"))?,
         );

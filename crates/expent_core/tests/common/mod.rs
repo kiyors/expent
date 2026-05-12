@@ -9,16 +9,10 @@ pub async fn setup_test_core() -> Core {
         s3_access_key_id: "test".to_string(),
         s3_secret_access_key: "test".to_string(),
         s3_bucket_name: "test".to_string(),
+        ocr_worker_url: Some("http://localhost:8090".to_string()),
+        better_auth_secret: "test_secret_key_at_least_32_chars_long_12345".to_string(),
+        better_auth_base_url: "http://localhost:3000".to_string(),
     };
-
-    unsafe {
-        env::set_var("OCR_WORKER_URL", "http://localhost:8090");
-        env::set_var(
-            "BETTER_AUTH_SECRET",
-            "test_secret_key_at_least_32_chars_long_12345",
-        );
-        env::set_var("BETTER_AUTH_URL", "http://localhost:3000");
-    }
 
     let (tx, _) = tokio::sync::broadcast::channel(100);
     let core = Core::init(config, tx).await.expect("Failed to init core");

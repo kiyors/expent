@@ -92,15 +92,9 @@ where
 
 pub async fn init_auth(
     db: DatabaseConnection,
+    auth_secret: String,
+    base_url: String,
 ) -> Result<Arc<BetterAuth<PostgresAdapter>>, Box<dyn std::error::Error>> {
-    let auth_secret = env::var("BETTER_AUTH_SECRET")
-        .or_else(|_| env::var("BETTERAUTH_SECRET"))
-        .expect("BETTER_AUTH_SECRET must be set");
-
-    let base_url = env::var("BETTER_AUTH_BASE_URL")
-        .or_else(|_| env::var("BASE_URL"))
-        .unwrap_or_else(|_| "http://localhost:7878".into());
-
     let cors_origin = env::var("CORS_ORIGIN").unwrap_or_default();
 
     let is_production = env::var("APP_ENV").unwrap_or_default() == "production"
