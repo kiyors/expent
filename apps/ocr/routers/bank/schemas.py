@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 
 
@@ -6,9 +6,9 @@ class BankTransaction(BaseModel):
     transaction_date: str = Field(description="The date of the transaction. MUST ALWAYS be in YYYY-MM-DD format.")
     description: str = Field(description="The full particulars or description of the transaction")
     mode: Optional[str] = Field(None, description="The mode of transaction, e.g., UPI, NEFT, INF, IMPS")
-    debit_amount: Optional[float] = Field(None, description="Amount withdrawn/debited. Null if deposit.")
-    credit_amount: Optional[float] = Field(None, description="Amount deposited/credited. Null if withdrawal.")
-    balance: Optional[float] = Field(None, description="The account balance after the transaction")
+    debit_amount: Optional[str] = Field(None, description="Amount withdrawn/debited as a string. Null if deposit.")
+    credit_amount: Optional[str] = Field(None, description="Amount deposited/credited as a string. Null if withdrawal.")
+    balance: Optional[str] = Field(None, description="The account balance after the transaction as a string")
     contact_name: Optional[str] = Field(
         None, description="Extracted name of the sender/receiver (e.g. from UPI or IMPS)"
     )
@@ -18,12 +18,16 @@ class BankTransaction(BaseModel):
     wallet_id: Optional[str] = Field(None, description="Assigned wallet ID")
     raw_particulars: Optional[str] = Field(None, description="The original un-truncated particulars string")
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class BankStatementResponse(BaseModel):
     transactions: List[BankTransaction]
     bank_name: str
     account_number: Optional[str]
     statement_period: str
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class BankExtractionResult(BaseModel):
@@ -33,3 +37,5 @@ class BankExtractionResult(BaseModel):
     doc_type: str = Field(default="bank_statement")
     confidence_score: float = Field(default=1.0)
     bank_data: BankStatementResponse
+
+    model_config = ConfigDict(extra="forbid")

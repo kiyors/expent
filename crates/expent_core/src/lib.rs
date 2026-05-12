@@ -123,8 +123,8 @@ impl Core {
         let mut opt = ConnectOptions::new(config.database_url);
         opt.max_connections(100)
             .min_connections(2)
-            .connect_timeout(Duration::from_secs(5))
-            .acquire_timeout(Duration::from_secs(5))
+            .connect_timeout(Duration::from_secs(10))
+            .acquire_timeout(Duration::from_secs(10))
             .idle_timeout(Duration::from_secs(30))
             .max_lifetime(Duration::from_secs(30 * 60))
             .sqlx_logging(true);

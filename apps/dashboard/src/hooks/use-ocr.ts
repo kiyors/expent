@@ -20,7 +20,7 @@ export function useOcrUpload() {
   const [processedOcr, setProcessedOcr] = useState<TypedProcessedOcr | null>(null);
 
   const pollJobStatus = async (jobId: string): Promise<TypedProcessedOcr> => {
-    const maxAttempts = 60; // 2 minutes with 2s intervals
+    const maxAttempts = 150; // 5 minutes with 2s intervals
     let attempts = 0;
 
     while (attempts < maxAttempts) {

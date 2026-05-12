@@ -20,7 +20,7 @@ Your goal is to extract every transaction from the provided document into a stru
 3. **Transaction Amounts**:
    - Map 'WITHDRAWALS' to `debit_amount`.
    - Map 'DEPOSITS' to `credit_amount`.
-   - Ensure you strip commas from numbers and represent them as floats.
+   - Ensure you strip commas from numbers and represent them ALWAYS as strings (e.g., "1250.50").
    - One of `debit_amount` or `credit_amount` must be populated, the other must be null.
 
 4. **Metadata Preservation**:
