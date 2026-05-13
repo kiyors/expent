@@ -100,18 +100,22 @@ pub async fn upload_statement_handler(
     session: AuthSession,
     Json(payload): Json<StatementUploadRequest>,
 ) -> Result<StatusCode, ApiError> {
-    for row in payload.rows {
-        state
-            .core
-            .reconciliation
-            .upload_statement(
-                &session.user.id,
-                row.date,
-                row.description,
-                row.amount,
-                None,
-            )
-            .await?;
-    }
+    let inputs = payload
+        .rows
+        .into_iter()
+        .map(|row| reconciliation::statement::StatementRowInput {
+            date: row.date,
+            description: row.description,
+            amount: row.amount,
+            raw_data: None,
+        })
+        .collect();
+
+    state
+        .core
+        .reconciliation
+        .upload_statement_batch(&session.user.id, inputs)
+        .await?;
+
     Ok(StatusCode::CREATED)
 }
