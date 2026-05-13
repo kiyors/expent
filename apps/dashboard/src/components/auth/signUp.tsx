@@ -6,7 +6,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@expent/ui/compone
 import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthShades } from "@/components/auth/auth-shades";
 import { SocialLogins } from "@/components/auth/auth-social";
@@ -20,13 +20,16 @@ export function SignUp() {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
+  const [isTransitionPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (!isPending && session) {
-      router.push("/");
+    if (!isSessionPending && session) {
+      startTransition(() => {
+        router.push("/");
+      });
     }
-  }, [session, isPending, router]);
+  }, [session, isSessionPending, router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -44,6 +44,7 @@ export default function ContactDetailPage() {
 
   const { contactData, isLoading, addIdentifierMutation } = useContactDetail(id);
   const { deleteMutation } = useContacts();
+  const [startTransition] = React.useTransition();
 
   if (isLoading) {
     return <div className="p-8 text-center">Loading contact details…</div>;
@@ -91,7 +92,11 @@ export default function ContactDetailPage() {
           onClick={() => {
             if (confirm("Are you sure you want to remove this contact from your list?")) {
               deleteMutation.mutate(id, {
-                onSuccess: () => router.push("/contacts"),
+                onSuccess: () => {
+                  startTransition(() => {
+                    router.push("/contacts");
+                  });
+                },
               });
             }
           }}

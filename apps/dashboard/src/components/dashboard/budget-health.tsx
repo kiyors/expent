@@ -6,10 +6,12 @@ import { cn } from "@expent/ui/lib/utils";
 import { TargetIcon } from "lucide-react";
 import { Button } from "@expent/ui/components/button";
 import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
 export function BudgetHealthWidget() {
   const { health, isLoading } = useBudgets();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   if (isLoading) {
     return (
@@ -32,7 +34,7 @@ export function BudgetHealthWidget() {
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <TargetIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
         <p className="text-sm text-muted-foreground mb-4">No budgets set</p>
-        <Button size="sm" variant="outline" onClick={() => router.push("/settings/budgets")}>
+        <Button size="sm" variant="outline" onClick={() => startTransition(() => router.push("/settings/budgets"))}>
           Setup Budgets
         </Button>
       </div>
@@ -76,7 +78,7 @@ export function BudgetHealthWidget() {
           variant="link"
           size="sm"
           className="w-full text-xs text-muted-foreground"
-          onClick={() => router.push("/settings/budgets")}
+          onClick={() => startTransition(() => router.push("/settings/budgets"))}
         >
           View all budgets &rarr;
         </Button>
