@@ -3,17 +3,18 @@ use db::entities;
 use db::entities::enums::WalletType;
 use rust_decimal::Decimal;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
+use std::sync::Arc;
 
 pub mod ops;
 
 #[derive(Debug, Clone)]
 pub struct WalletsManager {
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
 }
 
 impl WalletsManager {
     #[must_use]
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 
@@ -24,15 +25,19 @@ impl WalletsManager {
         wallet_type: WalletType,
         initial_balance: Decimal,
     ) -> Result<entities::wallets::Model, AppError> {
-        ops::create_wallet(&self.db, user_id, name, wallet_type, initial_balance).await
+        ops::create_wallet(&*self.db, user_id, name, wallet_type, initial_balance).await
     }
 
     pub async fn list(&self, user_id: &str) -> Result<Vec<entities::wallets::Model>, AppError> {
-        ops::list_wallets(&self.db, user_id).await
+        ops::list_wallets(&*self.db, user_id).await
     }
 
-    pub async fn delete(&self, user_id: &str, wallet_id: &str) -> Result<u64, AppError> {
-        ops::delete_wallet(&self.db, user_id, wallet_id).await
+    pub async fn get(
+        &self,
+        user_id: &str,
+        wallet_id: &str,
+    ) -> Result<entities::wallets::Model, AppError> {
+        ops::get_wallet(&*self.db, user_id, wallet_id).await
     }
 
     pub async fn update(
@@ -42,38 +47,28 @@ impl WalletsManager {
         name: Option<String>,
         balance: Option<Decimal>,
     ) -> Result<entities::wallets::Model, AppError> {
-        ops::update_wallet(&self.db, user_id, wallet_id, name, balance).await
+        ops::update_wallet(&*self.db, user_id, wallet_id, name, balance).await
     }
 
-    pub async fn get(
-        &self,
-        user_id: &str,
-        wallet_id: &str,
-    ) -> Result<entities::wallets::Model, AppError> {
-        ops::get_wallet(&self.db, user_id, wallet_id).await
-    }
-
-    pub async fn get_balance(&self, wallet_id: &str) -> Result<Decimal, AppError> {
-        ops::get_balance(&self.db, wallet_id).await
+    pub async fn delete(&self, user_id: &str, wallet_id: &str) -> Result<u64, AppError> {
+        ops::delete_wallet(&*self.db, user_id, wallet_id).await
     }
 
     pub async fn resolve<C>(
         &self,
-        conn: &C,
+        db: &C,
         user_id: &str,
         params: ops::ResolveWalletParams,
     ) -> Result<entities::wallets::Model, AppError>
     where
         C: ConnectionTrait,
     {
-        ops::resolve_wallet(conn, user_id, params).await
+        ops::resolve_wallet(db, user_id, params).await
     }
 
-    /// Atomically adjusts the balance of a wallet.
-    /// Can accept either a `DatabaseConnection` or a `DatabaseTransaction`.
     pub async fn adjust_balance<C>(
         &self,
-        conn: &C,
+        db: &C,
         wallet_id: &str,
         amount: Decimal,
         allow_negative: bool,
@@ -81,6 +76,6 @@ impl WalletsManager {
     where
         C: ConnectionTrait,
     {
-        ops::adjust_balance(conn, wallet_id, amount, allow_negative).await
+        ops::adjust_balance(db, wallet_id, amount, allow_negative).await
     }
 }

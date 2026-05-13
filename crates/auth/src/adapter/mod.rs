@@ -1,4 +1,5 @@
 use sea_orm::DatabaseConnection;
+use std::sync::Arc;
 
 pub mod account;
 pub mod others;
@@ -8,11 +9,11 @@ pub mod verification;
 
 #[derive(Clone)]
 pub struct PostgresAdapter {
-    pub db: DatabaseConnection,
+    pub db: Arc<DatabaseConnection>,
 }
 
 impl PostgresAdapter {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 }

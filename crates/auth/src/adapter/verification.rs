@@ -27,7 +27,7 @@ impl VerificationOps for PostgresAdapter {
             updated_at: Set(Some(now.into())),
         };
 
-        active_model.insert(&self.db).await.map_err(|e| {
+        active_model.insert(&*self.db).await.map_err(|e| {
             AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
         })?;
 
@@ -49,7 +49,7 @@ impl VerificationOps for PostgresAdapter {
         let model = verifications::Entity::find()
             .filter(verifications::Column::Identifier.eq(identifier))
             .filter(verifications::Column::Value.eq(value))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -64,7 +64,7 @@ impl VerificationOps for PostgresAdapter {
     ) -> AuthResult<Option<Self::Verification>> {
         let model = verifications::Entity::find()
             .filter(verifications::Column::Value.eq(value))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -87,7 +87,7 @@ impl VerificationOps for PostgresAdapter {
 
     async fn delete_verification(&self, id: &str) -> AuthResult<()> {
         verifications::Entity::delete_by_id(id.to_string())
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -98,7 +98,7 @@ impl VerificationOps for PostgresAdapter {
     async fn delete_expired_verifications(&self) -> AuthResult<usize> {
         let res = verifications::Entity::delete_many()
             .filter(verifications::Column::ExpiresAt.lt(Utc::now()))
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))

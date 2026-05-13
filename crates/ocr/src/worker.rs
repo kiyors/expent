@@ -1,24 +1,24 @@
 use crate::{OcrService, OcrUpdate};
 use chrono::Utc;
 use db::entities;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
 use upload::UploadClient;
 
-pub async fn start_recovery_worker(db: DatabaseConnection) {
+pub async fn start_recovery_worker(db: Arc<DatabaseConnection>) {
     let mut interval = tokio::time::interval(Duration::from_secs(300)); // Every 5 minutes
     loop {
         interval.tick().await;
-        if let Err(e) = recover_stale_jobs(&db).await {
+        if let Err(e) = recover_stale_jobs(&*db).await {
             tracing::error!("❌ Recovery worker failed: {}", e);
         }
     }
 }
 
 pub async fn start_processor_worker(
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
     ocr_service: Arc<OcrService>,
     upload_client: UploadClient,
     ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
@@ -30,7 +30,7 @@ pub async fn start_processor_worker(
     loop {
         interval.tick().await;
         if let Err(e) = process_queued_jobs(
-            &db,
+            db.clone(),
             ocr_service.clone(),
             &upload_client,
             ocr_tx.clone(),
@@ -45,7 +45,7 @@ pub async fn start_processor_worker(
 }
 
 async fn process_queued_jobs(
-    db: &DatabaseConnection,
+    db: Arc<DatabaseConnection>,
     ocr_service: Arc<OcrService>,
     upload_client: &UploadClient,
     ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
@@ -62,7 +62,7 @@ async fn process_queued_jobs(
                 .is_null()
                 .or(entities::ocr_jobs::Column::ScheduledAt.lte(now)),
         )
-        .all(db)
+        .all(&*db)
         .await?;
 
     for job in queued_jobs {
@@ -85,7 +85,7 @@ async fn process_queued_jobs(
                 let _permit = permit;
 
                 if let Err(e) = crate::process_job(
-                    &db_clone,
+                    &*db_clone,
                     ocr_service_clone,
                     &upload_client_clone,
                     ocr_tx_clone,
