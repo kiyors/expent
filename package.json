@@ -8,7 +8,7 @@
     "dev": "dotenv -- turbo dev",
     "check": "biome check --no-errors-on-unmatched --files-ignore-unknown=true",
     "lint": "biome lint --write --no-errors-on-unmatched",
-    "fmt": "biome format --write --no-errors-on-unmatched",
+    "fmt": "biome format --write",
     "typecheck": "dotenv -- turbo typecheck",
     "test": "dotenv -- turbo test",
     "test:core": "cargo test -p expent_core",

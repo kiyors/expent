@@ -4,4 +4,4 @@ import type { Transaction } from "./Transaction";
 /**
  * Response for OCR transaction creation.
  */
-export type OcrTransactionResponse = { transaction: Transaction, contact_created: boolean, };
+export type OcrTransactionResponse = { transaction: Transaction, contact_created: boolean, batch_count: number, };

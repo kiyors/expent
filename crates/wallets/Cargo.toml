@@ -16,8 +16,8 @@ tracing.workspace      = true
 uuid.workspace         = true
 
 [dev-dependencies]
-sea-orm = { workspace = true, features = ["mock"] }
-tokio = { workspace = true, features = ["full"] }
+sea-orm = { features = [ "mock" ], workspace = true }
+tokio   = { features = [ "full" ], workspace = true }
 
 [lints]
 workspace = true
