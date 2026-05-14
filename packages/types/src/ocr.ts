@@ -1,9 +1,14 @@
-import type { GPayExtraction, OcrResult, ProcessedOcr } from "./db";
+import type { BankExtractionResult, GPayExtraction, OcrResult, ProcessedOcr } from "./db";
 
 export type TypedProcessedOcr =
   | {
       doc_type: "GPAY";
       data: GPayExtraction;
+      r2_key: string | null;
+    }
+  | {
+      doc_type: "BANK_STATEMENT";
+      data: BankExtractionResult;
       r2_key: string | null;
     }
   | {
@@ -13,5 +18,5 @@ export type TypedProcessedOcr =
     };
 
 export type UnifiedProcessedOcr = ProcessedOcr & {
-  data: GPayExtraction | OcrResult;
+  data: GPayExtraction | OcrResult | BankExtractionResult;
 };

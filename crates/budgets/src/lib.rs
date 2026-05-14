@@ -7,6 +7,7 @@ use sea_orm::{
     QueryOrder, QuerySelect,
 };
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use ts_rs::TS;
 use uuid::Uuid;
 
@@ -28,11 +29,11 @@ pub struct BudgetHealth {
 
 #[derive(Clone)]
 pub struct BudgetsManager {
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
 }
 
 impl BudgetsManager {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 
@@ -53,14 +54,14 @@ impl BudgetsManager {
             updated_at: ActiveValue::Set(Utc::now().naive_utc()),
         };
 
-        Ok(budget.insert(&self.db).await?)
+        Ok(budget.insert(self.db.as_ref()).await?)
     }
 
     pub async fn list(&self, user_id: &str) -> Result<Vec<budgets::Model>, AppError> {
         Ok(budgets::Entity::find()
             .filter(budgets::Column::UserId.eq(user_id))
             .order_by_desc(budgets::Column::CreatedAt)
-            .all(&self.db)
+            .all(self.db.as_ref())
             .await?)
     }
 
@@ -74,7 +75,7 @@ impl BudgetsManager {
         let mut budget: budgets::ActiveModel = budgets::Entity::find()
             .filter(budgets::Column::Id.eq(budget_id))
             .filter(budgets::Column::UserId.eq(user_id))
-            .one(&self.db)
+            .one(self.db.as_ref())
             .await?
             .ok_or_else(|| AppError::not_found("Budget not found"))?
             .into();
@@ -87,14 +88,14 @@ impl BudgetsManager {
         }
         budget.updated_at = ActiveValue::Set(Utc::now().naive_utc());
 
-        Ok(budget.update(&self.db).await?)
+        Ok(budget.update(self.db.as_ref()).await?)
     }
 
     pub async fn delete(&self, user_id: &str, budget_id: &str) -> Result<u64, AppError> {
         let res = budgets::Entity::delete_many()
             .filter(budgets::Column::Id.eq(budget_id))
             .filter(budgets::Column::UserId.eq(user_id))
-            .exec(&self.db)
+            .exec(self.db.as_ref())
             .await?;
         Ok(res.rows_affected)
     }
@@ -117,20 +118,20 @@ impl BudgetsManager {
                 .filter(transactions::Column::Date.lt(end_date))
                 .filter(transactions::Column::DeletedAt.is_null());
 
-            if let Some(ref cat_id) = budget.category_id {
-                query = query.filter(transactions::Column::CategoryId.eq(cat_id));
-            }
-
             #[derive(sea_orm::FromQueryResult)]
             struct SumResult {
                 total: Option<Decimal>,
+            }
+
+            if let Some(ref cat_id) = budget.category_id {
+                query = query.filter(transactions::Column::CategoryId.eq(cat_id));
             }
 
             let res: Option<SumResult> = query
                 .select_only()
                 .column_as(transactions::Column::Amount.sum(), "total")
                 .into_model::<SumResult>()
-                .one(&self.db)
+                .one(self.db.as_ref())
                 .await?;
 
             let spent = res.and_then(|r| r.total).unwrap_or(Decimal::ZERO);
@@ -144,7 +145,7 @@ impl BudgetsManager {
             // Get category name if it exists
             let category_name = if let Some(ref cat_id) = budget.category_id {
                 categories::Entity::find_by_id(cat_id)
-                    .one(&self.db)
+                    .one(self.db.as_ref())
                     .await?
                     .map(|c| c.name)
             } else {
@@ -177,15 +178,17 @@ fn get_period_bounds(period: BudgetPeriod) -> (chrono::DateTime<Utc>, chrono::Da
             let weekday = now.weekday().num_days_from_monday();
             let start = Utc
                 .with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
-                .unwrap()
-                - chrono::Duration::days(weekday as i64);
+                .single()
+                .unwrap_or(now)
+                - chrono::Duration::days(i64::from(weekday));
             let end = start + chrono::Duration::days(7);
             (start, end)
         }
         BudgetPeriod::Monthly => {
             let start = Utc
                 .with_ymd_and_hms(now.year(), now.month(), 1, 0, 0, 0)
-                .unwrap();
+                .single()
+                .unwrap_or(now);
             let (next_year, next_month) = if now.month() == 12 {
                 (now.year() + 1, 1)
             } else {
@@ -193,12 +196,19 @@ fn get_period_bounds(period: BudgetPeriod) -> (chrono::DateTime<Utc>, chrono::Da
             };
             let end = Utc
                 .with_ymd_and_hms(next_year, next_month, 1, 0, 0, 0)
-                .unwrap();
+                .single()
+                .unwrap_or(now);
             (start, end)
         }
         BudgetPeriod::Yearly => {
-            let start = Utc.with_ymd_and_hms(now.year(), 1, 1, 0, 0, 0).unwrap();
-            let end = Utc.with_ymd_and_hms(now.year() + 1, 1, 1, 0, 0, 0).unwrap();
+            let start = Utc
+                .with_ymd_and_hms(now.year(), 1, 1, 0, 0, 0)
+                .single()
+                .unwrap_or(now);
+            let end = Utc
+                .with_ymd_and_hms(now.year() + 1, 1, 1, 0, 0, 0)
+                .single()
+                .unwrap_or(now);
             (start, end)
         }
     }

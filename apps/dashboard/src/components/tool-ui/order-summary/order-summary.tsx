@@ -1,4 +1,5 @@
 import { CheckCircle, Package } from "lucide-react";
+import Image from "next/image";
 import type { ReactElement } from "react";
 import { cn, Separator } from "./_adapter";
 import type { OrderDecision, OrderItem, OrderSummaryProps, OrderSummaryVariant, Pricing } from "./schema";
@@ -27,7 +28,7 @@ function ItemImage({ src, alt }: { src?: string; alt: string }) {
     );
   }
 
-  return <img src={src} alt={alt} width={48} height={48} className="h-12 w-12 shrink-0 rounded-md object-cover" />;
+  return <Image src={src} alt={alt} width={48} height={48} className="h-12 w-12 shrink-0 rounded-md object-cover" />;
 }
 
 function OrderItemRow({ item, currency }: { item: OrderItem; currency: string }) {

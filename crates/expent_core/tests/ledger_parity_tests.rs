@@ -65,7 +65,7 @@ async fn test_wallet_ledger_parity() {
 
     let txns = transactions::Entity::find()
         .filter(transactions::Column::DeletedAt.is_null())
-        .all(&core.db)
+        .all(&*core.db)
         .await
         .unwrap();
 

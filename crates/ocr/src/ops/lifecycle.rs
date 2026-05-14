@@ -16,30 +16,34 @@ pub struct OcrJobUpdateParams {
     pub resolution_candidates: Option<serde_json::Value>,
 }
 
+pub struct OcrJobCreateParams {
+    pub user_id: String,
+    pub trace_id: Option<String>,
+    pub key: String,
+    pub raw_key: Option<String>,
+    pub p_hash: Option<String>,
+    pub auto_confirm: bool,
+    pub wallet_id: Option<String>,
+    pub category_id: Option<String>,
+}
+
 pub async fn create_ocr_job(
     db: &DatabaseConnection,
-    user_id: &str,
-    trace_id: Option<String>,
-    key: &str,
-    raw_key: Option<String>,
-    p_hash: Option<String>,
-    auto_confirm: bool,
-    wallet_id: Option<String>,
-    category_id: Option<String>,
+    params: OcrJobCreateParams,
 ) -> Result<entities::ocr_jobs::Model, AppError> {
     let now = chrono::Utc::now().naive_utc();
     let job = entities::ocr_jobs::ActiveModel {
         id: Set(uuid::Uuid::now_v7().to_string()),
-        user_id: Set(user_id.to_string()),
+        user_id: Set(params.user_id),
         status: Set("QUEUED".to_string()),
-        r2_key: Set(key.to_string()),
-        raw_key: Set(raw_key),
-        p_hash: Set(p_hash),
-        auto_confirm: Set(auto_confirm),
-        wallet_id: Set(wallet_id),
-        category_id: Set(category_id),
+        r2_key: Set(params.key),
+        raw_key: Set(params.raw_key),
+        p_hash: Set(params.p_hash),
+        auto_confirm: Set(params.auto_confirm),
+        wallet_id: Set(params.wallet_id),
+        category_id: Set(params.category_id),
         schema_version: Set(CURRENT_SCHEMA_VERSION),
-        trace_id: Set(trace_id),
+        trace_id: Set(params.trace_id),
         created_at: Set(now),
         updated_at: Set(now),
         ..Default::default()
@@ -78,7 +82,7 @@ pub async fn update_ocr_job(
     job.status = Set(params.status.to_string());
     job.updated_at = Set(chrono::Utc::now().naive_utc());
     if let Some(data) = params.processed_data {
-        job.processed_data = Set(Some(data.into()));
+        job.processed_data = Set(Some(data));
     }
     job.error = Set(params.error_message);
     job.transaction_id = Set(params.transaction_id);
@@ -87,7 +91,7 @@ pub async fn update_ocr_job(
     job.last_error = Set(params.last_error);
     job.scheduled_at = Set(params.scheduled_at.map(|dt| dt.naive_utc()));
     if let Some(candidates) = params.resolution_candidates {
-        job.resolution_candidates = Set(Some(candidates.into()));
+        job.resolution_candidates = Set(Some(candidates));
     }
 
     Ok(job.update(db).await?)

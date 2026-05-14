@@ -21,6 +21,7 @@ import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
 import { useOcrUpload } from "@/hooks/use-ocr";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api-client";
 
 export default function ReconciliationPage() {
   const queryClient = useQueryClient();

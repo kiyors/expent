@@ -4,6 +4,7 @@ export * from "./BankStatementRow";
 export * from "./Budget";
 export * from "./BudgetHealth";
 export * from "./BudgetPeriod";
+export * from "./BankExtractionResult";
 export * from "./Category";
 export * from "./Contact";
 export * from "./ContactDetail";

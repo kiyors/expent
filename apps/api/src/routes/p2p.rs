@@ -127,7 +127,7 @@ pub async fn list_ledger_tabs_handler(
     use expent_core::sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
     let result = db::entities::ledger_tabs::Entity::find()
         .filter(db::entities::ledger_tabs::Column::CreatorId.eq(&session.user.id))
-        .all(&state.core.db)
+        .all(&*state.core.db)
         .await?;
     Ok(Json(result))
 }

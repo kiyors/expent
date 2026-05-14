@@ -75,7 +75,7 @@ use upload::UploadClient;
 
 #[derive(Clone)]
 pub struct Core {
-    pub db: DatabaseConnection,
+    pub db: Arc<DatabaseConnection>,
     pub auth: Arc<better_auth::BetterAuth<PostgresAdapter>>,
     pub upload_client: UploadClient,
     pub ocr_manager: Arc<OcrManager>,
@@ -91,37 +91,39 @@ pub struct Core {
 }
 
 impl OcrProcessor for Core {
-    fn process_ocr(
-        &self,
-        db: &DatabaseConnection,
+    fn process_ocr<'a>(
+        &'a self,
+        db: &'a DatabaseConnection,
         user_id: &str,
         processed: db::ProcessedOcr,
     ) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = Result<db::OcrTransactionResponse, AppError>> + Send>,
+        Box<
+            dyn std::future::Future<Output = Result<db::OcrTransactionResponse, AppError>>
+                + Send
+                + 'a,
+        >,
     > {
-        let db = db.clone();
         let user_id = user_id.to_string();
         let contacts = self.contacts.clone();
         let wallets = self.wallets.clone();
         Box::pin(
-            async move { bridge::process_ocr(&db, contacts, wallets, &user_id, processed).await },
+            async move { bridge::process_ocr(db, contacts, wallets, &user_id, processed).await },
         )
     }
 
-    fn enrich_ocr(
-        &self,
-        db: &DatabaseConnection,
+    fn enrich_ocr<'a>(
+        &'a self,
+        db: &'a DatabaseConnection,
         user_id: &str,
         processed: db::ProcessedOcr,
     ) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = Result<db::ProcessedOcr, AppError>> + Send>,
+        Box<dyn std::future::Future<Output = Result<db::ProcessedOcr, AppError>> + Send + 'a>,
     > {
-        let db = db.clone();
         let user_id = user_id.to_string();
         let contacts = self.contacts.clone();
         let wallets = self.wallets.clone();
         Box::pin(
-            async move { bridge::enrich_ocr(&db, contacts, wallets, &user_id, processed).await },
+            async move { bridge::enrich_ocr(db, contacts, wallets, &user_id, processed).await },
         )
     }
 }
@@ -174,9 +176,11 @@ impl Core {
             }
         };
 
+        let db = Arc::new(db);
+
         // Initialize Auth
         let auth = auth::init_auth(
-            db.clone(),
+            Arc::clone(&db),
             config.better_auth_secret,
             config.better_auth_base_url,
         )
@@ -218,24 +222,24 @@ impl Core {
 
         let ocr_manager = Arc::new(OcrManager::new(
             ocr_service,
-            db.clone(),
+            Arc::clone(&db),
             upload_client.clone(),
             ocr_tx,
         ));
 
-        let wallets = Arc::new(WalletsManager::new(db.clone()));
-        let transactions = Arc::new(TransactionsManager::new(db.clone(), wallets.clone()));
+        let wallets = Arc::new(WalletsManager::new(Arc::clone(&db)));
+        let transactions = Arc::new(TransactionsManager::new(Arc::clone(&db), wallets.clone()));
         let groups = Arc::new(GroupsManager::new(
-            db.clone(),
+            Arc::clone(&db),
             wallets.clone(),
             transactions.clone(),
         ));
-        let reconciliation = Arc::new(ReconciliationManager::new(db.clone()));
-        let subscriptions = Arc::new(SubscriptionsManager::new(db.clone()));
-        let budgets = Arc::new(BudgetsManager::new(db.clone()));
-        let contacts = Arc::new(ContactsManager::new(db.clone()));
-        let categories = Arc::new(CategoriesManager::new(db.clone()));
-        let users = Arc::new(UsersManager::new(db.clone()));
+        let reconciliation = Arc::new(ReconciliationManager::new(Arc::clone(&db)));
+        let subscriptions = Arc::new(SubscriptionsManager::new(Arc::clone(&db)));
+        let budgets = Arc::new(BudgetsManager::new(Arc::clone(&db)));
+        let contacts = Arc::new(ContactsManager::new(Arc::clone(&db)));
+        let categories = Arc::new(CategoriesManager::new(Arc::clone(&db)));
+        let users = Arc::new(UsersManager::new(Arc::clone(&db)));
 
         let core = Self {
             db,

@@ -48,6 +48,7 @@ export function CommandCenter() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { setTransactionModalOpen, setOCRModalOpen, setCategoryModalOpen, setHotkeyHelpOpen } = useGlobalStore();
+  const [isTransitionPending, startTransition] = React.useTransition();
 
   // Custom Double-Space Trigger
   React.useEffect(() => {
@@ -112,31 +113,63 @@ export function CommandCenter() {
 
   // Navigation Sequences
   useHotkeySequence(["G", "D"], () => {
-    if (!open) router.push("/");
+    if (!open) {
+      startTransition(() => {
+        router.push("/");
+      });
+    }
   });
   useHotkeySequence(["G", "T"], () => {
-    if (!open) router.push("/transactions");
+    if (!open) {
+      startTransition(() => {
+        router.push("/transactions");
+      });
+    }
   });
   useHotkeySequence(["G", "W"], () => {
-    if (!open) router.push("/wallets");
+    if (!open) {
+      startTransition(() => {
+        router.push("/wallets");
+      });
+    }
   });
   useHotkeySequence(["G", "C"], () => {
-    if (!open) router.push("/contacts");
+    if (!open) {
+      startTransition(() => {
+        router.push("/contacts");
+      });
+    }
   });
   useHotkeySequence(["G", "S"], () => {
-    if (!open) router.push("/settings");
+    if (!open) {
+      startTransition(() => {
+        router.push("/settings");
+      });
+    }
   });
   useHotkeySequence(["G", "R"], () => {
-    if (!open) router.push("/reconciliation");
+    if (!open) {
+      startTransition(() => {
+        router.push("/reconciliation");
+      });
+    }
   });
   useHotkeySequence(["G", "L"], () => {
-    if (!open) router.push("/p2p/ledger-tabs");
+    if (!open) {
+      startTransition(() => {
+        router.push("/p2p/ledger-tabs");
+      });
+    }
   });
 
   // Settings & Theme
   useHotkey({ key: ",", mod: true }, (e) => {
     e.preventDefault();
-    if (!open) router.push("/settings");
+    if (!open) {
+      startTransition(() => {
+        router.push("/settings");
+      });
+    }
   });
 
   const runCommand = React.useCallback((command: () => void) => {
@@ -245,7 +278,7 @@ export function CommandCenter() {
             <CommandItem
               key={nav.href}
               value={nav.label}
-              onSelect={() => runCommand(() => router.push(nav.href))}
+              onSelect={() => runCommand(() => startTransition(() => router.push(nav.href)))}
               className="flex items-center gap-4 px-3 py-3 rounded-xl mb-1 transition-all group"
             >
               <div className="size-10 rounded-lg bg-muted/50 flex items-center justify-center group-data-selected:bg-background transition-colors">
@@ -269,7 +302,7 @@ export function CommandCenter() {
               <CommandItem
                 key={wallet.id}
                 value={wallet.name}
-                onSelect={() => runCommand(() => router.push("/wallets"))}
+                onSelect={() => runCommand(() => startTransition(() => router.push("/wallets")))}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-all group"
               >
                 <div className="size-8 rounded-lg bg-muted/30 flex items-center justify-center group-data-selected:bg-background/50 transition-colors">
@@ -293,7 +326,7 @@ export function CommandCenter() {
               <CommandItem
                 key={contact.id}
                 value={contact.name}
-                onSelect={() => runCommand(() => router.push(`/contacts/${contact.id}`))}
+                onSelect={() => runCommand(() => startTransition(() => router.push(`/contacts/${contact.id}`)))}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-all group"
               >
                 <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center group-data-selected:bg-primary/20 transition-colors">
@@ -312,7 +345,7 @@ export function CommandCenter() {
             <CommandItem
               key={item.href}
               value={item.label}
-              onSelect={() => runCommand(() => router.push(item.href))}
+              onSelect={() => runCommand(() => startTransition(() => router.push(item.href)))}
               className="flex items-center gap-4 px-3 py-2 rounded-xl mb-1 transition-all group"
             >
               <div className="size-8 rounded-lg bg-muted/50 flex items-center justify-center group-data-selected:bg-background transition-colors">

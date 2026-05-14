@@ -12,6 +12,7 @@ pub struct ImageOptimizer {
 }
 
 impl ImageOptimizer {
+    #[must_use]
     pub fn new(max_concurrent_tasks: usize) -> Self {
         Self {
             semaphore: Arc::new(Semaphore::new(max_concurrent_tasks)),
@@ -19,17 +20,22 @@ impl ImageOptimizer {
     }
 
     /// Process an image: resize, normalize, strip EXIF, compute pHash.
-    /// Returns (processed_data, content_type, p_hash)
+    /// Returns (`processed_data`, `content_type`, `p_hash`)
+    ///
+    /// # Errors
+    /// Returns `UploadError::Internal` if semaphore acquisition fails or blocking task fails.
+    /// Returns `UploadError::ImageError` if image processing fails.
     pub async fn optimize(
         &self,
         data: Bytes,
         max_dimension: u32,
         to_grayscale: bool,
     ) -> Result<(Bytes, String, String), UploadError> {
-        let _permit =
-            self.semaphore.acquire().await.map_err(|e| {
-                UploadError::Internal(format!("Semaphore acquisition failed: {}", e))
-            })?;
+        let _permit = self
+            .semaphore
+            .acquire()
+            .await
+            .map_err(|e| UploadError::Internal(format!("Semaphore acquisition failed: {e}")))?;
 
         tokio::task::spawn_blocking(move || {
             let mut img = image::load_from_memory(&data)?;
@@ -63,6 +69,6 @@ impl ImageOptimizer {
             Ok((final_data, "image/webp".to_string(), p_hash))
         })
         .await
-        .map_err(|e| UploadError::Internal(format!("Blocking task failed: {}", e)))?
+        .map_err(|e| UploadError::Internal(format!("Blocking task failed: {e}")))?
     }
 }

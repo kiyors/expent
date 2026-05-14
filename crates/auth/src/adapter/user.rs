@@ -48,7 +48,7 @@ impl UserOps for PostgresAdapter {
             metadata: Set(data.metadata),
         };
 
-        active_model.insert(&self.db).await.map_err(|e| {
+        active_model.insert(&*self.db).await.map_err(|e| {
             AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
         })?;
 
@@ -59,7 +59,7 @@ impl UserOps for PostgresAdapter {
 
     async fn get_user_by_id(&self, id: &str) -> AuthResult<Option<Self::User>> {
         let model = users::Entity::find_by_id(id.to_string())
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -71,7 +71,7 @@ impl UserOps for PostgresAdapter {
     async fn get_user_by_email(&self, email: &str) -> AuthResult<Option<Self::User>> {
         let model = users::Entity::find()
             .filter(users::Column::Email.eq(email))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -83,7 +83,7 @@ impl UserOps for PostgresAdapter {
     async fn get_user_by_username(&self, username: &str) -> AuthResult<Option<Self::User>> {
         let model = users::Entity::find()
             .filter(users::Column::Username.eq(username))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -94,7 +94,7 @@ impl UserOps for PostgresAdapter {
 
     async fn update_user(&self, id: &str, update: UpdateUser) -> AuthResult<Self::User> {
         let model = users::Entity::find_by_id(id.to_string())
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -132,7 +132,7 @@ impl UserOps for PostgresAdapter {
             active_model.ban_expires = Set(Some(ban_expires.into()));
         }
 
-        active_model.update(&self.db).await.map_err(|e| {
+        active_model.update(&*self.db).await.map_err(|e| {
             AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
         })?;
 
@@ -143,7 +143,7 @@ impl UserOps for PostgresAdapter {
 
     async fn delete_user(&self, id: &str) -> AuthResult<()> {
         users::Entity::delete_by_id(id.to_string())
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -154,7 +154,7 @@ impl UserOps for PostgresAdapter {
     async fn list_users(&self, _params: ListUsersParams) -> AuthResult<(Vec<Self::User>, usize)> {
         let models = users::Entity::find()
             .order_by_desc(users::Column::CreatedAt)
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))

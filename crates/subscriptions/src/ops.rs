@@ -4,7 +4,6 @@ use db::entities;
 use db::entities::enums::{AlertChannel, SubscriptionCycle};
 use rust_decimal::Decimal;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
-use std::str::FromStr;
 use strsim::jaro_winkler;
 
 pub async fn detect_subscriptions(
@@ -22,7 +21,7 @@ pub async fn detect_subscriptions(
     // Group transactions by "candidate" subscriptions
     let mut groups: Vec<(entities::transactions::Model, Vec<DateTime<FixedOffset>>)> = Vec::new();
 
-    let ten_percent = Decimal::from_str("0.10").unwrap();
+    let ten_percent = Decimal::new(10, 2); // 0.10
 
     for txn in transactions {
         let name = txn.purpose_tag.as_deref().unwrap_or("Unknown");
@@ -37,11 +36,10 @@ pub async fn detect_subscriptions(
             let name_match = jaro_winkler(name, group_name) > 0.85;
 
             // 2. Amount Epsilon (+/- 10%)
-            let amount_diff = (amount - group_amount).abs();
             let amount_match = if group_amount > Decimal::ZERO {
-                amount_diff / group_amount <= ten_percent
+                (amount - group_amount).abs() / group_amount <= ten_percent
             } else {
-                amount_diff == Decimal::ZERO
+                amount == Decimal::ZERO
             };
 
             if name_match && amount_match {
@@ -62,7 +60,7 @@ pub async fn detect_subscriptions(
             dates.sort();
 
             let mut detected_cycle = None;
-            let last_date = *dates.last().unwrap();
+            let last_date = *dates.last().unwrap_or(&Utc::now().fixed_offset());
 
             for i in 0..dates.len() - 1 {
                 let diff = (dates[i + 1] - dates[i]).num_days();
@@ -79,8 +77,8 @@ pub async fn detect_subscriptions(
             if let Some(cycle) = detected_cycle {
                 let next_charge = match cycle {
                     SubscriptionCycle::Weekly => last_date + Duration::days(7),
+                    SubscriptionCycle::Monthly => last_date + Duration::days(30),
                     SubscriptionCycle::Yearly => last_date + Duration::days(365),
-                    _ => last_date + Duration::days(30),
                 };
 
                 let sub = entities::subscriptions::Model {

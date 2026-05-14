@@ -11,23 +11,27 @@ use upload::UploadClient;
 /// Helper function to bridge with expent_core for processing transactions.
 pub trait OcrProcessor: Send + Sync {
     /// Full processing (includes DB insertion)
-    fn process_ocr(
-        &self,
-        db: &DatabaseConnection,
+    fn process_ocr<'a>(
+        &'a self,
+        db: &'a DatabaseConnection,
         user_id: &str,
         processed: db::ProcessedOcr,
     ) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = Result<db::OcrTransactionResponse, AppError>> + Send>,
+        Box<
+            dyn std::future::Future<Output = Result<db::OcrTransactionResponse, AppError>>
+                + Send
+                + 'a,
+        >,
     >;
 
     /// Enrichment only (resolves suggestions without DB insertion)
-    fn enrich_ocr(
-        &self,
-        db: &DatabaseConnection,
+    fn enrich_ocr<'a>(
+        &'a self,
+        db: &'a DatabaseConnection,
         user_id: &str,
         processed: db::ProcessedOcr,
     ) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = Result<db::ProcessedOcr, AppError>> + Send>,
+        Box<dyn std::future::Future<Output = Result<db::ProcessedOcr, AppError>> + Send + 'a>,
     >;
 }
 
@@ -110,7 +114,7 @@ pub async fn process_job(
             }
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         } else {
-            let ext = filename.split('.').last().unwrap_or("").to_lowercase();
+            let ext = filename.split('.').next_back().unwrap_or("").to_lowercase();
             match ext.as_str() {
                 "pdf" => "application/pdf",
                 "csv" => "text/csv",

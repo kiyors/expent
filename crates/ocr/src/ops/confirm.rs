@@ -121,13 +121,15 @@ pub async fn resolve_contact_collision(
             let mut gpay: db::GPayExtraction = serde_json::from_value(processed.data.0.clone())
                 .map_err(|e| AppError::Ocr(format!("Invalid GPAY data: {}", e)))?;
             gpay.contact_id = Some(contact_id.to_string());
-            processed.data.0 = serde_json::to_value(gpay).unwrap();
+            processed.data.0 = serde_json::to_value(gpay)
+                .map_err(|e| AppError::Ocr(format!("Failed to serialize GPAY: {}", e)))?;
         }
         "GENERIC" => {
             let mut generic: db::OcrResult = serde_json::from_value(processed.data.0.clone())
                 .map_err(|e| AppError::Ocr(format!("Invalid GENERIC data: {}", e)))?;
             generic.contact_id = Some(contact_id.to_string());
-            processed.data.0 = serde_json::to_value(generic).unwrap();
+            processed.data.0 = serde_json::to_value(generic)
+                .map_err(|e| AppError::Ocr(format!("Failed to serialize GENERIC: {}", e)))?;
         }
         _ => {}
     }
@@ -142,7 +144,10 @@ pub async fn resolve_contact_collision(
         job_id,
         OcrJobUpdateParams {
             status: "COMPLETED".to_string(),
-            processed_data: Some(serde_json::to_value(processed).unwrap()),
+            processed_data: Some(
+                serde_json::to_value(processed)
+                    .map_err(|e| AppError::Ocr(format!("Failed to serialize job data: {}", e)))?,
+            ),
             error_message: None,
             transaction_id: Some(res.transaction.id.clone()),
             started_at: None,

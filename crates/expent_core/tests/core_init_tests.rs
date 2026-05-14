@@ -1,7 +1,6 @@
 use env_logger;
 use expent_core::{Core, CoreConfig};
 use rstest::*;
-use std::env;
 use std::sync::Arc;
 use tracing_test::traced_test;
 
@@ -45,6 +44,18 @@ async fn test_core_init_happy_path(
     assert!(
         Arc::strong_count(&core_instance.auth) > 0,
         "Auth service should be initialized"
+    );
+
+    // Assert upload_client initialization state without exposing internals
+    assert!(
+        Arc::strong_count(&core_instance.upload_client.optimizer) > 0,
+        "Upload client optimizer should be initialized"
+    );
+
+    // Assert ocr_service initialization state without exposing internals
+    assert!(
+        Arc::strong_count(&core_instance.ocr_manager.service) > 0,
+        "OCR service should be initialized"
     );
 }
 

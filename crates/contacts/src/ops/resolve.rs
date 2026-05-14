@@ -89,6 +89,10 @@ where
 }
 
 #[allow(clippy::too_many_lines)]
+/// Attempts to resolve a contact based on provided identifiers (UPI, Phone, Email) and name.
+///
+/// # Errors
+/// Returns `AppError::Db` if any database query fails.
 pub async fn resolve_contact<C>(
     db: &C,
     user_id: &str,
@@ -99,24 +103,23 @@ where
 {
     let mut matches: HashMap<String, f64> = HashMap::new(); // contact_id -> score
 
-    if let Some(upi_id) = params.upi_id {
-        if let Some(contact_id) = get_upi_match(db, &upi_id).await? {
-            *matches.entry(contact_id).or_insert(0.0) += 0.5; // Weight 0.5
-        }
+    if let Some(upi_id) = params.upi_id
+        && let Some(id) = get_upi_match(db, &upi_id).await?
+    {
+        *matches.entry(id).or_insert(0.0) += 0.5; // Weight 0.5
     }
 
-    if let Some(phone) = params.phone {
-        if let Some(contact_id) = get_phone_match(db, user_id, &phone).await? {
-            *matches.entry(contact_id).or_insert(0.0) += 0.3; // Weight 0.3
-        }
+    if let Some(phone) = params.phone
+        && let Some(id) = get_phone_match(db, user_id, &phone).await?
+    {
+        *matches.entry(id).or_insert(0.0) += 0.3; // Weight 0.3
     }
 
-    if let Some(email) = params.email {
-        if let Some(contact_id) = get_email_match(db, &email).await? {
-            *matches.entry(contact_id).or_insert(0.0) += 0.1; // Weight 0.1
-        }
+    if let Some(email) = params.email
+        && let Some(id) = get_email_match(db, &email).await?
+    {
+        *matches.entry(id).or_insert(0.0) += 0.1; // Weight 0.1
     }
-
     if let Some(name) = params.name {
         let normalized_input = normalize_name(&name);
         let phonetic_input = phonetic_encode(&name);
@@ -165,12 +168,13 @@ where
     }
 
     let mut sorted_matches: Vec<(String, f64)> = matches.into_iter().collect();
-    #[allow(clippy::unwrap_used)] // partial_cmp on f64 is infallible for non-NaN values
-    sorted_matches.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    // Use total_cmp for safe f64 sorting
+    sorted_matches.sort_by(|a, b| b.1.total_cmp(&a.1));
 
     let (best_contact_id, best_score) = sorted_matches[0].clone();
 
-    if best_score < MIN_CONFIDENCE_THRESHOLD as f64 {
+    #[allow(clippy::cast_possible_truncation)]
+    if best_score < f64::from(MIN_CONFIDENCE_THRESHOLD) {
         return Ok(ContactResolution {
             contact_id: None,
             confidence_score: best_score as f32,
@@ -194,6 +198,7 @@ where
 
             return Ok(ContactResolution {
                 contact_id: None,
+                #[allow(clippy::cast_possible_truncation)]
                 confidence_score: best_score as f32,
                 collision_candidates: candidates,
                 is_collision: true,
@@ -203,6 +208,7 @@ where
 
     Ok(ContactResolution {
         contact_id: Some(best_contact_id),
+        #[allow(clippy::cast_possible_truncation)]
         confidence_score: best_score as f32,
         collision_candidates: Vec::new(),
         is_collision: false,

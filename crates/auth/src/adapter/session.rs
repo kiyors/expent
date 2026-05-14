@@ -25,7 +25,7 @@ impl SessionOps for PostgresAdapter {
             user_id: Set(data.user_id.clone()),
         };
 
-        active_model.insert(&self.db).await.map_err(|e| {
+        active_model.insert(&*self.db).await.map_err(|e| {
             AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
         })?;
 
@@ -47,7 +47,7 @@ impl SessionOps for PostgresAdapter {
     async fn get_session(&self, token: &str) -> AuthResult<Option<Self::Session>> {
         let model = sessions::Entity::find()
             .filter(sessions::Column::Token.eq(token))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -59,7 +59,7 @@ impl SessionOps for PostgresAdapter {
     async fn get_user_sessions(&self, user_id: &str) -> AuthResult<Vec<Self::Session>> {
         let models = sessions::Entity::find()
             .filter(sessions::Column::UserId.eq(user_id))
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -77,7 +77,7 @@ impl SessionOps for PostgresAdapter {
             .col_expr(sessions::Column::ExpiresAt, Expr::value(expires_at))
             .col_expr(sessions::Column::UpdatedAt, Expr::value(Utc::now()))
             .filter(sessions::Column::Token.eq(token))
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -88,7 +88,7 @@ impl SessionOps for PostgresAdapter {
     async fn delete_session(&self, token: &str) -> AuthResult<()> {
         sessions::Entity::delete_many()
             .filter(sessions::Column::Token.eq(token))
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -99,7 +99,7 @@ impl SessionOps for PostgresAdapter {
     async fn delete_user_sessions(&self, user_id: &str) -> AuthResult<()> {
         sessions::Entity::delete_many()
             .filter(sessions::Column::UserId.eq(user_id))
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -110,7 +110,7 @@ impl SessionOps for PostgresAdapter {
     async fn delete_expired_sessions(&self) -> AuthResult<usize> {
         let res = sessions::Entity::delete_many()
             .filter(sessions::Column::ExpiresAt.lt(Utc::now()))
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))

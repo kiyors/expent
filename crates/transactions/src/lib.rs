@@ -16,13 +16,13 @@ mod tests;
 
 #[derive(Clone)]
 pub struct TransactionsManager {
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
     wallets: Arc<WalletsManager>,
 }
 
 impl TransactionsManager {
     #[must_use]
-    pub fn new(db: DatabaseConnection, wallets: Arc<WalletsManager>) -> Self {
+    pub fn new(db: Arc<DatabaseConnection>, wallets: Arc<WalletsManager>) -> Self {
         Self { db, wallets }
     }
 
@@ -42,7 +42,7 @@ impl TransactionsManager {
         notes: Option<String>,
     ) -> Result<entities::transactions::Model, AppError> {
         ops::create_transaction(
-            &self.db,
+            &*self.db,
             Arc::clone(&self.wallets),
             user_id,
             amount,
@@ -65,7 +65,7 @@ impl TransactionsManager {
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<PaginatedTransactions, AppError> {
-        ops::list_transactions(&self.db, user_id, limit, offset).await
+        ops::list_transactions(&*self.db, user_id, limit, offset).await
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -84,7 +84,7 @@ impl TransactionsManager {
         contact_id: Option<String>,
     ) -> Result<entities::transactions::Model, AppError> {
         ops::update_transaction(
-            &self.db,
+            &*self.db,
             Arc::clone(&self.wallets),
             user_id,
             txn_id,
@@ -102,7 +102,7 @@ impl TransactionsManager {
     }
 
     pub async fn delete(&self, user_id: &str, txn_id: &str) -> Result<u64, AppError> {
-        ops::delete_transaction(&self.db, Arc::clone(&self.wallets), user_id, txn_id).await
+        ops::delete_transaction(&*self.db, Arc::clone(&self.wallets), user_id, txn_id).await
     }
 
     pub async fn split(
@@ -111,10 +111,10 @@ impl TransactionsManager {
         txn_id: &str,
         splits: Vec<SplitDetail>,
     ) -> Result<Vec<entities::p2p_requests::Model>, AppError> {
-        ops::split_transaction(&self.db, user_id, txn_id, splits).await
+        ops::split_transaction(&*self.db, user_id, txn_id, splits).await
     }
 
     pub async fn get_summary(&self, user_id: &str) -> Result<DashboardSummary, AppError> {
-        summary::get_dashboard_summary(&self.db, user_id).await
+        summary::get_dashboard_summary(&*self.db, user_id).await
     }
 }

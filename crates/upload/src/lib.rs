@@ -58,6 +58,7 @@ impl Default for CompressOptions {
 
 impl CompressOptions {
     /// Preset for avatar images: 512×512 max, 80% quality.
+    #[must_use]
     pub fn avatar() -> Self {
         Self {
             quality: 80,
@@ -67,6 +68,7 @@ impl CompressOptions {
     }
 
     /// Preset for receipt/document images: 2048px max dimension, 85% quality.
+    #[must_use]
     pub fn receipt() -> Self {
         Self {
             quality: 85,
@@ -97,6 +99,7 @@ pub struct UploadClient {
 }
 
 impl UploadClient {
+    #[must_use]
     pub fn new(s3_client: S3Client, bucket_name: String) -> Self {
         Self {
             s3_client,
@@ -105,6 +108,11 @@ impl UploadClient {
         }
     }
 
+    /// Generates a presigned URL for direct upload.
+    ///
+    /// # Errors
+    /// Returns `UploadError::Internal` if URL presigning fails.
+    /// Returns `UploadError::S3Error` if communication with S3 fails.
     pub async fn get_presigned_url(
         &self,
         user_id: &str,
@@ -116,7 +124,7 @@ impl UploadClient {
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unnamed");
-        let key = format!("{}/{}-{}", user_id, Uuid::now_v7(), sanitized_name);
+        let key = format!("{user_id}/{}-{sanitized_name}", Uuid::now_v7());
 
         let presigning_config = PresigningConfig::expires_in(expires_in)
             .map_err(|e| UploadError::Internal(e.to_string()))?;
@@ -129,11 +137,16 @@ impl UploadClient {
             .content_type(content_type)
             .presigned(presigning_config)
             .await
-            .map_err(|e| UploadError::S3Error(format!("{:#?}", e)))?;
+            .map_err(|e| UploadError::S3Error(format!("{e:#?}")))?;
 
         Ok((presigned_request.uri().to_string(), key))
     }
 
+    /// Uploads a file directly to S3.
+    ///
+    /// # Errors
+    /// Returns `UploadError::S3Error` if the upload fails.
+    /// Returns `UploadError::ImageError` if image processing fails.
     pub async fn upload_direct(
         &self,
         user_id: &str,
@@ -161,7 +174,7 @@ impl UploadClient {
                 .and_then(|ct| mime_guess::get_mime_extensions_str(ct))
                 .and_then(|exts| exts.first())
                 .unwrap_or(&"bin");
-            let raw_path = format!("{}/raw/{}-original.{}", user_id, raw_id, raw_ext);
+            let raw_path = format!("{user_id}/raw/{raw_id}-original.{raw_ext}");
 
             self.s3_client
                 .put_object()
@@ -175,7 +188,7 @@ impl UploadClient {
                 .body(data.into())
                 .send()
                 .await
-                .map_err(|e| UploadError::S3Error(format!("{:#?}", e)))?;
+                .map_err(|e| UploadError::S3Error(format!("{e:#?}")))?;
 
             raw_key = Some(raw_path);
 
@@ -202,10 +215,10 @@ impl UploadClient {
                 .file_stem()
                 .and_then(|s| s.to_str())
                 .unwrap_or("unnamed");
-            final_name = format!("{}.webp", base);
+            final_name = format!("{base}.webp");
         }
 
-        let key = format!("{}/{}-{}", user_id, processed.id, final_name);
+        let key = format!("{user_id}/{}-{final_name}", processed.id);
 
         self.s3_client
             .put_object()
@@ -215,7 +228,7 @@ impl UploadClient {
             .body(processed.data.clone().into())
             .send()
             .await
-            .map_err(|e| UploadError::S3Error(format!("{:#?}", e)))?;
+            .map_err(|e| UploadError::S3Error(format!("{e:#?}")))?;
 
         Ok(ProcessedFile {
             id: processed.id,
@@ -231,6 +244,10 @@ impl UploadClient {
 
     /// Upload with explicit image compression. All images are compressed to WebP
     /// before being sent to R2, regardless of input format.
+    ///
+    /// # Errors
+    /// Returns `UploadError::S3Error` if the upload fails.
+    /// Returns `UploadError::ImageError` if image processing fails.
     pub async fn upload_compressed(
         &self,
         user_id: &str,
@@ -257,11 +274,11 @@ impl UploadClient {
                 .file_stem()
                 .and_then(|s| s.to_str())
                 .unwrap_or("unnamed");
-            format!("{}.webp", base)
+            format!("{base}.webp")
         } else {
             sanitized_name.to_string()
         };
-        let key = format!("{}/{}-{}", user_id, processed.id, key_name);
+        let key = format!("{user_id}/{}-{key_name}", processed.id);
 
         self.s3_client
             .put_object()
@@ -271,7 +288,7 @@ impl UploadClient {
             .body(processed.data.clone().into())
             .send()
             .await
-            .map_err(|e| UploadError::S3Error(format!("{:#?}", e)))?;
+            .map_err(|e| UploadError::S3Error(format!("{e:#?}")))?;
 
         Ok(ProcessedFile {
             id: processed.id,
@@ -285,6 +302,10 @@ impl UploadClient {
         })
     }
 
+    /// Retrieves a file from S3.
+    ///
+    /// # Errors
+    /// Returns `UploadError::S3Error` if retrieval fails.
     pub async fn get_file(&self, key: &str) -> Result<Bytes, UploadError> {
         let response = self
             .s3_client
@@ -293,7 +314,7 @@ impl UploadClient {
             .key(key)
             .send()
             .await
-            .map_err(|e| UploadError::S3Error(format!("{:#?}", e)))?;
+            .map_err(|e| UploadError::S3Error(format!("{e:#?}")))?;
 
         let data = response
             .body
@@ -305,6 +326,10 @@ impl UploadClient {
         Ok(data)
     }
 
+    /// Deletes a file from S3.
+    ///
+    /// # Errors
+    /// Returns `UploadError::S3Error` if deletion fails.
     pub async fn delete_file(&self, key: &str) -> Result<(), UploadError> {
         self.s3_client
             .delete_object()
@@ -312,7 +337,7 @@ impl UploadClient {
             .key(key)
             .send()
             .await
-            .map_err(|e| UploadError::S3Error(format!("{:#?}", e)))?;
+            .map_err(|e| UploadError::S3Error(format!("{e:#?}")))?;
 
         Ok(())
     }
@@ -321,6 +346,10 @@ impl UploadClient {
 pub struct UploadProcessor;
 
 impl UploadProcessor {
+    /// Processes a file based on its category and compression options.
+    ///
+    /// # Errors
+    /// Returns `UploadError::ImageError` if image processing fails.
     pub fn process(
         data: Bytes,
         original_name: Option<String>,
@@ -439,6 +468,9 @@ impl UploadProcessor {
 
     /// Compress an image to WebP format with optional resizing.
     /// Supports all input formats that the `image` crate handles (PNG, JPEG, GIF, WebP, etc.).
+    ///
+    /// # Errors
+    /// Returns `UploadError::ImageError` if image loading or writing fails.
     pub fn compress_to_webp(data: &[u8], opts: &CompressOptions) -> Result<Bytes, UploadError> {
         let mut img = image::load_from_memory(data)?;
 
@@ -447,8 +479,8 @@ impl UploadProcessor {
             || opts.max_height.is_some_and(|mh| img.height() > mh);
 
         if needs_resize {
-            let max_w = opts.max_width.unwrap_or(img.width());
-            let max_h = opts.max_height.unwrap_or(img.height());
+            let max_w = opts.max_width.unwrap_or_else(|| img.width());
+            let max_h = opts.max_height.unwrap_or_else(|| img.height());
             img = img.resize(max_w, max_h, FilterType::Lanczos3);
         }
 
@@ -458,6 +490,9 @@ impl UploadProcessor {
     }
 
     /// Legacy: Convert image to PNG (kept for backward compatibility).
+    ///
+    /// # Errors
+    /// Returns `UploadError::ImageError` if image loading or writing fails.
     pub fn convert_to_png(data: &[u8]) -> Result<Bytes, UploadError> {
         let img = image::load_from_memory(data)?;
         let mut buffer = std::io::Cursor::new(Vec::new());
@@ -528,10 +563,10 @@ mod tests {
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unnamed");
-        let key = format!("{}/{}-{}", user_id, id, sanitized_name);
+        let key = format!("{user_id}/{id}-{sanitized_name}");
 
         // The key should NO LONGER contain "../"
         assert!(!key.contains("../"));
-        assert_eq!(key, format!("user123/{}-dangerous.txt", id));
+        assert_eq!(key, format!("user123/{id}-dangerous.txt"));
     }
 }

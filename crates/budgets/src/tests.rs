@@ -5,8 +5,9 @@ use ::db::entities::enums::{
 use migration::{Migrator, MigratorTrait};
 use rust_decimal_macros::dec;
 use sea_orm::{Database, DatabaseConnection, EntityTrait, Set};
+use std::sync::Arc;
 
-async fn setup_test_db() -> DatabaseConnection {
+async fn setup_test_db() -> Arc<DatabaseConnection> {
     let db = Database::connect("sqlite::memory:").await.unwrap();
     Migrator::up(&db, None).await.unwrap();
 
@@ -25,7 +26,7 @@ async fn setup_test_db() -> DatabaseConnection {
         .await
         .unwrap();
 
-    db
+    Arc::new(db)
 }
 
 async fn create_test_user(db: &DatabaseConnection, id: &str) -> db::entities::users::Model {
@@ -52,7 +53,7 @@ async fn create_test_user(db: &DatabaseConnection, id: &str) -> db::entities::us
 #[tokio::test]
 async fn test_budget_crud() {
     let db = setup_test_db().await;
-    let user = create_test_user(&db, "user_1").await;
+    let user = create_test_user(&*db, "user_1").await;
     let manager = BudgetsManager::new(db.clone());
 
     // 1. Create
@@ -92,7 +93,7 @@ async fn test_budget_crud() {
 #[tokio::test]
 async fn test_budget_health() {
     let db = setup_test_db().await;
-    let user = create_test_user(&db, "user_1").await;
+    let user = create_test_user(&*db, "user_1").await;
     let manager = BudgetsManager::new(db.clone());
     let now = Utc::now();
 
@@ -104,7 +105,7 @@ async fn test_budget_health() {
         ..Default::default()
     };
     db::entities::categories::Entity::insert(category)
-        .exec(&db)
+        .exec(&*db)
         .await
         .unwrap();
 
@@ -133,7 +134,7 @@ async fn test_budget_health() {
         ..Default::default()
     };
     db::entities::transactions::Entity::insert(txn1)
-        .exec(&db)
+        .exec(&*db)
         .await
         .unwrap();
 
@@ -150,7 +151,7 @@ async fn test_budget_health() {
         ..Default::default()
     };
     db::entities::transactions::Entity::insert(txn2)
-        .exec(&db)
+        .exec(&*db)
         .await
         .unwrap();
 

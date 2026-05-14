@@ -249,7 +249,7 @@ async fn test_delete_transaction_soft_delete() {
 
     // Verify soft delete
     let db_txn = transactions::Entity::find_by_id(txn.id)
-        .one(&core.db)
+        .one(&*core.db)
         .await
         .unwrap()
         .unwrap();

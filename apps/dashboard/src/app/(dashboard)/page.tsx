@@ -26,9 +26,9 @@ import {
   Trash2Icon,
   WalletIcon,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useMemo, useState, useTransition } from "react";
 
 const Analytics = dynamic(() => import("@/components/dashboard/analytics").then((mod) => mod.Analytics), {
   loading: () => <div className="h-[400px] w-full animate-pulse bg-muted rounded-xl" />,
@@ -59,35 +59,38 @@ const BudgetHealthWidget = dynamic(
 import { DataTable } from "@/components/data-table/data-table";
 import { ApprovalCard } from "@/components/tool-ui/approval-card";
 import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
-import { DashboardSkeleton } from "@/components/ui-elements/dashboard-skeleton";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
 import { SplitDialog } from "@/components/transactions/split-dialog";
 import { TransactionViewer } from "@/components/transactions/transaction-viewer";
-import { useP2P } from "@/hooks/use-p2p";
+import { DashboardSkeleton } from "@/components/ui-elements/dashboard-skeleton";
 import { useOcrUpload } from "@/hooks/use-ocr";
-import { useTransactions, useTransactionSummary } from "@/hooks/use-transactions";
+import { useP2P } from "@/hooks/use-p2p";
+import { useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
-import { useGlobalStore } from "@/lib/store";
 import type { Column } from "@/lib/data-table-types";
+import { useGlobalStore } from "@/lib/store";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const [startTransition] = useTransition();
 
   const activeTab = searchParams.get("tab") || "overview";
 
   const handleTabChange = useCallback(
     (value: string | number | null) => {
-      const tab = String(value);
-      const params = new URLSearchParams(searchParams.toString());
-      if (tab === "overview") {
-        params.delete("tab");
-      } else {
-        params.set("tab", tab);
-      }
-      const qs = params.toString();
-      router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+      startTransition(() => {
+        const tab = String(value);
+        const params = new URLSearchParams(searchParams.toString());
+        if (tab === "overview") {
+          params.delete("tab");
+        } else {
+          params.set("tab", tab);
+        }
+        const qs = params.toString();
+        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+      });
     },
     [router, searchParams],
   );
@@ -275,7 +278,7 @@ export default function DashboardPage() {
                     variant="link"
                     size="sm"
                     className="px-0 h-auto text-xs"
-                    onClick={() => router.push("/p2p/pending")}
+                    onClick={() => startTransition(() => router.push("/p2p/pending"))}
                   >
                     View Requests &rarr;
                   </Button>
@@ -377,7 +380,7 @@ export default function DashboardPage() {
               <Card className="col-span-1 lg:col-span-3 flex flex-col max-h-[500px] overflow-hidden">
                 <CardHeader className="px-6 py-4 flex flex-row items-center justify-between shrink-0">
                   <CardTitle>Recent Transactions</CardTitle>
-                  <Button variant="link" size="sm" onClick={() => router.push("/transactions")}>
+                  <Button variant="link" size="sm" onClick={() => startTransition(() => router.push("/transactions"))}>
                     View All
                   </Button>
                 </CardHeader>
@@ -499,5 +502,13 @@ function StatsCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
   );
 }
