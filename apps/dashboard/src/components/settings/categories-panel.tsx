@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
 import { api } from "@/lib/api-client";
+import type { Category } from "@expent/types/db/Category";
 
 export function CategoriesPanel() {
   const queryClient = useQueryClient();
@@ -15,7 +16,7 @@ export function CategoriesPanel() {
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["categories"],
-    queryFn: () => api.get<any[]>("/api/categories"),
+    queryFn: () => api.get<Category[]>("/api/categories"),
   });
 
   const createMutation = useMutation({
