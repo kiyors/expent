@@ -12,6 +12,5 @@ db                    = { workspace = true }
 sea-orm.workspace     = true
 serde.workspace       = true
 serde_json.workspace  = true
-sqlx                  = { features = [ "postgres" ], workspace = true }
 tracing.workspace     = true
 uuid.workspace        = true

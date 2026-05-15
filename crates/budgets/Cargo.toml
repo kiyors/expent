@@ -5,22 +5,16 @@ edition.workspace = true
 
 [dependencies]
 db.workspace = true
-
-anyhow.workspace              = true
 chrono.workspace              = true
 rust_decimal.workspace        = true
 rust_decimal_macros.workspace = true
 sea-orm.workspace             = true
 serde.workspace               = true
-strum_macros.workspace        = true
-thiserror.workspace           = true
-tracing.workspace             = true
 ts-rs.workspace               = true
 uuid.workspace                = true
 
 [dev-dependencies]
 migration = { path = "../migration" }
-rstest    = "0.26.1"
 tokio     = { features = [ "full" ], version = "1.44" }
 
 [lints]
