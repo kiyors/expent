@@ -24,7 +24,7 @@ export function CategoryChart() {
     if (!summary) return [];
     return summary.category_distribution.map((c) => ({
       name: c.name,
-      value: Math.round(parseFloat(c.amount as any)),
+      value: Math.round(parseFloat(c.amount)),
     }));
   }, [summary]);
 

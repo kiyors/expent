@@ -1,6 +1,6 @@
 "use client";
 
-import type { Transaction, TransactionWithDetail } from "@expent/types";
+import type { Category, Transaction, TransactionWithDetail } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
@@ -27,7 +27,7 @@ import { api } from "@/lib/api-client";
 
 interface TransactionViewerProps {
   item: TransactionWithDetail;
-  onUpdate: (id: string, data: Partial<Transaction>) => void;
+  onUpdate: (id: string, data: Partial<TransactionWithDetail>) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -45,7 +45,7 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
-    queryFn: () => api.get<any[]>("/api/categories"),
+    queryFn: () => api.get<Category[]>("/api/categories"),
   });
 
   const { wallets } = useWallets();
@@ -129,14 +129,14 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
               onUpdate(item.id, {
                 purpose_tag: source,
                 category_id: categoryId === "none" ? undefined : categoryId,
-                status: status as any,
+                status: status as Transaction["status"],
                 amount,
                 notes: note,
-                date: new Date(date).toISOString() as any,
+                date: new Date(date).toISOString(),
                 source_wallet_id: item.direction === "OUT" ? (walletId === "none" ? "" : walletId) : undefined,
                 destination_wallet_id: item.direction === "IN" ? (walletId === "none" ? "" : walletId) : undefined,
                 contact_id: contactId === "none" ? "" : contactId,
-              } as any);
+              });
             }}
           >
             <div className="flex flex-col gap-3">

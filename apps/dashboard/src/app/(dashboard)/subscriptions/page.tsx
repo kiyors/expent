@@ -1,5 +1,6 @@
 "use client";
 
+import type { Subscription } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -38,7 +39,7 @@ export default function SubscriptionsComponent() {
 
   const { data: confirmedSubs } = useQuery({
     queryKey: ["subscriptions"],
-    queryFn: () => api.get<any[]>("/api/subscriptions"),
+    queryFn: () => api.get<Subscription[]>("/api/subscriptions"),
     enabled: !!session.data,
   });
 
@@ -48,12 +49,12 @@ export default function SubscriptionsComponent() {
     refetch: detect,
   } = useQuery({
     queryKey: ["subscriptions-detect"],
-    queryFn: () => api.get<any[]>("/api/subscriptions/detect"),
+    queryFn: () => api.get<Subscription[]>("/api/subscriptions/detect"),
     enabled: !!session.data,
   });
 
   const confirmMutation = useMutation({
-    mutationFn: (sub: any) =>
+    mutationFn: (sub: Subscription) =>
       api.post("/api/subscriptions", {
         name: sub.name,
         amount: parseFloat(sub.amount),
@@ -153,8 +154,16 @@ export default function SubscriptionsComponent() {
   );
 }
 
-function SubscriptionCard({ sub, isConfirmed, onAction }: { sub: any; isConfirmed?: boolean; onAction: () => void }) {
-  const isMonthly = sub.cycle === "MONTHLY" || sub.cycle === "monthly";
+function SubscriptionCard({
+  sub,
+  isConfirmed,
+  onAction,
+}: {
+  sub: Subscription;
+  isConfirmed?: boolean;
+  onAction: () => void;
+}) {
+  const isMonthly = sub.cycle === "MONTHLY" || (sub.cycle as string) === "monthly";
   const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   return (
@@ -228,7 +237,7 @@ function AlertConfigDialog({
   open,
   onOpenChange,
 }: {
-  sub: any;
+  sub: Subscription;
   open: boolean;
   onOpenChange: (o: boolean) => void;
 }) {

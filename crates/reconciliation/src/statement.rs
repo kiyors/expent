@@ -3,6 +3,7 @@ use db::AppError;
 use db::entities;
 use rust_decimal::Decimal;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
+use std::collections::HashSet;
 
 pub struct StatementRowInput {
     pub date: DateTime<FixedOffset>,
@@ -10,6 +11,13 @@ pub struct StatementRowInput {
     pub amount: Decimal,
     pub raw_data: Option<serde_json::Value>,
 }
+
+type ExistingRowKey = (
+    DateTime<FixedOffset>,
+    String,
+    Option<Decimal>,
+    Option<Decimal>,
+);
 
 #[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 pub async fn upload_statement_batch(
@@ -39,13 +47,7 @@ pub async fn upload_statement_batch(
         .all(db)
         .await?;
 
-    use std::collections::HashSet;
-    let existing_set: HashSet<(
-        DateTime<FixedOffset>,
-        String,
-        Option<Decimal>,
-        Option<Decimal>,
-    )> = existing_rows
+    let existing_set: HashSet<ExistingRowKey> = existing_rows
         .into_iter()
         .map(|r| {
             (

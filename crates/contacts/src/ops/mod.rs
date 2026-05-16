@@ -14,6 +14,6 @@ pub use get::get_contact_detail;
 pub use identifiers::add_contact_identifier;
 pub use list::list_contacts;
 pub use merge::merge_contacts;
-pub use resolve::{ContactResolution, ResolveParams, resolve_contact};
+pub use resolve::{ContactResolution, ResolveParams, resolve_contact, resolve_contacts_bulk};
 pub use suggestions::{MergeSuggestion, get_merge_suggestions};
 pub use update::update_contact;

@@ -11,6 +11,7 @@ use std::sync::LazyLock;
 static UPI_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$").unwrap());
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn list_user_upi(
     db: &DatabaseConnection,
     user_id: &str,
@@ -22,6 +23,7 @@ pub async fn list_user_upi(
         .map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn add_user_upi(
     db: &DatabaseConnection,
     user_id: &str,
@@ -52,6 +54,7 @@ pub async fn add_user_upi(
     upi.insert(db).await.map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn make_primary_upi(
     db: &DatabaseConnection,
     user_id: &str,

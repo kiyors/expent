@@ -17,7 +17,7 @@ export default function SettingsBudgetsPage() {
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id, {
       onSuccess: () => toast.success(`Budget deleted.`),
-      onError: (err: any) => toast.error(err.message || "Failed to delete budget"),
+      onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to delete budget"),
     });
   };
 

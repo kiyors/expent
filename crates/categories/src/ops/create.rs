@@ -2,6 +2,7 @@ use db::AppError;
 use db::entities;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn create_category(
     db: &DatabaseConnection,
     user_id: &str,

@@ -14,8 +14,8 @@ export function Analytics() {
     if (!summary) return [];
     return summary.weekly_trends.map((t) => ({
       name: t.month,
-      income: parseFloat(t.income as any),
-      expense: parseFloat(t.expense as any),
+      income: parseFloat(t.income),
+      expense: parseFloat(t.expense),
     }));
   }, [summary]);
 
@@ -35,12 +35,12 @@ export function Analytics() {
   if (!summary) return null;
 
   const metrics = {
-    totalIncome: parseFloat(summary.monthly_income as any),
-    totalExpense: parseFloat(summary.monthly_spend as any),
+    totalIncome: parseFloat(summary.monthly_income),
+    totalExpense: parseFloat(summary.monthly_spend),
     txnCount: summary.total_transactions,
     avgTxn:
       summary.total_transactions > 0
-        ? (parseFloat(summary.monthly_income as any) + parseFloat(summary.monthly_spend as any)) / 10
+        ? (parseFloat(summary.monthly_income) + parseFloat(summary.monthly_spend)) / 10
         : 0,
   };
 
@@ -99,7 +99,10 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600">
-              ₹{metrics.totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ₹
+              {metrics.totalIncome.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p className="text-xs text-muted-foreground">Earnings this month</p>
           </CardContent>
@@ -111,7 +114,10 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-rose-600">
-              ₹{metrics.totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ₹
+              {metrics.totalExpense.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p className="text-xs text-muted-foreground">Spending this month</p>
           </CardContent>
@@ -133,7 +139,10 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₹{parseFloat(summary.total_balance as any).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ₹
+              {parseFloat(summary.total_balance).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p className="text-xs text-muted-foreground">Across all wallets</p>
           </CardContent>
@@ -149,7 +158,10 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <SimpleBarList
-              items={summary.top_expenses.map((e) => ({ name: e.name, value: parseFloat(e.amount as any) }))}
+              items={summary.top_expenses.map((e) => ({
+                name: e.name,
+                value: parseFloat(e.amount),
+              }))}
               barClass="bg-rose-500"
               valueFormatter={(n) => `₹${n.toLocaleString()}`}
             />
@@ -162,7 +174,10 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <SimpleBarList
-              items={summary.top_income.map((e) => ({ name: e.name, value: parseFloat(e.amount as any) }))}
+              items={summary.top_income.map((e) => ({
+                name: e.name,
+                value: parseFloat(e.amount),
+              }))}
               barClass="bg-emerald-500"
               valueFormatter={(n) => `₹${n.toLocaleString()}`}
             />

@@ -16,6 +16,7 @@ members = [
   "crates/contacts",
   "crates/categories",
   "crates/users",
+  "crates/jobs",
 ]
 resolver = "2"
 
@@ -32,6 +33,7 @@ db         = { path = "crates/db", version = "0.1.0" }
 
 expent_core    = { path = "crates/expent_core", version = "0.1.0" }
 groups         = { path = "crates/groups", version = "0.1.0" }
+jobs           = { path = "crates/jobs", version = "0.1.0" }
 ocr            = { path = "crates/ocr", version = "0.1.0" }
 reconciliation = { path = "crates/reconciliation", version = "0.1.0" }
 subscriptions  = { path = "crates/subscriptions", version = "0.1.0" }
@@ -55,6 +57,7 @@ dotenvy = "0.15"
 futures = "0.3"
 governor = "0.8"
 mimalloc = "0.1"
+moka = { features = [ "future" ], version = "0.12" }
 rand = "0.8"
 regex = "1.10"
 reqwest = { features = [ "json", "multipart" ], version = "0.12" }

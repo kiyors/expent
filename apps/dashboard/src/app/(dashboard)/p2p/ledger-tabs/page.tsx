@@ -48,7 +48,7 @@ export default function LedgerTabsPage() {
         title,
         description: description || null,
         target_amount: parseFloat(targetAmount),
-        tab_type: tabType as any,
+        tab_type: tabType as LedgerTab["tab_type"],
         counterparty_id: contactId !== "none" ? contactId : null,
       },
       {
@@ -225,7 +225,7 @@ function LedgerTabCard({ tab }: { tab: LedgerTab }) {
         <div className="flex justify-between items-end">
           <div>
             <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Target Amount</p>
-            <p className="text-xl font-bold font-mono">₹{parseFloat(tab.target_amount as any).toLocaleString()}</p>
+            <p className="text-xl font-bold font-mono">₹{parseFloat(tab.target_amount).toLocaleString()}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] text-muted-foreground italic">
@@ -265,7 +265,7 @@ function RepaymentDialog({
         id: tab.id,
         data: {
           amount: parseFloat(amount),
-          source_wallet_id: walletId !== "none" ? walletId : null,
+          wallet_id: walletId !== "none" ? walletId : null,
         },
       },
       {

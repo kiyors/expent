@@ -1,5 +1,6 @@
 "use client";
 
+import type { Group, TransactionWithDetail } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -126,7 +127,10 @@ function MembersDialog({ groupId, groupName }: { groupId: string; groupName: str
                       <Select
                         value={m.role}
                         onValueChange={(newRole) =>
-                          updateRoleMutation.mutate({ userId: m.user_id, role: newRole || "MEMBER" })
+                          updateRoleMutation.mutate({
+                            userId: m.user_id,
+                            role: newRole || "MEMBER",
+                          })
                         }
                       >
                         <SelectTrigger className="h-7 text-[10px] w-24">
@@ -166,10 +170,10 @@ function MembersDialog({ groupId, groupName }: { groupId: string; groupName: str
   );
 }
 
-function GroupDetails({ group }: { group: any }) {
+function GroupDetails({ group }: { group: Group }) {
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["group-transactions", group.id],
-    queryFn: () => api.get<any[]>(`/api/groups/${group.id}/transactions`),
+    queryFn: () => api.get<TransactionWithDetail[]>(`/api/groups/${group.id}/transactions`),
   });
 
   return (
@@ -218,10 +222,13 @@ function GroupDetails({ group }: { group: any }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.map((txn: any) => (
+              {transactions.map((txn) => (
                 <TableRow key={txn.id}>
                   <TableCell className="px-4 text-xs text-muted-foreground">
-                    {new Date(txn.date).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}
+                    {new Date(txn.date).toLocaleDateString(undefined, {
+                      day: "2-digit",
+                      month: "short",
+                    })}
                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
@@ -271,7 +278,7 @@ export default function SharedLedgersComponent() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDesc, setNewGroupDesc] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
   const { groups, isLoading, createMutation } = useGroups();
 
@@ -354,7 +361,7 @@ export default function SharedLedgersComponent() {
               </CardContent>
             </Card>
           ) : (
-            groups.map((group: any) => (
+            groups.map((group) => (
               <Card
                 key={group.id}
                 className={`hover:border-primary/50 transition-all cursor-pointer group ${selectedGroup?.id === group.id ? "border-primary ring-1 ring-primary/20 shadow-sm" : ""}`}
