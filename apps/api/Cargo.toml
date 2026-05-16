@@ -4,7 +4,9 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+anyhow.workspace             = true
 async-stream.workspace       = true
+async-trait.workspace        = true
 axum.workspace               = true
 chrono.workspace             = true
 dashmap.workspace            = true
@@ -13,7 +15,10 @@ dotenvy.workspace            = true
 expent_core.workspace        = true
 futures.workspace            = true
 governor.workspace           = true
+jobs.workspace               = true
 mimalloc.workspace           = true
+ocr.workspace                = true
+reconciliation.workspace     = true
 rust_decimal.workspace       = true
 serde.workspace              = true
 serde_json.workspace         = true

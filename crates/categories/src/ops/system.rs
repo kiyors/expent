@@ -6,6 +6,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QuerySelect, Set,
 };
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn ensure_system_categories(db: &DatabaseConnection) -> Result<(), AppError> {
     // Ensure a "system" user exists so the FK constraint is satisfied
     let system_user = entities::users::Entity::find_by_id("system".to_string())

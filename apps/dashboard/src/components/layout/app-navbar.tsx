@@ -81,6 +81,7 @@ export function AppNavbar() {
       <div className="flex items-center gap-3">
         {/* Global Search Trigger */}
         <button
+          type="button"
           onClick={() => {
             const event = new KeyboardEvent("keydown", {
               key: "k",

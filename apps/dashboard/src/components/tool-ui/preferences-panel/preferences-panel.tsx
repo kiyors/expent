@@ -101,7 +101,7 @@ function ToggleControl({
   return (
     <ToggleGroup
       value={value as any}
-      onValueChange={(v: any) => v && onChange(v)}
+      onValueChange={(v) => v && onChange(v as any)}
       disabled={disabled}
       aria-label={label}
       className="gap-1"

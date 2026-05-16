@@ -11,7 +11,7 @@ export function Overview() {
     if (!summary) return [];
     return summary.monthly_trends.map((t) => ({
       name: t.month,
-      total: parseFloat(t.expense as any),
+      total: parseFloat(t.expense),
     }));
   }, [summary]);
 

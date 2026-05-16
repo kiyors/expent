@@ -41,10 +41,12 @@ struct TxnData {
 }
 
 impl BudgetsManager {
+    #[must_use]
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn create(
         &self,
         user_id: &str,
@@ -65,6 +67,7 @@ impl BudgetsManager {
         Ok(budget.insert(self.db.as_ref()).await?)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn list(&self, user_id: &str) -> Result<Vec<budgets::Model>, AppError> {
         Ok(budgets::Entity::find()
             .filter(budgets::Column::UserId.eq(user_id))
@@ -73,6 +76,7 @@ impl BudgetsManager {
             .await?)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn update(
         &self,
         user_id: &str,
@@ -99,6 +103,7 @@ impl BudgetsManager {
         Ok(budget.update(self.db.as_ref()).await?)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn delete(&self, user_id: &str, budget_id: &str) -> Result<u64, AppError> {
         let res = budgets::Entity::delete_many()
             .filter(budgets::Column::Id.eq(budget_id))
@@ -108,6 +113,7 @@ impl BudgetsManager {
         Ok(res.rows_affected)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn get_all_budget_health(
         &self,
         user_id: &str,
@@ -123,7 +129,7 @@ impl BudgetsManager {
             .iter()
             .map(|b| get_period_bounds(b.period).0)
             .min()
-            .unwrap_or_else(|| Utc::now());
+            .unwrap_or_else(Utc::now);
 
         let txns: Vec<TxnData> = transactions::Entity::find()
             .filter(transactions::Column::UserId.eq(user_id))
@@ -146,13 +152,13 @@ impl BudgetsManager {
         category_ids.sort();
         category_ids.dedup();
 
-        let categories = if !category_ids.is_empty() {
+        let categories = if category_ids.is_empty() {
+            Vec::new()
+        } else {
             categories::Entity::find()
                 .filter(categories::Column::Id.is_in(category_ids))
                 .all(self.db.as_ref())
                 .await?
-        } else {
-            Vec::new()
         };
 
         let mut category_names = HashMap::new();

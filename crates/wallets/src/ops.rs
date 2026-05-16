@@ -8,6 +8,7 @@ use sea_orm::{
     Set,
 };
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn create_wallet(
     db: &DatabaseConnection,
     user_id: &str,
@@ -29,6 +30,7 @@ pub async fn create_wallet(
     wallet.insert(db).await.map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn list_wallets(
     db: &DatabaseConnection,
     user_id: &str,
@@ -40,6 +42,7 @@ pub async fn list_wallets(
         .map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn delete_wallet(
     db: &DatabaseConnection,
     user_id: &str,
@@ -54,6 +57,7 @@ pub async fn delete_wallet(
     Ok(result.rows_affected)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn update_wallet(
     db: &DatabaseConnection,
     user_id: &str,
@@ -80,6 +84,7 @@ pub async fn update_wallet(
     wallet.update(db).await.map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn get_balance(db: &DatabaseConnection, wallet_id: &str) -> Result<Decimal, AppError> {
     let wallet = entities::wallets::Entity::find_by_id(wallet_id.to_string())
         .one(db)
@@ -90,6 +95,7 @@ pub async fn get_balance(db: &DatabaseConnection, wallet_id: &str) -> Result<Dec
 }
 
 /// Adjusts the balance of a wallet atomically using database-level expressions.
+#[allow(clippy::missing_errors_doc)]
 pub async fn adjust_balance<C>(
     db: &C,
     wallet_id: &str,
@@ -131,6 +137,7 @@ where
     Ok(())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn get_wallet(
     db: &DatabaseConnection,
     user_id: &str,
@@ -144,11 +151,13 @@ pub async fn get_wallet(
         .ok_or_else(|| AppError::not_found("Wallet not found"))
 }
 
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct ResolveWalletParams {
     pub bank_name: String,
     pub account_number: Option<String>,
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn resolve_wallet<C>(
     db: &C,
     user_id: &str,

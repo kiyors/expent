@@ -57,3 +57,5 @@ export * from "./UserUpiId";
 export * from "./Verification";
 export * from "./Wallet";
 export * from "./WalletType";
+export * from "./BankTransaction";
+export * from "./BankStatementResponse";

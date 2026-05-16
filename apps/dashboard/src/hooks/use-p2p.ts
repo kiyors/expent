@@ -66,7 +66,10 @@ export function useGroups() {
 
   const inviteMutation = useMutation({
     mutationFn: (data: { groupId: string; email: string }) =>
-      api.post<P2pRequest>("/api/groups/invite", { group_id: data.groupId, receiver_email: data.email }),
+      api.post<P2pRequest>("/api/groups/invite", {
+        group_id: data.groupId,
+        receiver_email: data.email,
+      }),
     onSuccess: () => {
       toast.success("Invite sent!");
     },
@@ -128,7 +131,13 @@ export function useLedgerTabs() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => api.post<LedgerTab>("/api/p2p/ledger-tabs", data),
+    mutationFn: (data: {
+      title: string;
+      description: string | null;
+      target_amount: number;
+      tab_type: LedgerTab["tab_type"];
+      counterparty_id: string | null;
+    }) => api.post<LedgerTab>("/api/p2p/ledger-tabs", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ledger-tabs"] });
       toast.success("Ledger tab created");
@@ -137,7 +146,7 @@ export function useLedgerTabs() {
   });
 
   const repaymentMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: { amount: number; wallet_id: string | null } }) =>
       api.post<Transaction>(`/api/p2p/ledger-tabs/${id}/repayment`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ledger-tabs"] });

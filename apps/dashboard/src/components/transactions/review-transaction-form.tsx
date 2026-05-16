@@ -1,6 +1,6 @@
 "use client";
 
-import type { TypedProcessedOcr } from "@expent/types";
+import type { BankTransaction, TypedProcessedOcr } from "@expent/types";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
 import { Checkbox } from "@expent/ui/components/checkbox";
@@ -34,7 +34,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
   const [contactId, setContactId] = React.useState<string>("none");
 
   // Bank Statement State
-  const [bankTransactions, setBankTransactions] = React.useState<any[]>([]);
+  const [bankTransactions, setBankTransactions] = React.useState<BankTransaction[]>([]);
   const [selectedIndices, setSelectedIndices] = React.useState<Set<number>>(new Set());
   const [searchTerm, setSearchTerm] = React.useState("");
 
@@ -55,7 +55,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
       const d = processedOcr.data.bank_data;
       const txs = d.transactions || [];
       setBankTransactions(txs);
-      setSelectedIndices(new Set(txs.map((_: any, i: number) => i)));
+      setSelectedIndices(new Set(txs.map((_, i: number) => i)));
       setDescription(`${d.bank_name} Statement: ${d.statement_period}`);
     } else {
       const d = processedOcr.data;
@@ -85,7 +85,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
     setSelectedIndices(next);
   };
 
-  const updateBankTx = (index: number, updates: any) => {
+  const updateBankTx = (index: number, updates: Partial<BankTransaction>) => {
     setBankTransactions((prev) => prev.map((tx, i) => (i === index ? { ...tx, ...updates } : tx)));
   };
 
@@ -294,7 +294,11 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
                       <div className="flex gap-2">
                         <Select
                           value={tx.category_id || "none"}
-                          onValueChange={(val) => updateBankTx(i, { category_id: val === "none" ? null : val })}
+                          onValueChange={(val) =>
+                            updateBankTx(i, {
+                              category_id: val === "none" ? null : val,
+                            })
+                          }
                           disabled={!isSelected}
                         >
                           <SelectTrigger className="h-7 w-32 text-[10px] px-2">
@@ -311,7 +315,11 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
                         </Select>
                         <Select
                           value={tx.wallet_id || "none"}
-                          onValueChange={(val) => updateBankTx(i, { wallet_id: val === "none" ? null : val })}
+                          onValueChange={(val) =>
+                            updateBankTx(i, {
+                              wallet_id: val === "none" ? null : val,
+                            })
+                          }
                           disabled={!isSelected}
                         >
                           <SelectTrigger className="h-7 w-32 text-[10px] px-2">
@@ -484,7 +492,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               <Label htmlFor="direction" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Type
               </Label>
-              <Select value={direction} onValueChange={(v: any) => setDirection(v)}>
+              <Select value={direction} onValueChange={(v) => v && setDirection(v)}>
                 <SelectTrigger id="direction" className="h-11">
                   <SelectValue />
                 </SelectTrigger>
@@ -600,7 +608,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
   );
 }
 
-const Loader2Icon = (props: any) => (
+const Loader2Icon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"

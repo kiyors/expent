@@ -31,6 +31,16 @@ pub enum TransactionDirection {
     Out,
 }
 
+impl TransactionDirection {
+    #[must_use]
+    pub fn counterparty_role(&self) -> TxnPartyRole {
+        match self {
+            Self::In => TxnPartyRole::Sender,
+            Self::Out => TxnPartyRole::Receiver,
+        }
+    }
+}
+
 #[derive(
     Debug,
     Clone,

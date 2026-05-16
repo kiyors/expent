@@ -88,6 +88,7 @@ pub struct Core {
     pub contacts: Arc<ContactsManager>,
     pub categories: Arc<CategoriesManager>,
     pub users: Arc<UsersManager>,
+    pub jobs: Arc<dyn ::jobs::JobQueue>,
 }
 
 impl OcrProcessor for Core {
@@ -240,6 +241,7 @@ impl Core {
         let contacts = Arc::new(ContactsManager::new(Arc::clone(&db)));
         let categories = Arc::new(CategoriesManager::new(Arc::clone(&db)));
         let users = Arc::new(UsersManager::new(Arc::clone(&db)));
+        let jobs = Arc::new(::jobs::DbJobQueue::new(Arc::clone(&db)));
 
         let core = Self {
             db,
@@ -255,6 +257,7 @@ impl Core {
             contacts,
             categories,
             users,
+            jobs,
         };
 
         // Ensure system categories exist
