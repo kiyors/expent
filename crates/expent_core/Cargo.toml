@@ -10,6 +10,7 @@ categories.workspace     = true
 contacts.workspace       = true
 db.workspace             = true
 groups.workspace         = true
+jobs.workspace           = true
 ocr.workspace            = true
 reconciliation.workspace = true
 subscriptions.workspace  = true

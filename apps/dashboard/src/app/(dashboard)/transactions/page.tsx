@@ -1,5 +1,11 @@
 "use client";
-import type { Transaction, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
+import type {
+  OcrJob,
+  OcrTransactionResponse,
+  Transaction,
+  TransactionWithDetail,
+  TypedProcessedOcr,
+} from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -65,7 +71,10 @@ export default function TransactionsPage() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "date", desc: true }]);
-  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 15 });
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 15,
+  });
   const [activeTab, setActiveTab] = React.useState("all");
 
   const {
@@ -84,12 +93,21 @@ export default function TransactionsPage() {
 
   // Selected Txn for Split Action
   const [splitDialogOpen, setSplitDialogOpen] = React.useState(false);
-  const [selectedTxn, setSelectedTxn] = React.useState<{ id: string; amount: string } | null>(null);
+  const [selectedTxn, setSelectedTxn] = React.useState<{
+    id: string;
+    amount: string;
+  } | null>(null);
   const [editingTxnId, setEditingTxnId] = React.useState<string | null>(null);
 
   // Upload State
   const [isUploading, setIsUploading] = React.useState(false);
-  const [uploadSteps, setUploadSteps] = React.useState<any[]>([]);
+  const [uploadSteps, setUploadSteps] = React.useState<
+    {
+      id: string;
+      label: string;
+      status: "pending" | "completed" | "failed" | "in-progress";
+    }[]
+  >([]);
   const [processedOcr, setProcessedOcr] = React.useState<TypedProcessedOcr | null>(null);
   const [isSavingOcr, setIsSavingOcr] = React.useState(false);
 
@@ -99,9 +117,9 @@ export default function TransactionsPage() {
   }, [rawTransactions]);
 
   // Derived Metrics from Summary
-  const totalIncome = summary?.monthly_income ? parseFloat(summary.monthly_income as any) : 0;
-  const totalExpense = summary?.monthly_spend ? parseFloat(summary.monthly_spend as any) : 0;
-  const netBalance = summary?.total_balance ? parseFloat(summary.total_balance as any) : 0;
+  const totalIncome = summary?.monthly_income ? parseFloat(summary.monthly_income) : 0;
+  const totalExpense = summary?.monthly_spend ? parseFloat(summary.monthly_spend) : 0;
+  const netBalance = summary?.total_balance ? parseFloat(summary.total_balance) : 0;
 
   const triggerSplit = React.useCallback((id: string, amount: string) => {
     setSelectedTxn({ id, amount });
@@ -112,7 +130,11 @@ export default function TransactionsPage() {
     setIsUploading(true);
     setProcessedOcr(null);
 
-    const steps = [
+    const steps: {
+      id: string;
+      label: string;
+      status: "pending" | "completed" | "failed" | "in-progress";
+    }[] = [
       { id: "1", label: "Uploading file…", status: "in-progress" },
       { id: "2", label: "Classifying…", status: "pending" },
       { id: "3", label: "Extracting…", status: "pending" },
@@ -139,7 +161,7 @@ export default function TransactionsPage() {
         ),
       );
 
-      const result = await api.post<any>("/api/ocr/process", { key });
+      const result = await api.post<OcrJob>("/api/ocr/process", { key });
 
       setUploadSteps((prev) =>
         prev.map((s) =>
@@ -149,7 +171,7 @@ export default function TransactionsPage() {
 
       setUploadSteps((prev) => prev.map((s) => (s.id === "3" ? { ...s, status: "completed" } : s)));
 
-      setProcessedOcr(result);
+      setProcessedOcr(result.processed_data as TypedProcessedOcr);
       toast.success("Extraction complete!");
       setTimeout(() => setIsUploading(false), 1000);
     } catch (error) {
@@ -160,10 +182,10 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleConfirmOcr = async (finalData: any) => {
+  const handleConfirmOcr = async (finalData: TypedProcessedOcr) => {
     setIsSavingOcr(true);
     try {
-      const result = await api.post<any>("/api/transactions/from-ocr", finalData);
+      const result = await api.post<OcrTransactionResponse>("/api/transactions/from-ocr", finalData);
       setProcessedOcr(null);
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
@@ -372,7 +394,7 @@ export default function TransactionsPage() {
     if (!rowsExport.length) return;
 
     const headers = ["Date", "Direction", "Amount", "Source", "ID"];
-    const rows = rowsExport.map((txn: Transaction) => [txn.date, txn.direction, txn.amount, txn.source, txn.id]);
+    const rows = rowsExport.map((txn) => [txn.date, txn.direction, txn.amount, txn.source, txn.id]);
 
     const csvContent = `data:text/csv;charset=utf-8,${[headers.join(","), ...rows.map((e) => e.join(","))].join("\n")}`;
     const encodedUri = encodeURI(csvContent);
@@ -460,7 +482,10 @@ export default function TransactionsPage() {
                 <Skeleton className="h-8 w-32" />
               ) : (
                 <div className="text-3xl font-bold tracking-tight text-green-700 dark:text-green-400">
-                  ₹{totalIncome.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                  ₹
+                  {totalIncome.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
                 </div>
               )}
             </CardContent>
@@ -476,7 +501,10 @@ export default function TransactionsPage() {
                 <Skeleton className="h-8 w-32" />
               ) : (
                 <div className="text-3xl font-bold tracking-tight text-red-700 dark:text-red-400">
-                  ₹{totalExpense.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                  ₹
+                  {totalExpense.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
                 </div>
               )}
             </CardContent>
@@ -493,7 +521,9 @@ export default function TransactionsPage() {
               ) : (
                 <div className="text-3xl font-bold tracking-tight text-blue-700 dark:text-blue-400">
                   {netBalance < 0 ? "-" : ""}₹
-                  {Math.abs(netBalance).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                  {Math.abs(netBalance).toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
                 </div>
               )}
             </CardContent>

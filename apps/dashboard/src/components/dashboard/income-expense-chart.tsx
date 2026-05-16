@@ -11,8 +11,8 @@ export function IncomeExpenseChart() {
     if (!summary) return [];
     return summary.monthly_trends.map((t) => ({
       name: t.month,
-      income: parseFloat(t.income as any),
-      expense: parseFloat(t.expense as any),
+      income: parseFloat(t.income),
+      expense: parseFloat(t.expense),
     }));
   }, [summary]);
 

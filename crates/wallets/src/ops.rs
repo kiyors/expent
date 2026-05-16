@@ -144,6 +144,7 @@ pub async fn get_wallet(
         .ok_or_else(|| AppError::not_found("Wallet not found"))
 }
 
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct ResolveWalletParams {
     pub bank_name: String,
     pub account_number: Option<String>,

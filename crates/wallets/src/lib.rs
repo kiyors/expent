@@ -1,21 +1,37 @@
 use db::AppError;
 use db::entities;
 use db::entities::enums::WalletType;
+use moka::future::Cache;
 use rust_decimal::Decimal;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
 use std::sync::Arc;
+use std::time::Duration;
 
 pub mod ops;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct WalletsManager {
     db: Arc<DatabaseConnection>,
+    resolve_cache: Cache<(String, ops::ResolveWalletParams), entities::wallets::Model>,
+}
+
+impl std::fmt::Debug for WalletsManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WalletsManager")
+            .field("db", &self.db)
+            .finish()
+    }
 }
 
 impl WalletsManager {
     #[must_use]
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
-        Self { db }
+        let resolve_cache = Cache::builder()
+            .max_capacity(1000)
+            .time_to_idle(Duration::from_secs(300)) // 5 minutes
+            .build();
+
+        Self { db, resolve_cache }
     }
 
     pub async fn create(
@@ -25,7 +41,10 @@ impl WalletsManager {
         wallet_type: WalletType,
         initial_balance: Decimal,
     ) -> Result<entities::wallets::Model, AppError> {
-        ops::create_wallet(&*self.db, user_id, name, wallet_type, initial_balance).await
+        let result =
+            ops::create_wallet(&*self.db, user_id, name, wallet_type, initial_balance).await?;
+        self.resolve_cache.invalidate_all(); // Simple invalidation for now
+        Ok(result)
     }
 
     pub async fn list(&self, user_id: &str) -> Result<Vec<entities::wallets::Model>, AppError> {
@@ -47,11 +66,17 @@ impl WalletsManager {
         name: Option<String>,
         balance: Option<Decimal>,
     ) -> Result<entities::wallets::Model, AppError> {
-        ops::update_wallet(&*self.db, user_id, wallet_id, name, balance).await
+        let result = ops::update_wallet(&*self.db, user_id, wallet_id, name, balance).await?;
+        self.resolve_cache.invalidate_all();
+        Ok(result)
     }
 
     pub async fn delete(&self, user_id: &str, wallet_id: &str) -> Result<u64, AppError> {
-        ops::delete_wallet(&*self.db, user_id, wallet_id).await
+        let res = ops::delete_wallet(&*self.db, user_id, wallet_id).await?;
+        if res > 0 {
+            self.resolve_cache.invalidate_all();
+        }
+        Ok(res)
     }
 
     pub async fn resolve<C>(
@@ -63,7 +88,14 @@ impl WalletsManager {
     where
         C: ConnectionTrait,
     {
-        ops::resolve_wallet(db, user_id, params).await
+        let key = (user_id.to_string(), params.clone());
+        if let Some(cached) = self.resolve_cache.get(&key).await {
+            return Ok(cached);
+        }
+
+        let wallet = ops::resolve_wallet(db, user_id, params).await?;
+        self.resolve_cache.insert(key, wallet.clone()).await;
+        Ok(wallet)
     }
 
     pub async fn adjust_balance<C>(

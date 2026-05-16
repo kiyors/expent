@@ -211,34 +211,23 @@ pub async fn bulk_confirm_ocr_jobs_handler(
     State(state): State<AppState>,
     session: AuthSession,
     Json(payload): Json<BulkConfirmOcrRequest>,
-) -> Result<Json<BulkConfirmOcrResponse>, ApiError> {
-    let mut succeeded = Vec::new();
-    let mut failed = Vec::new();
+) -> Result<StatusCode, ApiError> {
+    state
+        .core
+        .jobs
+        .enqueue(
+            "BULK_CONFIRM_OCR",
+            serde_json::json!(crate::jobs::BulkConfirmOcrJobPayload {
+                user_id: session.user.id.clone(),
+                job_ids: payload.job_ids,
+            }),
+            Some(session.user.id),
+            None,
+        )
+        .await
+        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
-    use futures::StreamExt;
-    let stream = futures::stream::iter(payload.job_ids).map(|job_id| {
-        let state = state.clone();
-        let user_id = session.user.id.clone();
-        async move {
-            let res = state
-                .core
-                .ocr_manager
-                .confirm_job(Arc::new(state.core.clone()), &user_id, &job_id, None)
-                .await;
-            (job_id, res)
-        }
-    });
-
-    let mut results = stream.buffer_unordered(5);
-
-    while let Some((job_id, result)) = results.next().await {
-        match result {
-            Ok(_) => succeeded.push(job_id),
-            Err(e) => failed.push((job_id, e.to_string())),
-        }
-    }
-
-    Ok(Json(BulkConfirmOcrResponse { succeeded, failed }))
+    Ok(StatusCode::ACCEPTED)
 }
 
 #[derive(Deserialize)]

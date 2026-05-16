@@ -1,19 +1,35 @@
 use db::AppError;
 use db::entities;
+use moka::future::Cache;
 use sea_orm::DatabaseConnection;
 use std::sync::Arc;
+use std::time::Duration;
 
 pub mod ops;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CategoriesManager {
     db: Arc<DatabaseConnection>,
+    list_cache: Cache<String, Vec<entities::categories::Model>>,
+}
+
+impl std::fmt::Debug for CategoriesManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CategoriesManager")
+            .field("db", &self.db)
+            .finish()
+    }
 }
 
 impl CategoriesManager {
     #[must_use]
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
-        Self { db }
+        let list_cache = Cache::builder()
+            .max_capacity(1000)
+            .time_to_idle(Duration::from_secs(600)) // 10 minutes
+            .build();
+
+        Self { db, list_cache }
     }
 
     pub async fn create(
@@ -23,15 +39,27 @@ impl CategoriesManager {
         icon: Option<String>,
         color: Option<String>,
     ) -> Result<entities::categories::Model, AppError> {
-        ops::create_category(&*self.db, user_id, name, icon, color).await
+        let result = ops::create_category(&*self.db, user_id, name, icon, color).await?;
+        self.list_cache.invalidate(user_id).await;
+        Ok(result)
     }
 
     pub async fn list(&self, user_id: &str) -> Result<Vec<entities::categories::Model>, AppError> {
-        ops::list_categories(&*self.db, user_id).await
+        if let Some(cached) = self.list_cache.get(user_id).await {
+            return Ok(cached);
+        }
+
+        let categories = ops::list_categories(&*self.db, user_id).await?;
+        self.list_cache
+            .insert(user_id.to_string(), categories.clone())
+            .await;
+        Ok(categories)
     }
 
     pub async fn delete(&self, user_id: &str, category_id: &str) -> Result<(), AppError> {
-        ops::delete_category(&*self.db, user_id, category_id).await
+        ops::delete_category(&*self.db, user_id, category_id).await?;
+        self.list_cache.invalidate(user_id).await;
+        Ok(())
     }
 
     pub async fn ensure_system_categories(&self) -> Result<(), AppError> {

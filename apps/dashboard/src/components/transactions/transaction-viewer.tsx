@@ -1,6 +1,10 @@
 "use client";
 
-import type { Transaction, TransactionWithDetail } from "@expent/types";
+import type {
+  Category,
+  Transaction,
+  TransactionWithDetail,
+} from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
@@ -15,7 +19,13 @@ import {
 } from "@expent/ui/components/drawer";
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@expent/ui/components/select";
 import { Separator } from "@expent/ui/components/separator";
 import { useIsMobile } from "@expent/ui/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
@@ -27,33 +37,59 @@ import { api } from "@/lib/api-client";
 
 interface TransactionViewerProps {
   item: TransactionWithDetail;
-  onUpdate: (id: string, data: Partial<Transaction>) => void;
+  onUpdate: (id: string, data: Partial<TransactionWithDetail>) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function TransactionViewer({ item, onUpdate, open, onOpenChange }: TransactionViewerProps) {
+export function TransactionViewer({
+  item,
+  onUpdate,
+  open,
+  onOpenChange,
+}: TransactionViewerProps) {
   const isMobile = useIsMobile();
-  const [source, setSource] = React.useState<string>(item.purpose_tag || item.source || "");
-  const [categoryId, setCategoryId] = React.useState<string>(item.category_id || "none");
-  const [status, setStatus] = React.useState<string>(item.status || "COMPLETED");
+  const [source, setSource] = React.useState<string>(
+    item.purpose_tag || item.source || "",
+  );
+  const [categoryId, setCategoryId] = React.useState<string>(
+    item.category_id || "none",
+  );
+  const [status, setStatus] = React.useState<string>(
+    item.status || "COMPLETED",
+  );
   const [amount, setAmount] = React.useState(item.amount);
   const [note, setNote] = React.useState(item.notes || "");
-  const [date, setDate] = React.useState(new Date(item.date).toISOString().split("T")[0]);
-  const [walletId, setWalletId] = React.useState<string>(item.source_wallet_id || item.destination_wallet_id || "none");
-  const [contactId, setContactId] = React.useState<string>(item.contact_id || "none");
+  const [date, setDate] = React.useState(
+    new Date(item.date).toISOString().split("T")[0],
+  );
+  const [walletId, setWalletId] = React.useState<string>(
+    item.source_wallet_id || item.destination_wallet_id || "none",
+  );
+  const [contactId, setContactId] = React.useState<string>(
+    item.contact_id || "none",
+  );
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
-    queryFn: () => api.get<any[]>("/api/categories"),
+    queryFn: () => api.get<Category[]>("/api/categories"),
   });
 
   const { wallets } = useWallets();
   const { contacts } = useContacts();
 
-  const selectedCategory = React.useMemo(() => categories?.find((c) => c.id === categoryId), [categories, categoryId]);
-  const selectedWallet = React.useMemo(() => wallets?.find((w) => w.id === walletId), [wallets, walletId]);
-  const selectedContact = React.useMemo(() => contacts?.find((c) => c.id === contactId), [contacts, contactId]);
+  const selectedCategory = React.useMemo(
+    () => categories?.find((c) => c.id === categoryId),
+    [categories, categoryId],
+  );
+  const selectedWallet = React.useMemo(
+    () => wallets?.find((w) => w.id === walletId),
+    [wallets, walletId],
+  );
+  const selectedContact = React.useMemo(
+    () => contacts?.find((c) => c.id === contactId),
+    [contacts, contactId],
+  );
 
   const title = source || "Transaction";
   const formattedDate = new Date(item.date).toLocaleDateString("en-IN", {
@@ -63,7 +99,11 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
   });
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={open} onOpenChange={onOpenChange}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DrawerTrigger asChild>
         <Button
           variant="link"
@@ -72,16 +112,22 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
           {title}
         </Button>
       </DrawerTrigger>
-      <DrawerContent className={isMobile ? "h-[80vh]" : "h-full w-[400px] ml-auto top-0"}>
+      <DrawerContent
+        className={isMobile ? "h-[80vh]" : "h-full w-[400px] ml-auto top-0"}
+      >
         <DrawerHeader className="gap-1 text-left">
           <DrawerTitle className="text-xl">{title}</DrawerTitle>
-          <DrawerDescription>Transaction from {formattedDate}</DrawerDescription>
+          <DrawerDescription>
+            Transaction from {formattedDate}
+          </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm mt-4">
           <div className="flex items-center justify-between p-4 bg-muted rounded-xl border">
             <div>
               <div className="text-sm text-muted-foreground">Amount</div>
-              <div className={`text-2xl font-bold tracking-tight ${item.direction === "IN" ? "text-green-600" : ""}`}>
+              <div
+                className={`text-2xl font-bold tracking-tight ${item.direction === "IN" ? "text-green-600" : ""}`}
+              >
                 {item.direction === "OUT" ? "-" : "+"}₹
                 {parseFloat(item.amount).toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
@@ -102,7 +148,9 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
                 </span>
                 <div className="flex items-center gap-2 text-sm">
                   <WalletIcon className="h-4 w-4 text-primary" />
-                  <span>{item.source_wallet_name || item.destination_wallet_name}</span>
+                  <span>
+                    {item.source_wallet_name || item.destination_wallet_name}
+                  </span>
                 </div>
               </div>
             )}
@@ -129,19 +177,33 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
               onUpdate(item.id, {
                 purpose_tag: source,
                 category_id: categoryId === "none" ? undefined : categoryId,
-                status: status as any,
+                status: status as Transaction["status"],
                 amount,
                 notes: note,
-                date: new Date(date).toISOString() as any,
-                source_wallet_id: item.direction === "OUT" ? (walletId === "none" ? "" : walletId) : undefined,
-                destination_wallet_id: item.direction === "IN" ? (walletId === "none" ? "" : walletId) : undefined,
+                date: new Date(date).toISOString(),
+                source_wallet_id:
+                  item.direction === "OUT"
+                    ? walletId === "none"
+                      ? ""
+                      : walletId
+                    : undefined,
+                destination_wallet_id:
+                  item.direction === "IN"
+                    ? walletId === "none"
+                      ? ""
+                      : walletId
+                    : undefined,
                 contact_id: contactId === "none" ? "" : contactId,
-              } as any);
+              });
             }}
           >
             <div className="flex flex-col gap-3">
               <Label htmlFor="source">Description / Merchant</Label>
-              <Input id="source" value={source} onChange={(e) => setSource(e.target.value)} />
+              <Input
+                id="source"
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -157,14 +219,22 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
               </div>
               <div className="flex flex-col gap-3">
                 <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
                 <Label htmlFor="wallet">Wallet</Label>
-                <Select value={walletId} onValueChange={(val) => setWalletId(val || "none")}>
+                <Select
+                  value={walletId}
+                  onValueChange={(val) => setWalletId(val || "none")}
+                >
                   <SelectTrigger id="wallet" className="w-full">
                     <SelectValue placeholder="Select wallet">
                       {walletId === "none" ? "No Wallet" : selectedWallet?.name}
@@ -182,10 +252,15 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
               </div>
               <div className="flex flex-col gap-3">
                 <Label htmlFor="contact">Person</Label>
-                <Select value={contactId} onValueChange={(val) => setContactId(val || "none")}>
+                <Select
+                  value={contactId}
+                  onValueChange={(val) => setContactId(val || "none")}
+                >
                   <SelectTrigger id="contact" className="w-full">
                     <SelectValue placeholder="Select contact">
-                      {contactId === "none" ? "No Contact" : selectedContact?.name}
+                      {contactId === "none"
+                        ? "No Contact"
+                        : selectedContact?.name}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -203,10 +278,15 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
                 <Label htmlFor="category">Category</Label>
-                <Select value={categoryId} onValueChange={(val) => setCategoryId(val || "none")}>
+                <Select
+                  value={categoryId}
+                  onValueChange={(val) => setCategoryId(val || "none")}
+                >
                   <SelectTrigger id="category" className="w-full">
                     <SelectValue placeholder="Select category">
-                      {categoryId === "none" ? "Uncategorized" : selectedCategory?.name}
+                      {categoryId === "none"
+                        ? "Uncategorized"
+                        : selectedCategory?.name}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -222,7 +302,10 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
 
               <div className="flex flex-col gap-3">
                 <Label htmlFor="status">Status</Label>
-                <Select value={status} onValueChange={(val) => setStatus(val || "COMPLETED")}>
+                <Select
+                  value={status}
+                  onValueChange={(val) => setStatus(val || "COMPLETED")}
+                >
                   <SelectTrigger id="status" className="w-full">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>

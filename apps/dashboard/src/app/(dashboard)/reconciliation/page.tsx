@@ -1,5 +1,6 @@
 "use client";
 
+import type { BankStatementRow, Transaction, TypedProcessedOcr } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -33,7 +34,7 @@ export default function ReconciliationPage() {
     await uploadFile(file);
   };
 
-  const handleConfirmOcr = async (finalData: any) => {
+  const handleConfirmOcr = async (finalData: TypedProcessedOcr) => {
     setIsSavingOcr(true);
     try {
       await api.post("/api/transactions/from-ocr", finalData);
@@ -167,7 +168,11 @@ export default function ReconciliationPage() {
                       key={row.id}
                       row={row}
                       onConfirm={(txId) =>
-                        confirmMatchMutation.mutate({ rowId: row.id, transactionId: txId, confidence: 100 })
+                        confirmMatchMutation.mutate({
+                          rowId: row.id,
+                          transactionId: txId,
+                          confidence: 100,
+                        })
                       }
                     />
                   ))}
@@ -189,9 +194,11 @@ export default function ReconciliationPage() {
   );
 }
 
-function RowMatchItem({ row, onConfirm }: { row: any; onConfirm: (txId: string) => void }) {
+function RowMatchItem({ row, onConfirm }: { row: BankStatementRow; onConfirm: (txId: string) => void }) {
   const { data: matchData } = useRowMatches(row.id);
   const matches = matchData?.matches || [];
+
+  const rowAmount = row.debit ? parseFloat(row.debit) : row.credit ? parseFloat(row.credit) : 0;
 
   return (
     <Card className="overflow-hidden border-l-4 border-l-muted">
@@ -204,7 +211,7 @@ function RowMatchItem({ row, onConfirm }: { row: any; onConfirm: (txId: string) 
           <p className="text-sm font-medium truncate">{row.description}</p>
           <div className="flex justify-between items-end mt-2">
             <span className="text-[11px] text-muted-foreground">{new Date(row.date).toLocaleDateString()}</span>
-            <span className="font-mono font-bold">₹{parseFloat(row.amount).toLocaleString()}</span>
+            <span className="font-mono font-bold">₹{rowAmount.toLocaleString()}</span>
           </div>
         </div>
 
@@ -235,7 +242,7 @@ function RowMatchItem({ row, onConfirm }: { row: any; onConfirm: (txId: string) 
             </div>
           ) : (
             <div className="space-y-3">
-              {matches.slice(0, 2).map(([tx, confidence]: any) => (
+              {matches.slice(0, 2).map(([tx, confidence]) => (
                 <div key={tx.id} className="flex items-center justify-between gap-4 group">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{tx.notes || "Unnamed Transaction"}</p>

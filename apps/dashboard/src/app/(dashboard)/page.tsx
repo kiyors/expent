@@ -217,8 +217,8 @@ function DashboardContent() {
     return <DashboardSkeleton />;
   }
 
-  const totalBalance = summary?.total_balance ? parseFloat(summary.total_balance as any) : 0;
-  const monthlySpend = summary?.monthly_spend ? parseFloat(summary.monthly_spend as any) : 0;
+  const totalBalance = summary?.total_balance ? parseFloat(summary.total_balance) : 0;
+  const monthlySpend = summary?.monthly_spend ? parseFloat(summary.monthly_spend) : 0;
 
   return (
     <>
@@ -261,7 +261,7 @@ function DashboardContent() {
                     ? {
                         label: "vs income",
                         value: `${(
-                          (parseFloat(summary.monthly_spend as any) / parseFloat(summary.monthly_income as any)) * 100
+                          (parseFloat(summary.monthly_spend) / parseFloat(summary.monthly_income)) * 100
                         ).toFixed(0)}%`,
                         inverse: true,
                       }
