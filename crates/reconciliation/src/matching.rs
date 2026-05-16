@@ -7,6 +7,7 @@ use sea_orm::{
     TransactionError, TransactionTrait,
 };
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn list_unmatched_rows(
     db: &DatabaseConnection,
     user_id: &str,
@@ -19,6 +20,7 @@ pub async fn list_unmatched_rows(
         .map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn get_row_matches(
     db: &DatabaseConnection,
     user_id: &str,
@@ -66,6 +68,7 @@ pub async fn get_row_matches(
     Ok(matches)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn confirm_match(
     db: &DatabaseConnection,
     _user_id: &str,
