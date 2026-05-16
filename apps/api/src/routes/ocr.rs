@@ -222,12 +222,7 @@ pub async fn bulk_confirm_ocr_jobs_handler(
             let res = state
                 .core
                 .ocr_manager
-                .confirm_job(
-                    Arc::new(state.core.clone()),
-                    &user_id,
-                    &job_id,
-                    None,
-                )
+                .confirm_job(Arc::new(state.core.clone()), &user_id, &job_id, None)
                 .await;
             (job_id, res)
         }
