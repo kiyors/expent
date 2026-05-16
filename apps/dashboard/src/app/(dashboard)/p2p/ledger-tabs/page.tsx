@@ -1,5 +1,6 @@
 "use client";
 
+import type { LedgerTab } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -47,7 +48,7 @@ export default function LedgerTabsPage() {
         title,
         description: description || null,
         target_amount: parseFloat(targetAmount),
-        tab_type: tabType,
+        tab_type: tabType as any,
         counterparty_id: contactId !== "none" ? contactId : null,
       },
       {
@@ -179,7 +180,7 @@ export default function LedgerTabsPage() {
   );
 }
 
-function LedgerTabCard({ tab }: { tab: any }) {
+function LedgerTabCard({ tab }: { tab: LedgerTab }) {
   const isLent = tab.tab_type === "LENT";
   const [isRepaymentOpen, setIsRepaymentOpen] = React.useState(false);
 
@@ -224,7 +225,7 @@ function LedgerTabCard({ tab }: { tab: any }) {
         <div className="flex justify-between items-end">
           <div>
             <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Target Amount</p>
-            <p className="text-xl font-bold font-mono">₹{parseFloat(tab.target_amount).toLocaleString()}</p>
+            <p className="text-xl font-bold font-mono">₹{parseFloat(tab.target_amount as any).toLocaleString()}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] text-muted-foreground italic">
@@ -243,8 +244,16 @@ function LedgerTabCard({ tab }: { tab: any }) {
   );
 }
 
-function RepaymentDialog({ tab, open, onOpenChange }: { tab: any; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [amount, setAmount] = React.useState(tab.target_amount);
+function RepaymentDialog({
+  tab,
+  open,
+  onOpenChange,
+}: {
+  tab: LedgerTab;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  const [amount, setAmount] = React.useState(tab.target_amount.toString());
   const [walletId, setWalletId] = React.useState("none");
 
   const { wallets } = useWallets();

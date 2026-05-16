@@ -88,6 +88,153 @@ where
     Ok(identifier.map(|ident| ident.contact_id))
 }
 
+pub async fn resolve_contacts_bulk<C>(
+    db: &C,
+    user_id: &str,
+    batch: Vec<ResolveParams>,
+) -> Result<Vec<ContactResolution>, AppError>
+where
+    C: ConnectionTrait,
+{
+    if batch.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    // 1. Fetch all user contacts once for fuzzy matching
+    let all_contacts = entities::contacts::Entity::find()
+        .inner_join(entities::contact_links::Entity)
+        .filter(entities::contact_links::Column::UserId.eq(user_id))
+        .all(db)
+        .await?;
+
+    // 2. Pre-fetch relevant identifiers for bulk lookups
+    let upi_ids: Vec<String> = batch.iter().filter_map(|p| p.upi_id.clone()).collect();
+    let upi_map: HashMap<String, String> = if upi_ids.is_empty() {
+        HashMap::new()
+    } else {
+        entities::contact_identifiers::Entity::find()
+            .filter(entities::contact_identifiers::Column::Type.eq("UPI"))
+            .filter(entities::contact_identifiers::Column::Value.is_in(upi_ids))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|i| (i.value, i.contact_id))
+            .collect()
+    };
+
+    let phones: Vec<String> = batch.iter().filter_map(|p| p.phone.clone()).collect();
+    let phone_map: HashMap<String, String> = if phones.is_empty() {
+        HashMap::new()
+    } else {
+        entities::contacts::Entity::find()
+            .filter(entities::contacts::Column::Phone.is_in(phones))
+            .inner_join(entities::contact_links::Entity)
+            .filter(entities::contact_links::Column::UserId.eq(user_id))
+            .all(db)
+            .await?
+            .into_iter()
+            .filter_map(|c| c.phone.map(|p| (p, c.id)))
+            .collect()
+    };
+
+    let mut results = Vec::with_capacity(batch.len());
+
+    for params in batch {
+        let mut matches: HashMap<String, f64> = HashMap::new();
+
+        if let Some(upi_id) = &params.upi_id {
+            if let Some(id) = upi_map.get(upi_id) {
+                *matches.entry(id.clone()).or_insert(0.0) += 0.5;
+            }
+        }
+
+        if let Some(phone) = &params.phone {
+            if let Some(id) = phone_map.get(phone) {
+                *matches.entry(id.clone()).or_insert(0.0) += 0.3;
+            }
+        }
+
+        if let Some(name) = &params.name {
+            let normalized_input = normalize_name(name);
+            let phonetic_input = phonetic_encode(name);
+
+            for c in &all_contacts {
+                let mut match_score = 0.0;
+
+                let normalized_target = c.normalized_name.as_deref().map_or_else(
+                    || std::borrow::Cow::Owned(normalize_name(&c.name)),
+                    std::borrow::Cow::Borrowed,
+                );
+
+                let similarity = jaro_winkler(&normalized_input, &normalized_target);
+                if similarity > FUZZY_MATCH_THRESHOLD {
+                    match_score += FUZZY_MATCH_SCORE_INCREMENT * similarity;
+                }
+
+                let phonetic_target = c.phonetic_name.as_deref().map_or_else(
+                    || std::borrow::Cow::Owned(phonetic_encode(&c.name)),
+                    std::borrow::Cow::Borrowed,
+                );
+
+                if !phonetic_input.is_empty()
+                    && !phonetic_target.is_empty()
+                    && phonetic_input == *phonetic_target
+                {
+                    match_score += PHONETIC_MATCH_SCORE_INCREMENT;
+                }
+
+                if match_score > 0.0 {
+                    *matches.entry(c.id.clone()).or_insert(0.0) += match_score;
+                }
+            }
+        }
+
+        if matches.is_empty() {
+            results.push(ContactResolution::default());
+            continue;
+        }
+
+        let mut sorted_matches: Vec<(String, f64)> = matches.into_iter().collect();
+        sorted_matches.sort_by(|a, b| b.1.total_cmp(&a.1));
+
+        let (best_contact_id, best_score) = sorted_matches[0].clone();
+
+        if best_score < f64::from(MIN_CONFIDENCE_THRESHOLD) {
+            results.push(ContactResolution {
+                contact_id: None,
+                confidence_score: best_score as f32,
+                ..Default::default()
+            });
+            continue;
+        }
+
+        // Collision detection (simplified for bulk)
+        if sorted_matches.len() > 1 {
+            let second_score = sorted_matches[1].1;
+            if second_score > 0.25
+                && (best_score - second_score).abs() < COLLISION_SCORE_DIFFERENCE_THRESHOLD
+            {
+                results.push(ContactResolution {
+                    contact_id: None,
+                    confidence_score: best_score as f32,
+                    is_collision: true,
+                    // Note: collision_candidates omitted for performance in bulk
+                    ..Default::default()
+                });
+                continue;
+            }
+        }
+
+        results.push(ContactResolution {
+            contact_id: Some(best_contact_id),
+            confidence_score: best_score as f32,
+            ..Default::default()
+        });
+    }
+
+    Ok(results)
+}
+
 #[allow(clippy::too_many_lines)]
 /// Attempts to resolve a contact based on provided identifiers (UPI, Phone, Email) and name.
 ///

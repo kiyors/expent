@@ -177,26 +177,36 @@ pub async fn process_ocr(
 
                 let mut last_txn = None;
                 let mut total_processed = 0;
+                let mut local_contact_cache: HashMap<String, String> = HashMap::new();
+
+                // 1. Bulk Resolve existing contacts
+                let resolve_batch: Vec<::contacts::ops::ResolveParams> = bank_result
+                    .bank_data
+                    .transactions
+                    .iter()
+                    .map(|bt| ::contacts::ops::ResolveParams {
+                        name: bt.contact_name.clone(),
+                        phone: None,
+                        email: None,
+                        upi_id: bt.upi_id.clone(),
+                    })
+                    .collect();
+
+                let bulk_resolutions = contacts_manager
+                    .resolve_bulk(txn_db, &user_id, resolve_batch)
+                    .await?;
+                let mut bulk_iter = bulk_resolutions.into_iter();
 
                 for bt in bank_result.bank_data.transactions {
                     let mut current_contact_id = None;
+                    let resolution = bulk_iter.next().expect("bulk_iter size mismatch");
 
                     // Contact Resolution
                     if let Some(contact_name) = &bt.contact_name {
-                        let resolution = contacts_manager
-                            .resolve(
-                                txn_db,
-                                &user_id,
-                                ::contacts::ops::ResolveParams {
-                                    name: Some(contact_name.clone()),
-                                    phone: None,
-                                    email: None,
-                                    upi_id: bt.upi_id.clone(),
-                                },
-                            )
-                            .await?;
-
-                        if let Some(c_id) = resolution.contact_id {
+                        // Check local cache first (contacts created during this batch)
+                        if let Some(c_id) = local_contact_cache.get(contact_name) {
+                            current_contact_id = Some(c_id.clone());
+                        } else if let Some(c_id) = resolution.contact_id {
                             current_contact_id = Some(c_id);
                         } else {
                             // Create new contact
@@ -207,15 +217,17 @@ pub async fn process_ocr(
                                 None,
                             )
                             .await?;
-                            current_contact_id = Some(c_result.id.clone());
+                            let c_id = c_result.id.clone();
+                            current_contact_id = Some(c_id.clone());
                             contact_created = true;
+                            local_contact_cache.insert(contact_name.clone(), c_id.clone());
 
                             // Add UPI identifier if present
                             if let Some(upi) = &bt.upi_id {
                                 let _ = ::contacts::ops::add_contact_identifier(
                                     txn_db,
                                     &user_id,
-                                    &c_result.id,
+                                    &c_id,
                                     IdentifierType::Upi,
                                     upi.clone(),
                                 )

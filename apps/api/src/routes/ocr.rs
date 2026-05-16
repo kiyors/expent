@@ -215,7 +215,8 @@ pub async fn bulk_confirm_ocr_jobs_handler(
     let mut succeeded = Vec::new();
     let mut failed = Vec::new();
 
-    let futures = payload.job_ids.into_iter().map(|job_id| {
+    use futures::StreamExt;
+    let stream = futures::stream::iter(payload.job_ids).map(|job_id| {
         let state = state.clone();
         let user_id = session.user.id.clone();
         async move {
@@ -228,7 +229,9 @@ pub async fn bulk_confirm_ocr_jobs_handler(
         }
     });
 
-    for (job_id, result) in futures::future::join_all(futures).await {
+    let mut results = stream.buffer_unordered(5);
+
+    while let Some((job_id, result)) = results.next().await {
         match result {
             Ok(_) => succeeded.push(job_id),
             Err(e) => failed.push((job_id, e.to_string())),

@@ -47,7 +47,14 @@ pub async fn upload_statement_batch(
         Option<Decimal>,
     )> = existing_rows
         .into_iter()
-        .map(|r| (r.date, r.description, r.debit, r.credit))
+        .map(|r| {
+            (
+                r.date,
+                r.description.trim().to_lowercase(),
+                r.debit,
+                r.credit,
+            )
+        })
         .collect();
 
     let mut to_insert = Vec::new();
@@ -59,7 +66,12 @@ pub async fn upload_statement_batch(
             (None, Some(row.amount))
         };
 
-        if existing_set.contains(&(row.date, row.description.clone(), debit, credit)) {
+        if existing_set.contains(&(
+            row.date,
+            row.description.trim().to_lowercase(),
+            debit,
+            credit,
+        )) {
             tracing::info!("⏭️ Skipping duplicate statement row: {}", row.description);
             continue;
         }

@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@expent/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@expent/ui/components/avatar";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
@@ -12,7 +13,7 @@ import { CheckIcon, Loader2Icon, UploadIcon, UserIcon } from "lucide-react";
 import * as React from "react";
 import { api } from "@/lib/api-client";
 
-export function ProfilePanel({ user }: { user: any }) {
+export function ProfilePanel({ user }: { user: User }) {
   const queryClient = useQueryClient();
   const [name, setName] = React.useState(user?.name || "");
   const [username, setUsername] = React.useState(user?.username || "");
@@ -79,7 +80,7 @@ export function ProfilePanel({ user }: { user: any }) {
         <div className="flex flex-col sm:flex-row items-center gap-6 pb-2">
           <div className="relative group">
             <Avatar className="size-24 border-2 border-muted">
-              <AvatarImage src={user?.image} />
+              <AvatarImage src={user?.image ?? undefined} />
               <AvatarFallback className="bg-primary/5 text-primary text-2xl">
                 {user?.name?.charAt(0) || user?.email?.charAt(0)}
               </AvatarFallback>
@@ -104,7 +105,7 @@ export function ProfilePanel({ user }: { user: any }) {
             <h3 className="font-bold text-lg">{user?.name || "Member"}</h3>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
             <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-              {user?.emailVerified ? (
+              {user?.email_verified ? (
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 px-2">
                   <CheckIcon className="h-3 w-3" /> Verified
                 </Badge>

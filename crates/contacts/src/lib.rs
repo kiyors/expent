@@ -91,4 +91,16 @@ impl ContactsManager {
     {
         ops::resolve_contact(conn, user_id, params).await
     }
+
+    pub async fn resolve_bulk<C>(
+        &self,
+        conn: &C,
+        user_id: &str,
+        batch: Vec<ops::ResolveParams>,
+    ) -> Result<Vec<ops::ContactResolution>, AppError>
+    where
+        C: ConnectionTrait,
+    {
+        ops::resolve_contacts_bulk(conn, user_id, batch).await
+    }
 }
