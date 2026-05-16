@@ -1,17 +1,17 @@
 "use client";
 
-import { useBudgets } from "@/hooks/use-budgets";
+import { Button } from "@expent/ui/components/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
 import { cn } from "@expent/ui/lib/utils";
 import { TargetIcon } from "lucide-react";
-import { Button } from "@expent/ui/components/button";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { useBudgets } from "@/hooks/use-budgets";
 
 export function BudgetHealthWidget() {
   const { health, isLoading } = useBudgets();
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
 
   if (isLoading) {
     return (

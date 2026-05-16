@@ -5,6 +5,7 @@ import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { Progress } from "@expent/ui/components/progress";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -13,14 +14,11 @@ import {
   FileTextIcon,
   HistoryIcon,
   UploadIcon,
-  XIcon,
 } from "lucide-react";
 import * as React from "react";
-
-import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
-import { useOcrUpload } from "@/hooks/use-ocr";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
-import { useQueryClient } from "@tanstack/react-query";
+import { useOcrUpload } from "@/hooks/use-ocr";
+import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
 import { api } from "@/lib/api-client";
 
 export default function ReconciliationPage() {
@@ -51,7 +49,7 @@ export default function ReconciliationPage() {
     }
   };
 
-  const showResults = unmatchedRows && unmatchedRows.length > 0;
+  const _showResults = unmatchedRows && unmatchedRows.length > 0;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">

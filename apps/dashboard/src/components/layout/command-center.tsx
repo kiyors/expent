@@ -10,15 +10,12 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@expent/ui/components/command";
-import { toast } from "@expent/ui/components/goey-toaster";
 import { cn } from "@expent/ui/lib/utils";
 import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
   BellIcon,
-  CalculatorIcon,
-  CalendarIcon,
   CameraIcon,
   CornerDownLeftIcon,
   LayoutDashboardIcon,
@@ -30,7 +27,6 @@ import {
   SettingsIcon,
   TagIcon,
   UserIcon,
-  UserPlusIcon,
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
@@ -38,7 +34,6 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { useContacts } from "@/hooks/use-contacts";
-import { useTransactions } from "@/hooks/use-transactions";
 import { useWallets } from "@/hooks/use-wallets";
 
 import { useGlobalStore } from "@/lib/store";
@@ -48,7 +43,7 @@ export function CommandCenter() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { setTransactionModalOpen, setOCRModalOpen, setCategoryModalOpen, setHotkeyHelpOpen } = useGlobalStore();
-  const [isTransitionPending, startTransition] = React.useTransition();
+  const [_isTransitionPending, startTransition] = React.useTransition();
 
   // Custom Double-Space Trigger
   React.useEffect(() => {
@@ -78,7 +73,7 @@ export function CommandCenter() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open]);
+  }, []);
 
   // Fetch data for quick search
   const { contacts } = useContacts();
@@ -91,22 +86,22 @@ export function CommandCenter() {
   });
 
   // Global Quick Shortcuts
-  useHotkey("N", (e) => {
+  useHotkey("N", (_e) => {
     if (open) return;
     setTransactionModalOpen(true);
   });
 
-  useHotkey("U", (e) => {
+  useHotkey("U", (_e) => {
     if (open) return;
     setOCRModalOpen(true);
   });
 
-  useHotkey("C", (e) => {
+  useHotkey("C", (_e) => {
     if (open) return;
     setCategoryModalOpen(true);
   });
 
-  useHotkey({ key: "?" }, (e) => {
+  useHotkey({ key: "?" }, (_e) => {
     if (open) return;
     setHotkeyHelpOpen(true);
   });

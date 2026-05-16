@@ -34,7 +34,7 @@ import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
 
 export default function ContactsPage() {
   const router = useRouter();
-  const [startTransition] = React.useTransition();
+  const [_isPending, startTransition] = React.useTransition();
   const [searchQuery, setSearchSearchQuery] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [newName, setNewName] = React.useState("");
@@ -166,7 +166,12 @@ export default function ContactsPage() {
                   <ContactCard
                     key={contact.id}
                     contact={contact}
-                    onPin={() => updateMutation.mutate({ id: contact.id, data: { is_pinned: false } })}
+                    onPin={() =>
+                      updateMutation.mutate({
+                        id: contact.id,
+                        data: { is_pinned: false },
+                      })
+                    }
                     onClick={() => handleContactClick(contact.id)}
                   />
                 ))}
@@ -183,7 +188,12 @@ export default function ContactsPage() {
                 <ContactCard
                   key={contact.id}
                   contact={contact}
-                  onPin={() => updateMutation.mutate({ id: contact.id, data: { is_pinned: true } })}
+                  onPin={() =>
+                    updateMutation.mutate({
+                      id: contact.id,
+                      data: { is_pinned: true },
+                    })
+                  }
                   onClick={() => handleContactClick(contact.id)}
                 />
               ))}
@@ -245,9 +255,10 @@ function MergeSuggestionsBanner({
   mergeMutation: UseMutationResult<Contact, Error, { primary_id: string; secondary_id: string }, unknown>;
 }) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [selectedSuggestion, setSelectedSuggestion] = React.useState<{ contacts: Contact[]; reason: string } | null>(
-    null,
-  );
+  const [selectedSuggestion, setSelectedSuggestion] = React.useState<{
+    contacts: Contact[];
+    reason: string;
+  } | null>(null);
   const [primaryId, setPrimaryId] = React.useState<string | null>(null);
   const [showAll, setShowAll] = React.useState(false);
 

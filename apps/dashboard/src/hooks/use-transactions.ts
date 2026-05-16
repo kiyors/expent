@@ -1,7 +1,7 @@
-import type { PaginatedTransactions, Transaction, TransactionWithDetail, DashboardSummary } from "@expent/types";
+import type { DashboardSummary, Transaction, TransactionWithDetail } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLiveQuery } from "@tanstack/react-db";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";

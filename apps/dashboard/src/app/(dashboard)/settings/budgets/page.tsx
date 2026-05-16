@@ -2,13 +2,13 @@
 
 import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
-import { Separator } from "@expent/ui/components/separator";
-import { PlusIcon, Trash2Icon, TargetIcon } from "lucide-react";
-import * as React from "react";
-import { useBudgets } from "@/hooks/use-budgets";
-import { CreateBudgetDialog } from "@/components/budgets/create-budget-dialog";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
+import { Separator } from "@expent/ui/components/separator";
 import { cn } from "@expent/ui/lib/utils";
+import { PlusIcon, TargetIcon, Trash2Icon } from "lucide-react";
+import * as React from "react";
+import { CreateBudgetDialog } from "@/components/budgets/create-budget-dialog";
+import { useBudgets } from "@/hooks/use-budgets";
 
 export default function SettingsBudgetsPage() {
   const { health, isLoading, deleteMutation } = useBudgets();

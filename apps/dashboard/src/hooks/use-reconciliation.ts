@@ -1,6 +1,6 @@
+import type { BankStatementRow, Transaction } from "@expent/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import type { BankStatementRow, Transaction } from "@expent/types";
 
 export interface RowMatch {
   row: BankStatementRow;

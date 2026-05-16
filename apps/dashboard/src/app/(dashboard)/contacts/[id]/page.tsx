@@ -44,7 +44,7 @@ export default function ContactDetailPage() {
 
   const { contactData, isLoading, addIdentifierMutation } = useContactDetail(id);
   const { deleteMutation } = useContacts();
-  const [startTransition] = React.useTransition();
+  const [_isPending, startTransition] = React.useTransition();
 
   if (isLoading) {
     return <div className="p-8 text-center">Loading contact details…</div>;
@@ -57,14 +57,23 @@ export default function ContactDetailPage() {
   const { contact, identifiers, transactions } = contactData;
 
   const txnColumns = [
-    { key: "date", label: "Date", format: { kind: "date", dateFormat: "short" } },
+    {
+      key: "date",
+      label: "Date",
+      format: { kind: "date", dateFormat: "short" },
+    },
     { key: "purpose_tag", label: "Description" },
     {
       key: "direction",
       label: "Direction",
       format: { kind: "badge", colorMap: { IN: "success", OUT: "danger" } },
     },
-    { key: "amount", label: "Amount", format: { kind: "currency", currency: "INR" }, align: "right" },
+    {
+      key: "amount",
+      label: "Amount",
+      format: { kind: "currency", currency: "INR" },
+      align: "right",
+    },
   ] as Column<Transaction>[];
 
   return (

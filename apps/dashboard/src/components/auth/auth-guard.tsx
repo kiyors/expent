@@ -7,7 +7,7 @@ import { useSession } from "@/lib/auth-client";
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const session = useSession();
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (!session.isPending && !session.data) {

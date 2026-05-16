@@ -40,7 +40,7 @@ export function CreateBudgetDialog({ open, onOpenChange }: CreateBudgetDialogPro
   }, [open]);
 
   const handleSubmit = () => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
       toast.error("Please enter a valid amount");
       return;
     }

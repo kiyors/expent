@@ -1,9 +1,9 @@
 "use client";
 
-import { useGlobalStore } from "@/lib/store";
-import { ManualTransactionDialog } from "@/components/transactions/manual-transaction-dialog";
-import { GlobalOCRDialog } from "@/components/transactions/global-ocr-dialog";
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
+import { GlobalOCRDialog } from "@/components/transactions/global-ocr-dialog";
+import { ManualTransactionDialog } from "@/components/transactions/manual-transaction-dialog";
+import { useGlobalStore } from "@/lib/store";
 
 export function GlobalModals() {
   const {

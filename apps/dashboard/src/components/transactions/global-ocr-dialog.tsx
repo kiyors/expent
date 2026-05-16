@@ -1,17 +1,16 @@
 "use client";
 
-import * as React from "react";
+import type { TypedProcessedOcr } from "@expent/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@expent/ui/components/dialog";
-import { Button } from "@expent/ui/components/button";
-import { Input } from "@expent/ui/components/input";
 import { toast } from "@expent/ui/components/goey-toaster";
-import { CameraIcon, FileUpIcon, Loader2Icon, SparklesIcon } from "lucide-react";
+import { Input } from "@expent/ui/components/input";
 import { useQueryClient } from "@tanstack/react-query";
+import { CameraIcon, Loader2Icon, SparklesIcon } from "lucide-react";
+import * as React from "react";
+import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
 import { useOcrUpload } from "@/hooks/use-ocr";
 import { api } from "@/lib/api-client";
-import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
 import { ReviewTransactionForm } from "./review-transaction-form";
-import type { TypedProcessedOcr } from "@expent/types";
 
 export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { isUploading, uploadSteps, processedOcr, uploadFile, setProcessedOcr, reset } = useOcrUpload();
@@ -31,7 +30,7 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
       toast.success("Transaction saved!");
       onOpenChange(false);
       reset();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to save transaction");
     } finally {
       setIsSaving(false);

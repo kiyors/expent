@@ -37,7 +37,7 @@ export function useContacts() {
 
       return { previousContacts };
     },
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       queryClient.setQueryData(["contacts"], context?.previousContacts);
       toast.error(err.message);
     },

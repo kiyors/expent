@@ -21,7 +21,7 @@ export function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const [isTransitionPending, startTransition] = useTransition();
+  const [_isTransitionPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (!isSessionPending && session) {

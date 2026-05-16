@@ -13,13 +13,13 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, TagIcon, UserIcon, WalletIcon, InfoIcon } from "lucide-react";
+import { InfoIcon, PlusIcon, TagIcon, WalletIcon } from "lucide-react";
+import { motion } from "motion/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion, AnimatePresence } from "motion/react";
 import { CreateCategoryDialog, ICON_MAP } from "@/components/categories/create-category-dialog";
 import { CreateContactDialog } from "@/components/contacts/create-contact-dialog";
 import { CreateWalletDialog } from "@/components/wallets/create-wallet-dialog";
@@ -33,7 +33,7 @@ const getCategoryIcon = (iconName: string | null | undefined) => {
   return ICON_MAP[iconName as keyof typeof ICON_MAP] || TagIcon;
 };
 
-const getCategoryColor = (colorHex: string | null | undefined) => {
+const _getCategoryColor = (colorHex: string | null | undefined) => {
   return colorHex || "#64748b";
 };
 

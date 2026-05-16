@@ -1,5 +1,6 @@
 "use client";
 
+import type { TransactionWithDetail, Wallet } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
@@ -42,7 +43,6 @@ import {
   WalletIcon,
 } from "lucide-react";
 import * as React from "react";
-import type { Wallet, TransactionWithDetail } from "@expent/types";
 import { useTransactions } from "@/hooks/use-transactions";
 import { useWallets } from "@/hooks/use-wallets";
 

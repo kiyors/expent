@@ -1,8 +1,8 @@
 "use client";
 
 import { Toaster } from "@expent/ui/components/goey-toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HotkeysProvider } from "@tanstack/react-hotkeys";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "motion/react";
 import { useTheme } from "next-themes";
 import { useState } from "react";

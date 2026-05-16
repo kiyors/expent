@@ -12,7 +12,6 @@ import {
 } from "@expent/ui/components/dropdown-menu";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@expent/ui/components/tabs";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -74,7 +73,7 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const [startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
 
   const activeTab = searchParams.get("tab") || "overview";
 
@@ -104,7 +103,10 @@ function DashboardContent() {
   const [file, setFile] = useState<File | null>(null);
   const [isSavingOcr, setIsSavingOcr] = useState(false);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
-  const [selectedTxn, setSelectedTxn] = useState<{ id: string; amount: string } | null>(null);
+  const [selectedTxn, setSelectedTxn] = useState<{
+    id: string;
+    amount: string;
+  } | null>(null);
 
   const triggerSplit = useCallback((id: string, amount: string) => {
     setSelectedTxn({ id, amount });
@@ -258,11 +260,9 @@ function DashboardContent() {
                   summary?.monthly_spend && summary?.monthly_income
                     ? {
                         label: "vs income",
-                        value:
-                          (
-                            (parseFloat(summary.monthly_spend as any) / parseFloat(summary.monthly_income as any)) *
-                            100
-                          ).toFixed(0) + "%",
+                        value: `${(
+                          (parseFloat(summary.monthly_spend as any) / parseFloat(summary.monthly_income as any)) * 100
+                        ).toFixed(0)}%`,
                         inverse: true,
                       }
                     : undefined
@@ -479,7 +479,11 @@ function StatsCard({
       <CardContent>
         <div className="text-2xl font-bold tracking-tight">
           {isCurrency && (value < 0 ? "-₹" : "₹")}
-          {isCurrency ? Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2 }) : value}
+          {isCurrency
+            ? Math.abs(value).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })
+            : value}
         </div>
         <div className="flex items-center justify-between mt-1">
           {description && <p className="text-xs text-muted-foreground">{description}</p>}

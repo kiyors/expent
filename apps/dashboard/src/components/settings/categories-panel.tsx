@@ -1,5 +1,6 @@
 "use client";
 
+import type { Category } from "@expent/types/db/Category";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";
 import { toast } from "@expent/ui/components/goey-toaster";
@@ -8,7 +9,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
 import { api } from "@/lib/api-client";
-import type { Category } from "@expent/types/db/Category";
 
 export function CategoriesPanel() {
   const queryClient = useQueryClient();

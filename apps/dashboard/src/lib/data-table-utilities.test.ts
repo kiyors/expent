@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  sortData,
-  getRowIdentifier,
   createDataTableRowKeys,
   getDataTableMobileDescriptionId,
+  getRowIdentifier,
   parseNumericLike,
+  sortData,
 } from "./data-table-utilities";
 
 describe("parseNumericLike", () => {
