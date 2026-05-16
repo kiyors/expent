@@ -17,7 +17,7 @@ impl std::fmt::Debug for CategoriesManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CategoriesManager")
             .field("db", &self.db)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -32,6 +32,7 @@ impl CategoriesManager {
         Self { db, list_cache }
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn create(
         &self,
         user_id: &str,
@@ -39,30 +40,33 @@ impl CategoriesManager {
         icon: Option<String>,
         color: Option<String>,
     ) -> Result<entities::categories::Model, AppError> {
-        let result = ops::create_category(&*self.db, user_id, name, icon, color).await?;
+        let result = ops::create_category(&self.db, user_id, name, icon, color).await?;
         self.list_cache.invalidate(user_id).await;
         Ok(result)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn list(&self, user_id: &str) -> Result<Vec<entities::categories::Model>, AppError> {
         if let Some(cached) = self.list_cache.get(user_id).await {
             return Ok(cached);
         }
 
-        let categories = ops::list_categories(&*self.db, user_id).await?;
+        let categories = ops::list_categories(&self.db, user_id).await?;
         self.list_cache
             .insert(user_id.to_string(), categories.clone())
             .await;
         Ok(categories)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn delete(&self, user_id: &str, category_id: &str) -> Result<(), AppError> {
-        ops::delete_category(&*self.db, user_id, category_id).await?;
+        ops::delete_category(&self.db, user_id, category_id).await?;
         self.list_cache.invalidate(user_id).await;
         Ok(())
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn ensure_system_categories(&self) -> Result<(), AppError> {
-        ops::ensure_system_categories(&*self.db).await
+        ops::ensure_system_categories(&self.db).await
     }
 }

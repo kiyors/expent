@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use db::entities::background_jobs;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use std::fmt;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
@@ -17,13 +18,13 @@ pub enum JobStatus {
     Failed,
 }
 
-impl ToString for JobStatus {
-    fn to_string(&self) -> String {
+impl fmt::Display for JobStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Queued => "QUEUED".to_string(),
-            Self::Running => "RUNNING".to_string(),
-            Self::Completed => "COMPLETED".to_string(),
-            Self::Failed => "FAILED".to_string(),
+            Self::Queued => write!(f, "QUEUED"),
+            Self::Running => write!(f, "RUNNING"),
+            Self::Completed => write!(f, "COMPLETED"),
+            Self::Failed => write!(f, "FAILED"),
         }
     }
 }
@@ -70,6 +71,7 @@ pub struct DbJobQueue {
 }
 
 impl DbJobQueue {
+    #[must_use]
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
     }
@@ -169,9 +171,6 @@ impl WorkerPool {
 
     async fn process_queued_jobs(&self) -> Result<()> {
         let now = Utc::now().naive_utc();
-
-        // Use a transaction and "SELECT ... FOR UPDATE SKIP LOCKED" logic if possible.
-        // For SeaORM, we'll fetch then try to mark as running.
 
         let queued_jobs = background_jobs::Entity::find()
             .filter(background_jobs::Column::Status.eq(JobStatus::Queued.to_string()))
@@ -299,4 +298,5 @@ impl WorkerPool {
     }
 }
 
+use futures::FutureExt;
 use futures::prelude::*;

@@ -2,6 +2,7 @@ use db::AppError;
 use db::entities;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn delete_category(
     db: &DatabaseConnection,
     user_id: &str,

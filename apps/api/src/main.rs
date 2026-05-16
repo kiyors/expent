@@ -14,8 +14,8 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+pub mod background_tasks;
 pub mod extractors;
-pub mod jobs;
 pub mod middleware;
 pub mod routes;
 
@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // Initialize and start Generic Background Worker Pool
     let mut worker_pool = ::jobs::WorkerPool::new(core.db.clone(), 10);
-    worker_pool.register_handler(jobs::BulkConfirmOcrJobHandler {
+    worker_pool.register_handler(background_tasks::BulkConfirmOcrJobHandler {
         core: Arc::new(core.clone()),
     });
     let worker_pool = Arc::new(worker_pool);

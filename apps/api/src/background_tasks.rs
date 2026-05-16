@@ -1,7 +1,7 @@
-use anyhow::Result;
-use async_trait::async_trait;
+use ::anyhow::Result;
+use ::async_trait::async_trait;
+use ::jobs::{JobArgs, JobHandler};
 use expent_core::Core;
-use jobs::{JobArgs, JobHandler};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -40,11 +40,13 @@ impl JobHandler<BulkConfirmOcrJobArgs> for BulkConfirmOcrJobHandler {
         while let Some((job_id, result)) = results.next().await {
             match result {
                 Ok(_) => tracing::info!("✅ Background bulk-confirm succeeded for job: {}", job_id),
-                Err(e) => tracing::error!(
-                    "❌ Background bulk-confirm failed for job {}: {}",
-                    job_id,
-                    e
-                ),
+                Err(e) => {
+                    tracing::error!(
+                        "❌ Background bulk-confirm failed for job {}: {}",
+                        job_id,
+                        e
+                    );
+                }
             }
         }
 

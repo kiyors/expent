@@ -19,7 +19,7 @@ impl std::fmt::Debug for WalletsManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("WalletsManager")
             .field("db", &self.db)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -34,6 +34,7 @@ impl WalletsManager {
         Self { db, resolve_cache }
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn create(
         &self,
         user_id: &str,
@@ -42,23 +43,26 @@ impl WalletsManager {
         initial_balance: Decimal,
     ) -> Result<entities::wallets::Model, AppError> {
         let result =
-            ops::create_wallet(&*self.db, user_id, name, wallet_type, initial_balance).await?;
+            ops::create_wallet(&self.db, user_id, name, wallet_type, initial_balance).await?;
         self.resolve_cache.invalidate_all(); // Simple invalidation for now
         Ok(result)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn list(&self, user_id: &str) -> Result<Vec<entities::wallets::Model>, AppError> {
-        ops::list_wallets(&*self.db, user_id).await
+        ops::list_wallets(&self.db, user_id).await
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn get(
         &self,
         user_id: &str,
         wallet_id: &str,
     ) -> Result<entities::wallets::Model, AppError> {
-        ops::get_wallet(&*self.db, user_id, wallet_id).await
+        ops::get_wallet(&self.db, user_id, wallet_id).await
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn update(
         &self,
         user_id: &str,
@@ -66,19 +70,21 @@ impl WalletsManager {
         name: Option<String>,
         balance: Option<Decimal>,
     ) -> Result<entities::wallets::Model, AppError> {
-        let result = ops::update_wallet(&*self.db, user_id, wallet_id, name, balance).await?;
+        let result = ops::update_wallet(&self.db, user_id, wallet_id, name, balance).await?;
         self.resolve_cache.invalidate_all();
         Ok(result)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn delete(&self, user_id: &str, wallet_id: &str) -> Result<u64, AppError> {
-        let res = ops::delete_wallet(&*self.db, user_id, wallet_id).await?;
+        let res = ops::delete_wallet(&self.db, user_id, wallet_id).await?;
         if res > 0 {
             self.resolve_cache.invalidate_all();
         }
         Ok(res)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn resolve<C>(
         &self,
         db: &C,
@@ -98,6 +104,7 @@ impl WalletsManager {
         Ok(wallet)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn adjust_balance<C>(
         &self,
         db: &C,

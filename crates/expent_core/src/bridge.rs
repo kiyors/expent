@@ -1,7 +1,6 @@
 use ::contacts::ContactsManager;
 use ::ocr::strategies::get_strategy;
 use ::wallets::WalletsManager;
-use chrono::{DateTime, Utc};
 use db::entities;
 use db::{AppError, OcrTransactionResponse, ProcessedOcr};
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, TransactionTrait};

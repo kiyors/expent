@@ -168,7 +168,9 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 name = "api"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-stream",
+ "async-trait",
  "axum",
  "chrono",
  "dashmap",
@@ -177,7 +179,10 @@ dependencies = [
  "expent_core",
  "futures",
  "governor 0.8.1",
+ "jobs",
  "mimalloc",
+ "ocr",
+ "reconciliation",
  "rust_decimal",
  "serde",
  "serde_json",

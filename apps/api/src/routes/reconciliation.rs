@@ -103,7 +103,7 @@ pub async fn upload_statement_handler(
     let inputs = payload
         .rows
         .into_iter()
-        .map(|row| reconciliation::statement::StatementRowInput {
+        .map(|row| ::reconciliation::statement::StatementRowInput {
             date: row.date,
             description: row.description,
             amount: row.amount,
