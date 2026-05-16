@@ -57,6 +57,11 @@ async fn test_core_init_happy_path(
         Arc::strong_count(&core_instance.ocr_manager.service) > 0,
         "OCR service should be initialized"
     );
+
+    assert!(
+        Arc::strong_count(&core_instance.ocr_manager) > 0,
+        "OCR manager should be initialized"
+    );
 }
 
 #[rstest]

@@ -1,9 +1,5 @@
 use std::time::Instant;
 
-// Mocking the functions since I might have trouble compiling with real ones
-// in a standalone script without proper setup, but I'll try to use the real ones
-// if I can run it via cargo.
-
 fn normalize_name(name: &str) -> String {
     // Simulated work
     name.to_lowercase()

@@ -1,8 +1,6 @@
-# BOLT: Performance Intelligence Journal
+# Bolt Performance Journal
 
-## 2026-05-11 - Optimized UPI Regex Compilation
-- **Architecture/Bottleneck:** The `add_user_upi` function inside `crates/users/src/ops/upi.rs` was compiling a `Regex` on every single invocation. This is highly inefficient in Rust, as `Regex::new` incurs significant initialization overhead, especially under heavy load.
-- **Optimization:** Refactored the codebase to use `std::sync::LazyLock` (now standard in Rust >=1.80) to evaluate and store the compiled regex exactly once. This eliminated repetitive parsing strings into automata graphs, directly improving the CPU footprint of the `add_user_upi` operation.
-## 2026-05-11 - Optimized UPI Regex Compilation
-- **Architecture/Bottleneck:** The `add_user_upi` function inside `crates/users/src/ops/upi.rs` was compiling a `Regex` on every single invocation. This is highly inefficient in Rust, as `Regex::new` incurs significant initialization overhead, especially under heavy load.
-- **Optimization:** Refactored the codebase to use `std::sync::LazyLock` (now standard in Rust >=1.80) to evaluate and store the compiled regex exactly once. This eliminated repetitive parsing strings into automata graphs, directly improving the CPU footprint of the `add_user_upi` operation.
+## ⚡ Reconciliation Upload Batching
+Identified an N+1 query bottleneck in `apps/api/src/routes/reconciliation.rs` where uploaded statement rows were iterated sequentially and inserted into the database individually. By implementing a bulk processing routine in `crates/reconciliation/src/statement.rs`, we retrieve duplicate checking rows within the batch bounds using a single read and write the new records using `insert_many`.
+
+This drops query load from 2n queries (duplicate check + insert) to exactly 2 queries per batch.

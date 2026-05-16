@@ -19,6 +19,7 @@ impl ReconciliationManager {
         Self { db }
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn list_unmatched_rows(
         &self,
         user_id: &str,
@@ -26,6 +27,7 @@ impl ReconciliationManager {
         matching::list_unmatched_rows(&*self.db, user_id).await
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn get_row_matches(
         &self,
         user_id: &str,
@@ -34,6 +36,7 @@ impl ReconciliationManager {
         matching::get_row_matches(&*self.db, user_id, row_id).await
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn confirm_match(
         &self,
         user_id: &str,
@@ -44,6 +47,7 @@ impl ReconciliationManager {
         matching::confirm_match(&*self.db, user_id, row_id, txn_id, confidence).await
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn upload_statement(
         &self,
         user_id: &str,
@@ -53,5 +57,14 @@ impl ReconciliationManager {
         raw_data: Option<serde_json::Value>,
     ) -> Result<entities::bank_statement_rows::Model, AppError> {
         statement::upload_statement(&*self.db, user_id, date, description, amount, raw_data).await
+    }
+
+    #[allow(clippy::missing_errors_doc)]
+    pub async fn upload_statement_batch(
+        &self,
+        user_id: &str,
+        rows: Vec<statement::StatementRowInput>,
+    ) -> Result<(), AppError> {
+        statement::upload_statement_batch(&*self.db, user_id, rows).await
     }
 }

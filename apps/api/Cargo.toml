@@ -4,9 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-anyhow.workspace             = true
 async-stream.workspace       = true
-async-trait.workspace        = true
 axum.workspace               = true
 chrono.workspace             = true
 dashmap.workspace            = true
@@ -15,28 +13,15 @@ dotenvy.workspace            = true
 expent_core.workspace        = true
 futures.workspace            = true
 governor.workspace           = true
-http.workspace               = true
 mimalloc.workspace           = true
-rand                         = "0.8"
-reqwest.workspace            = true
 rust_decimal.workspace       = true
 serde.workspace              = true
 serde_json.workspace         = true
-sqlx                         = { features = [ "sqlite" ], workspace = true }
 thiserror.workspace          = true
 tokio.workspace              = true
-tokio-stream.workspace       = true
 tower-http.workspace         = true
 tower_governor.workspace     = true
 tracing.workspace            = true
 tracing-subscriber.workspace = true
-
-urlencoding.workspace = true
 uuid.workspace        = true
 validator.workspace   = true
-
-[dev-dependencies]
-http-body-util = "0.1"
-rstest         = "0.26.1"
-tower          = { features = [ "util" ], version = "0.5" }
-tracing-test   = "0.2"

@@ -215,18 +215,21 @@ pub async fn bulk_confirm_ocr_jobs_handler(
     let mut succeeded = Vec::new();
     let mut failed = Vec::new();
 
-    for job_id in payload.job_ids {
-        match state
-            .core
-            .ocr_manager
-            .confirm_job(
-                Arc::new(state.core.clone()),
-                &session.user.id,
-                &job_id,
-                None,
-            )
-            .await
-        {
+    let futures = payload.job_ids.into_iter().map(|job_id| {
+        let state = state.clone();
+        let user_id = session.user.id.clone();
+        async move {
+            let res = state
+                .core
+                .ocr_manager
+                .confirm_job(Arc::new(state.core.clone()), &user_id, &job_id, None)
+                .await;
+            (job_id, res)
+        }
+    });
+
+    for (job_id, result) in futures::future::join_all(futures).await {
+        match result {
             Ok(_) => succeeded.push(job_id),
             Err(e) => failed.push((job_id, e.to_string())),
         }

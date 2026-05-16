@@ -42,20 +42,21 @@ import {
   WalletIcon,
 } from "lucide-react";
 import * as React from "react";
+import type { Wallet, TransactionWithDetail } from "@expent/types";
 import { useTransactions } from "@/hooks/use-transactions";
 import { useWallets } from "@/hooks/use-wallets";
 
 export default function WalletsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
-  const [newName, setNewName] = React.useState("");
-  const [newType, setNewType] = React.useState("CASH");
+  const [newName, setNewName] = React.useState<string>("");
+  const [newType, setNewType] = React.useState<string>("CASH");
   const [newBalance, setNewBalance] = React.useState("0");
 
   const { wallets, isLoading, createMutation, updateMutation, deleteMutation } = useWallets();
   const { transactions } = useTransactions({ limit: 1000 });
 
   const transactionsByWallet = React.useMemo(() => {
-    const map: Record<string, any[]> = {};
+    const map: Record<string, TransactionWithDetail[]> = {};
     if (!transactions) return map;
 
     for (const txn of transactions) {
@@ -127,7 +128,7 @@ export default function WalletsPage() {
                       <SelectItem value="CASH">Cash</SelectItem>
                       <SelectItem value="BANK">Bank Account</SelectItem>
                       <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
-                      <SelectItem value="UPI">UPI Wallet</SelectItem>
+                      <SelectItem value="UPI_WALLET">UPI Wallet</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -198,9 +199,9 @@ function WalletCard({
   onUpdate,
   onDelete,
 }: {
-  wallet: any;
-  walletTransactions: any[];
-  onUpdate: (data: any) => void;
+  wallet: Wallet;
+  walletTransactions: TransactionWithDetail[];
+  onUpdate: (data: Partial<Wallet>) => void;
   onDelete: () => void;
 }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
@@ -227,7 +228,7 @@ function WalletCard({
   }, [walletTransactions, wallet.id]);
 
   const handleEdit = () => {
-    onUpdate({ name: editName, balance: parseFloat(editBalance) });
+    onUpdate({ name: editName, balance: editBalance });
     setIsEditDialogOpen(false);
   };
 
@@ -241,7 +242,7 @@ function WalletCard({
         return <Building2Icon className="h-5 w-5" />;
       case "CREDIT_CARD":
         return <CreditCardIcon className="h-5 w-5" />;
-      case "UPI":
+      case "UPI_WALLET":
         return <SmartphoneIcon className="h-5 w-5" />;
       default:
         return <BanknoteIcon className="h-5 w-5" />;
@@ -298,7 +299,10 @@ function WalletCard({
           <div className="mt-2">
             <p className="text-xs text-muted-foreground uppercase font-medium">Current Balance</p>
             <p className="text-2xl font-bold font-mono tracking-tight">
-              ₹{parseFloat(wallet.balance).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {parseFloat(wallet.balance).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
             </p>
           </div>
 

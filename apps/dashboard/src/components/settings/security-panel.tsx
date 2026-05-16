@@ -9,13 +9,19 @@ import { FingerprintIcon, KeyIcon, LaptopIcon, PlusIcon, SmartphoneIcon, Trash2I
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 
+interface Passkey {
+  id: string;
+  name: string | null;
+  createdAt: string;
+}
+
 export function SecurityPanel() {
   const queryClient = useQueryClient();
   const session = useSession();
 
   const { data: passkeys } = useQuery({
     queryKey: ["passkeys"],
-    queryFn: () => api.get<any[]>("/api/auth/passkey/list"),
+    queryFn: () => api.get<Passkey[]>("/api/auth/passkey/list"),
     enabled: !!session.data,
   });
 

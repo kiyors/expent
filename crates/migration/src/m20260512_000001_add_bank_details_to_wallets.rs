@@ -11,6 +11,13 @@ impl MigrationTrait for Migration {
                 Table::alter()
                     .table(Wallets::Table)
                     .add_column(ColumnDef::new(Wallets::BankName).string().null())
+                    .to_owned(),
+            )
+            .await?;
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Wallets::Table)
                     .add_column(ColumnDef::new(Wallets::AccountNumber).string().null())
                     .to_owned(),
             )
@@ -23,6 +30,13 @@ impl MigrationTrait for Migration {
                 Table::alter()
                     .table(Wallets::Table)
                     .drop_column(Wallets::BankName)
+                    .to_owned(),
+            )
+            .await?;
+        manager
+            .alter_table(
+                Table::alter()
+                    .table(Wallets::Table)
                     .drop_column(Wallets::AccountNumber)
                     .to_owned(),
             )
