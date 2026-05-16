@@ -6294,9 +6294,15 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "db",
+ "lazy_static",
+ "once_cell",
  "regex",
+ "rstest",
  "sea-orm",
+ "serde",
+ "serde_json",
  "tokio",
+ "tracing",
  "uuid",
 ]
 

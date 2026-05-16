@@ -1,18 +1,25 @@
 [package]
 name              = "users"
-edition.workspace = true
 version.workspace = true
+edition.workspace = true
 
 [dependencies]
 db.workspace = true
-chrono.workspace     = true
-regex.workspace      = true
-sea-orm.workspace    = true
-uuid.workspace       = true
+
+chrono.workspace      = true
+lazy_static           = "1.5.0"
+once_cell             = "1.21.4"
+regex.workspace       = true
+sea-orm.workspace     = true
+serde.workspace       = true
+serde_json.workspace  = true
+tracing.workspace     = true
+uuid.workspace        = true
 
 [lints]
 workspace = true
 
 [dev-dependencies]
+rstest  = "0.26.1"
 sea-orm = { features = [ "mock" ], workspace = true }
 tokio   = { features = [ "full" ], workspace = true }
