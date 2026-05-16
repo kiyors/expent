@@ -29,13 +29,7 @@ import {
 } from "@expent/ui/components/dropdown-menu";
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@expent/ui/components/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import {
   BanknoteIcon,
   Building2Icon,
@@ -58,8 +52,7 @@ export default function WalletsPage() {
   const [newType, setNewType] = React.useState<string>("CASH");
   const [newBalance, setNewBalance] = React.useState("0");
 
-  const { wallets, isLoading, createMutation, updateMutation, deleteMutation } =
-    useWallets();
+  const { wallets, isLoading, createMutation, updateMutation, deleteMutation } = useWallets();
   const { transactions } = useTransactions({ limit: 1000 });
 
   const transactionsByWallet = React.useMemo(() => {
@@ -73,8 +66,7 @@ export default function WalletsPage() {
         map[txn.source_wallet_id].push(txn);
       }
       if (txn.destination_wallet_id) {
-        if (!map[txn.destination_wallet_id])
-          map[txn.destination_wallet_id] = [];
+        if (!map[txn.destination_wallet_id]) map[txn.destination_wallet_id] = [];
         map[txn.destination_wallet_id].push(txn);
       }
     }
@@ -103,12 +95,8 @@ export default function WalletsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Wallets & Accounts
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your payment methods and track balances.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Wallets & Accounts</h1>
+          <p className="text-muted-foreground text-sm">Manage your payment methods and track balances.</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger render={<Button />}>
@@ -117,9 +105,7 @@ export default function WalletsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create Wallet</DialogTitle>
-              <DialogDescription>
-                Add a new bank account, credit card, or cash wallet.
-              </DialogDescription>
+              <DialogDescription>Add a new bank account, credit card, or cash wallet.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
@@ -134,10 +120,7 @@ export default function WalletsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="type">Type</Label>
-                  <Select
-                    value={newType}
-                    onValueChange={(val) => setNewType(val || "CASH")}
-                  >
+                  <Select value={newType} onValueChange={(val) => setNewType(val || "CASH")}>
                     <SelectTrigger id="type">
                       <SelectValue />
                     </SelectTrigger>
@@ -162,16 +145,10 @@ export default function WalletsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsCreateDialogOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                onClick={handleCreate}
-                disabled={!newName || createMutation.isPending}
-              >
+              <Button onClick={handleCreate} disabled={!newName || createMutation.isPending}>
                 {createMutation.isPending ? "Creating…" : "Create Wallet"}
               </Button>
             </DialogFooter>
@@ -193,8 +170,7 @@ export default function WalletsPage() {
             </div>
             <h3 className="text-lg font-medium">No wallets found</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-              Add your first bank account or wallet to start tracking where your
-              money goes.
+              Add your first bank account or wallet to start tracking where your money goes.
             </p>
           </CardContent>
         </Card>
@@ -205,9 +181,7 @@ export default function WalletsPage() {
               key={wallet.id}
               wallet={wallet}
               walletTransactions={transactionsByWallet[wallet.id] || []}
-              onUpdate={(data) =>
-                updateMutation.mutate({ id: wallet.id, data })
-              }
+              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data })}
               onDelete={() => deleteMutation.mutate(wallet.id)}
             />
           ))}
@@ -232,17 +206,11 @@ function WalletCard({
 }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editName, setEditName] = React.useState(wallet.name);
-  const [editBalance, setEditBalance] = React.useState(
-    wallet.balance.toString(),
-  );
+  const [editBalance, setEditBalance] = React.useState(wallet.balance.toString());
 
   const lastStats = React.useMemo(() => {
-    const lastInTxn = walletTransactions.find(
-      (txn) => txn.destination_wallet_id === wallet.id,
-    );
-    const lastOutTxn = walletTransactions.find(
-      (txn) => txn.source_wallet_id === wallet.id,
-    );
+    const lastInTxn = walletTransactions.find((txn) => txn.destination_wallet_id === wallet.id);
+    const lastOutTxn = walletTransactions.find((txn) => txn.source_wallet_id === wallet.id);
 
     return {
       lastIn: lastInTxn ? parseFloat(lastInTxn.amount) : 0,
@@ -282,17 +250,11 @@ function WalletCard({
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      className="h-full"
-    >
+    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
       <Card className="overflow-hidden group hover:border-primary/50 transition-all shadow-sm h-full">
         <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              {typeIcon()}
-            </div>
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">{typeIcon()}</div>
             <div>
               <CardTitle className="text-base">{wallet.name}</CardTitle>
               <CardDescription className="text-[10px] uppercase font-semibold tracking-wider">
@@ -322,11 +284,7 @@ function WalletCard({
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() => {
-                    if (
-                      confirm(
-                        "Are you sure you want to delete this wallet? This will not delete transactions.",
-                      )
-                    ) {
+                    if (confirm("Are you sure you want to delete this wallet? This will not delete transactions.")) {
                       onDelete();
                     }
                   }}
@@ -339,9 +297,7 @@ function WalletCard({
         </CardHeader>
         <CardContent className="p-4 pt-0">
           <div className="mt-2">
-            <p className="text-xs text-muted-foreground uppercase font-medium">
-              Current Balance
-            </p>
+            <p className="text-xs text-muted-foreground uppercase font-medium">Current Balance</p>
             <p className="text-2xl font-bold font-mono tracking-tight">
               ₹
               {parseFloat(wallet.balance).toLocaleString("en-IN", {
@@ -352,9 +308,7 @@ function WalletCard({
 
           <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-4">
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                Last In
-              </p>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Last In</p>
               <p className="text-sm font-semibold text-green-600">
                 {lastStats.lastIn > 0
                   ? `+₹${lastStats.lastIn.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
@@ -362,9 +316,7 @@ function WalletCard({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                Last Out
-              </p>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Last Out</p>
               <p className="text-sm font-semibold text-red-600">
                 {lastStats.lastOut > 0
                   ? `-₹${lastStats.lastOut.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
@@ -383,18 +335,12 @@ function WalletCard({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Wallet</DialogTitle>
-              <DialogDescription>
-                Update wallet details or adjust balance manually.
-              </DialogDescription>
+              <DialogDescription>Update wallet details or adjust balance manually.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-name">Wallet Name</Label>
-                <Input
-                  id="edit-name"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                />
+                <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
@@ -419,10 +365,7 @@ function WalletCard({
               </div>
             </div>
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsEditDialogOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleEdit}>Save Changes</Button>
