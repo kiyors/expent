@@ -6,6 +6,8 @@ use std::sync::Arc;
 use tracing::info;
 
 pub mod ops;
+pub mod strategies;
+pub mod utils;
 pub mod worker;
 
 pub use ops::confirm::{confirm_ocr_job, resolve_contact_collision};

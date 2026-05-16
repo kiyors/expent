@@ -1,5 +1,4 @@
 use super::OcrExtractionStrategy;
-use crate::bridge::parse_bank_date;
 use ::contacts::ContactsManager;
 use ::wallets::WalletsManager;
 use async_trait::async_trait;
@@ -7,7 +6,7 @@ use chrono::Utc;
 use db::entities::enums::{IdentifierType, TransactionDirection, TransactionStatus, TxnPartyRole};
 use db::{AppError, BankExtractionResult, OcrTransactionResponse, ProcessedOcr};
 use rust_decimal::Decimal;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, DatabaseTransaction, Set};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, DatabaseTransaction, EntityTrait, Set};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -150,15 +149,19 @@ impl OcrExtractionStrategy for BankStatementStrategy {
 
             let amount = bt
                 .debit_amount
-                .or(bt.credit_amount)
+                .as_ref()
+                .or(bt.credit_amount.as_ref())
+                .and_then(|s| s.parse::<Decimal>().ok())
                 .unwrap_or(Decimal::ZERO);
+
             let direction = if bt.debit_amount.is_some() {
                 TransactionDirection::Out
             } else {
                 TransactionDirection::In
             };
 
-            let timestamp = parse_bank_date(&bt.transaction_date).unwrap_or_else(Utc::now);
+            let timestamp =
+                crate::utils::parse_bank_date(&bt.transaction_date).unwrap_or_else(Utc::now);
 
             let txn = db::entities::transactions::ActiveModel {
                 id: Set(uuid::Uuid::now_v7().to_string()),

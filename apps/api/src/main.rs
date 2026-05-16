@@ -94,12 +94,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // Initialize and start Generic Background Worker Pool
     let mut worker_pool = ::jobs::WorkerPool::new(core.db.clone(), 10);
-    worker_pool.register_handler(
-        "BULK_CONFIRM_OCR",
-        Arc::new(jobs::BulkConfirmOcrJobHandler {
-            core: Arc::new(core.clone()),
-        }),
-    );
+    worker_pool.register_handler(jobs::BulkConfirmOcrJobHandler {
+        core: Arc::new(core.clone()),
+    });
     let worker_pool = Arc::new(worker_pool);
     let worker_pool_clone = worker_pool.clone();
     tokio::spawn(async move {

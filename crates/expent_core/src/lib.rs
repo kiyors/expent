@@ -1,5 +1,4 @@
 pub mod bridge;
-pub mod ocr_strategies;
 
 pub use db::AppError;
 pub use db::GPayExtraction;

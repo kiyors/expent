@@ -1,11 +1,5 @@
 "use client";
-import type {
-  OcrJob,
-  OcrTransactionResponse,
-  Transaction,
-  TransactionWithDetail,
-  TypedProcessedOcr,
-} from "@expent/types";
+import type { OcrJob, OcrTransactionResponse, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -445,7 +439,9 @@ export default function TransactionsPage() {
                   const files = e.target.files;
                   if (files && files.length > 0) {
                     // Process them sequentially for now, or we could map them to a queue
-                    Array.from(files).forEach((file) => handleUpload(file));
+                    Array.from(files).forEach((file) => {
+                      handleUpload(file);
+                    });
                   }
                 }}
               />

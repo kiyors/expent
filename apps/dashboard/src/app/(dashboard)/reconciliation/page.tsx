@@ -1,6 +1,6 @@
 "use client";
 
-import type { BankStatementRow, Transaction, TypedProcessedOcr } from "@expent/types";
+import type { BankStatementRow, TypedProcessedOcr } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";

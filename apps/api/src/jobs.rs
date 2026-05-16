@@ -1,14 +1,18 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use expent_core::Core;
-use jobs::JobHandler;
+use jobs::{JobArgs, JobHandler};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Serialize, Deserialize)]
-pub struct BulkConfirmOcrJobPayload {
+pub struct BulkConfirmOcrJobArgs {
     pub user_id: String,
     pub job_ids: Vec<String>,
+}
+
+impl JobArgs for BulkConfirmOcrJobArgs {
+    const JOB_TYPE: &'static str = "BULK_CONFIRM_OCR";
 }
 
 pub struct BulkConfirmOcrJobHandler {
@@ -16,15 +20,12 @@ pub struct BulkConfirmOcrJobHandler {
 }
 
 #[async_trait]
-impl JobHandler for BulkConfirmOcrJobHandler {
-    async fn handle(&self, payload: serde_json::Value) -> Result<()> {
-        let payload: BulkConfirmOcrJobPayload = serde_json::from_value(payload)?;
-
-        // Use bounded concurrency (like we had in the API handler before)
+impl JobHandler<BulkConfirmOcrJobArgs> for BulkConfirmOcrJobHandler {
+    async fn handle(&self, args: BulkConfirmOcrJobArgs) -> Result<()> {
         use futures::StreamExt;
-        let stream = futures::stream::iter(payload.job_ids).map(|job_id| {
+        let stream = futures::stream::iter(args.job_ids).map(|job_id| {
             let core = self.core.clone();
-            let user_id = payload.user_id.clone();
+            let user_id = args.user_id.clone();
             async move {
                 let res = core
                     .ocr_manager

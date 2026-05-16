@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 use crate::middleware::error::ApiError;
 use crate::{AppState, AuthSession};
+use jobs::JobQueueExt;
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -216,11 +217,10 @@ pub async fn bulk_confirm_ocr_jobs_handler(
         .core
         .jobs
         .enqueue(
-            "BULK_CONFIRM_OCR",
-            serde_json::json!(crate::jobs::BulkConfirmOcrJobPayload {
+            crate::jobs::BulkConfirmOcrJobArgs {
                 user_id: session.user.id.clone(),
                 job_ids: payload.job_ids,
-            }),
+            },
             Some(session.user.id),
             None,
         )

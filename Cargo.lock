@@ -3769,10 +3769,13 @@ name = "ocr"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "chrono",
+ "contacts",
  "db",
  "rand 0.8.6",
  "reqwest",
+ "rust_decimal",
  "sea-orm",
  "serde",
  "serde_json",
@@ -3780,6 +3783,7 @@ dependencies = [
  "tracing",
  "upload",
  "uuid",
+ "wallets",
 ]
 
 [[package]]

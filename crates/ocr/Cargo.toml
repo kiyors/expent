@@ -6,11 +6,15 @@ edition.workspace = true
 [dependencies]
 db.workspace     = true
 upload.workspace = true
+contacts.workspace = true
+wallets.workspace = true
 
 anyhow.workspace     = true
+async-trait.workspace = true
 chrono.workspace     = true
 rand.workspace       = true
 reqwest.workspace    = true
+rust_decimal.workspace = true
 sea-orm.workspace    = true
 serde.workspace      = true
 serde_json.workspace = true

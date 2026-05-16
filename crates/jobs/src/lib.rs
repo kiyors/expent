@@ -1,15 +1,15 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use db::entities::background_jobs;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum JobStatus {
     Queued,
     Running,
@@ -28,21 +28,42 @@ impl ToString for JobStatus {
     }
 }
 
+pub trait JobArgs: Serialize + DeserializeOwned + Send + Sync + 'static {
+    const JOB_TYPE: &'static str;
+}
+
 #[async_trait]
-pub trait JobHandler: Send + Sync {
-    async fn handle(&self, payload: serde_json::Value) -> Result<()>;
+pub trait JobHandler<Args: JobArgs>: Send + Sync + 'static {
+    async fn handle(&self, args: Args) -> Result<()>;
 }
 
 #[async_trait]
 pub trait JobQueue: Send + Sync {
-    async fn enqueue(
+    async fn enqueue_erased(
         &self,
-        job_type: &str,
+        job_type: String,
         payload: serde_json::Value,
         user_id: Option<String>,
-        run_at: Option<chrono::DateTime<Utc>>,
+        run_at: Option<DateTime<Utc>>,
     ) -> Result<String>;
 }
+
+#[async_trait]
+pub trait JobQueueExt: JobQueue {
+    async fn enqueue<Args: JobArgs>(
+        &self,
+        args: Args,
+        user_id: Option<String>,
+        run_at: Option<DateTime<Utc>>,
+    ) -> Result<String> {
+        let job_type = Args::JOB_TYPE.to_string();
+        let payload = serde_json::to_value(args)?;
+        self.enqueue_erased(job_type, payload, user_id, run_at)
+            .await
+    }
+}
+
+impl<T: JobQueue + ?Sized> JobQueueExt for T {}
 
 pub struct DbJobQueue {
     db: Arc<DatabaseConnection>,
@@ -56,12 +77,12 @@ impl DbJobQueue {
 
 #[async_trait]
 impl JobQueue for DbJobQueue {
-    async fn enqueue(
+    async fn enqueue_erased(
         &self,
-        job_type: &str,
+        job_type: String,
         payload: serde_json::Value,
         user_id: Option<String>,
-        run_at: Option<chrono::DateTime<Utc>>,
+        run_at: Option<DateTime<Utc>>,
     ) -> Result<String> {
         let id = Uuid::now_v7().to_string();
         let now = Utc::now();
@@ -69,7 +90,7 @@ impl JobQueue for DbJobQueue {
 
         let active_model = background_jobs::ActiveModel {
             id: Set(id.clone()),
-            job_type: Set(job_type.to_string()),
+            job_type: Set(job_type),
             payload: Set(payload),
             status: Set(JobStatus::Queued.to_string()),
             attempts: Set(0),
@@ -85,9 +106,31 @@ impl JobQueue for DbJobQueue {
     }
 }
 
+#[async_trait]
+trait ErasedJobHandler: Send + Sync {
+    async fn handle(&self, payload: serde_json::Value) -> Result<()>;
+}
+
+struct JobHandlerWrapper<Args, H> {
+    _phantom: std::marker::PhantomData<Args>,
+    handler: H,
+}
+
+#[async_trait]
+impl<Args, H> ErasedJobHandler for JobHandlerWrapper<Args, H>
+where
+    Args: JobArgs,
+    H: JobHandler<Args>,
+{
+    async fn handle(&self, payload: serde_json::Value) -> Result<()> {
+        let args: Args = serde_json::from_value(payload)?;
+        self.handler.handle(args).await
+    }
+}
+
 pub struct WorkerPool {
     db: Arc<DatabaseConnection>,
-    handlers: std::collections::HashMap<String, Arc<dyn JobHandler>>,
+    handlers: std::collections::HashMap<String, Arc<dyn ErasedJobHandler>>,
     semaphore: Arc<Semaphore>,
 }
 
@@ -100,8 +143,18 @@ impl WorkerPool {
         }
     }
 
-    pub fn register_handler(&mut self, job_type: &str, handler: Arc<dyn JobHandler>) {
-        self.handlers.insert(job_type.to_string(), handler);
+    pub fn register_handler<Args, H>(&mut self, handler: H)
+    where
+        Args: JobArgs,
+        H: JobHandler<Args>,
+    {
+        self.handlers.insert(
+            Args::JOB_TYPE.to_string(),
+            Arc::new(JobHandlerWrapper {
+                _phantom: std::marker::PhantomData,
+                handler,
+            }),
+        );
     }
 
     pub async fn run(&self) {
@@ -116,6 +169,10 @@ impl WorkerPool {
 
     async fn process_queued_jobs(&self) -> Result<()> {
         let now = Utc::now().naive_utc();
+
+        // Use a transaction and "SELECT ... FOR UPDATE SKIP LOCKED" logic if possible.
+        // For SeaORM, we'll fetch then try to mark as running.
+
         let queued_jobs = background_jobs::Entity::find()
             .filter(background_jobs::Column::Status.eq(JobStatus::Queued.to_string()))
             .filter(background_jobs::Column::RunAt.lte(now))
@@ -133,7 +190,7 @@ impl WorkerPool {
 
             let permit = match self.semaphore.clone().try_acquire_owned() {
                 Ok(p) => p,
-                Err(_) => break, // No more concurrency capacity for now
+                Err(_) => break, // No more capacity
             };
 
             let db = self.db.clone();
@@ -142,8 +199,26 @@ impl WorkerPool {
 
             tokio::spawn(async move {
                 let _permit = permit;
-                if let Err(e) = Self::execute_job(db, job_id, payload, handler).await {
-                    tracing::error!("❌ Job execution failed: {}", e);
+
+                // Panic recovery
+                let result = std::panic::AssertUnwindSafe(Self::execute_job(
+                    db.clone(),
+                    job_id.clone(),
+                    payload,
+                    handler,
+                ))
+                .catch_unwind()
+                .await;
+
+                match result {
+                    Ok(Ok(_)) => {}
+                    Ok(Err(e)) => {
+                        tracing::error!("❌ Job {} failed: {}", job_id, e);
+                    }
+                    Err(_) => {
+                        tracing::error!("🔥 Job {} panicked!", job_id);
+                        let _ = Self::mark_failed(db, job_id, "Panic occurred".to_string()).await;
+                    }
                 }
             });
         }
@@ -155,7 +230,7 @@ impl WorkerPool {
         db: Arc<DatabaseConnection>,
         job_id: String,
         payload: serde_json::Value,
-        handler: Arc<dyn JobHandler>,
+        handler: Arc<dyn ErasedJobHandler>,
     ) -> Result<()> {
         // 1. Mark as Running
         let active_model = background_jobs::ActiveModel {
@@ -177,32 +252,51 @@ impl WorkerPool {
                 active_model.update(db.as_ref()).await?;
             }
             Err(e) => {
-                tracing::error!("❌ Job {} failed: {}", job_id, e);
-
-                // Get current job to check attempts
-                let job = background_jobs::Entity::find_by_id(job_id.clone())
-                    .one(db.as_ref())
-                    .await?
-                    .ok_or_else(|| anyhow::anyhow!("Job not found"))?;
-
-                let next_attempts = job.attempts + 1;
-                let status = if next_attempts >= job.max_attempts {
-                    JobStatus::Failed
-                } else {
-                    JobStatus::Queued
-                };
-
-                let active_model = background_jobs::ActiveModel {
-                    id: Set(job_id),
-                    status: Set(status.to_string()),
-                    attempts: Set(next_attempts),
-                    error: Set(Some(e.to_string())),
-                    ..Default::default()
-                };
-                active_model.update(db.as_ref()).await?;
+                Self::handle_job_error(db, job_id, e).await?;
             }
         }
 
         Ok(())
     }
+
+    async fn handle_job_error(
+        db: Arc<DatabaseConnection>,
+        job_id: String,
+        error: anyhow::Error,
+    ) -> Result<()> {
+        let job = background_jobs::Entity::find_by_id(job_id.clone())
+            .one(db.as_ref())
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("Job not found"))?;
+
+        let next_attempts = job.attempts + 1;
+        let status = if next_attempts >= job.max_attempts {
+            JobStatus::Failed
+        } else {
+            JobStatus::Queued
+        };
+
+        let active_model = background_jobs::ActiveModel {
+            id: Set(job_id),
+            status: Set(status.to_string()),
+            attempts: Set(next_attempts),
+            error: Set(Some(error.to_string())),
+            ..Default::default()
+        };
+        active_model.update(db.as_ref()).await?;
+        Ok(())
+    }
+
+    async fn mark_failed(db: Arc<DatabaseConnection>, job_id: String, error: String) -> Result<()> {
+        let active_model = background_jobs::ActiveModel {
+            id: Set(job_id),
+            status: Set(JobStatus::Failed.to_string()),
+            error: Set(Some(error)),
+            ..Default::default()
+        };
+        active_model.update(db.as_ref()).await?;
+        Ok(())
+    }
 }
+
+use futures::FutureExt;
