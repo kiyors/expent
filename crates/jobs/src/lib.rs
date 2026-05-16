@@ -299,4 +299,4 @@ impl WorkerPool {
     }
 }
 
-use futures::FutureExt;
+use futures::prelude::*;

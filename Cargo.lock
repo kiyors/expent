@@ -3239,6 +3239,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "db",
+ "futures",
  "sea-orm",
  "serde",
  "serde_json",
