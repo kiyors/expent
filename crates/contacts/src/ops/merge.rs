@@ -41,7 +41,7 @@ pub async fn merge_contacts(
     entities::txn_parties::Entity::update_many()
         .col_expr(
             entities::txn_parties::Column::ContactId,
-            Expr::value(primary_id_owned.clone()),
+            Expr::value(&primary_id_owned),
         )
         .filter(entities::txn_parties::Column::ContactId.eq(secondary_id))
         .exec(&txn)
@@ -92,7 +92,7 @@ pub async fn merge_contacts(
             .filter(entities::contact_identifiers::Column::Id.is_in(to_move))
             .col_expr(
                 entities::contact_identifiers::Column::ContactId,
-                Expr::value(primary_id_owned.clone()),
+                Expr::value(&primary_id_owned),
             )
             .exec(&txn)
             .await?;
@@ -100,13 +100,13 @@ pub async fn merge_contacts(
 
     // 3. Move the phone number if primary doesn't have one and secondary does
     let mut primary_contact: entities::contacts::ActiveModel =
-        entities::contacts::Entity::find_by_id(primary_id_owned.clone())
+        entities::contacts::Entity::find_by_id(&primary_id_owned)
             .one(&txn)
             .await?
             .ok_or_else(|| AppError::not_found("Primary contact for merge not found"))?
             .into();
 
-    let secondary_contact = entities::contacts::Entity::find_by_id(secondary_id_owned.clone())
+    let secondary_contact = entities::contacts::Entity::find_by_id(&secondary_id_owned)
         .one(&txn)
         .await?
         .ok_or_else(|| AppError::not_found("Secondary contact for merge not found"))?;
@@ -120,7 +120,7 @@ pub async fn merge_contacts(
     let final_primary = if updated_primary {
         primary_contact.update(&txn).await?
     } else {
-        entities::contacts::Entity::find_by_id(primary_id_owned.clone())
+        entities::contacts::Entity::find_by_id(primary_id_owned)
             .one(&txn)
             .await?
             .ok_or_else(|| AppError::not_found("Primary contact not found after update attempt"))?

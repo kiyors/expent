@@ -14,6 +14,7 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@ex
 import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { useTransition } from "react";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export function NavUser() {

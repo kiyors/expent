@@ -29,9 +29,9 @@ pub struct AppState {
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
-impl FromRef<AppState> for DatabaseConnection {
+impl FromRef<AppState> for Arc<DatabaseConnection> {
     fn from_ref(state: &AppState) -> Self {
-        state.core.db.clone()
+        Arc::clone(&state.core.db)
     }
 }
 

@@ -91,7 +91,7 @@ where
 }
 
 pub async fn init_auth(
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
     auth_secret: String,
     base_url: String,
 ) -> Result<Arc<BetterAuth<PostgresAdapter>>, Box<dyn std::error::Error>> {

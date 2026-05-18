@@ -91,28 +91,18 @@ impl OcrService {
 #[derive(Clone)]
 pub struct OcrManager {
     pub service: Arc<OcrService>,
-    pub db: DatabaseConnection,
+    pub db: Arc<DatabaseConnection>,
     pub upload: upload::UploadClient,
     pub ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
     pub semaphore: Arc<tokio::sync::Semaphore>,
 }
 
-#[derive(Debug)]
-pub struct OcrJobCreateParams {
-    pub user_id: String,
-    pub trace_id: Option<String>,
-    pub key: String,
-    pub raw_key: Option<String>,
-    pub p_hash: Option<String>,
-    pub auto_confirm: bool,
-    pub wallet_id: Option<String>,
-    pub category_id: Option<String>,
-}
+pub use ops::lifecycle::OcrJobCreateParams;
 
 impl OcrManager {
     pub fn new(
         service: Arc<OcrService>,
-        db: DatabaseConnection,
+        db: Arc<DatabaseConnection>,
         upload: upload::UploadClient,
         ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
     ) -> Self {
@@ -130,21 +120,23 @@ impl OcrManager {
         params: OcrJobCreateParams,
     ) -> Result<db::entities::ocr_jobs::Model, db::AppError> {
         ops::lifecycle::create_ocr_job(
-            &self.db,
-            &params.user_id,
-            params.trace_id,
-            &params.key,
-            params.raw_key,
-            params.p_hash,
-            params.auto_confirm,
-            params.wallet_id,
-            params.category_id,
+            &*self.db,
+            ops::lifecycle::OcrJobCreateParams {
+                user_id: params.user_id,
+                trace_id: params.trace_id,
+                key: params.key,
+                raw_key: params.raw_key,
+                p_hash: params.p_hash,
+                auto_confirm: params.auto_confirm,
+                wallet_id: params.wallet_id,
+                category_id: params.category_id,
+            },
         )
         .await
     }
 
     pub async fn process_immediately(&self, processor: Arc<dyn OcrProcessor>, job_id: String) {
-        let db = self.db.clone();
+        let db = Arc::clone(&self.db);
         let service = Arc::clone(&self.service);
         let upload = self.upload.clone();
         let ocr_tx = self.ocr_tx.clone();
@@ -153,7 +145,7 @@ impl OcrManager {
         tokio::spawn(async move {
             let _permit = semaphore.acquire().await.ok();
             if let Err(e) =
-                ops::process::process_job(&db, service, &upload, ocr_tx, processor, job_id).await
+                ops::process::process_job(&*db, service, &upload, ocr_tx, processor, job_id).await
             {
                 tracing::error!("❌ Immediate OCR processing failed: {}", e);
             }
@@ -161,9 +153,9 @@ impl OcrManager {
     }
 
     pub fn spawn_workers(&self, processor: Arc<dyn OcrProcessor>) {
-        tokio::spawn(worker::start_recovery_worker(self.db.clone()));
+        tokio::spawn(worker::start_recovery_worker(Arc::clone(&self.db)));
         tokio::spawn(worker::start_processor_worker(
-            self.db.clone(),
+            Arc::clone(&self.db),
             Arc::clone(&self.service),
             self.upload.clone(),
             self.ocr_tx.clone(),
@@ -183,7 +175,7 @@ impl OcrManager {
             serde_json::to_value(d)
                 .map_err(|e| db::AppError::Ocr(format!("Serialization failed: {}", e)))?
         } else {
-            let job = ops::lifecycle::get_ocr_job(&self.db, job_id)
+            let job = ops::lifecycle::get_ocr_job(&*self.db, job_id)
                 .await?
                 .ok_or_else(|| db::AppError::not_found("OCR Job not found"))?;
             job.processed_data
@@ -191,7 +183,7 @@ impl OcrManager {
         };
 
         ops::confirm::confirm_ocr_job(
-            &self.db,
+            &*self.db,
             self.ocr_tx.clone(),
             processor,
             user_id,
@@ -209,7 +201,7 @@ impl OcrManager {
         contact_id: &str,
     ) -> Result<db::OcrTransactionResponse, db::AppError> {
         ops::confirm::resolve_contact_collision(
-            &self.db,
+            &*self.db,
             self.ocr_tx.clone(),
             processor,
             user_id,

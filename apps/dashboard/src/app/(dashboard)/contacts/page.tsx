@@ -16,7 +16,6 @@ import {
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
-import { motion } from "motion/react";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   AlertCircleIcon,
@@ -28,12 +27,14 @@ import {
   SearchIcon,
   UserIcon,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
 
 export default function ContactsPage() {
   const router = useRouter();
+  const [startTransition] = React.useTransition();
   const [searchQuery, setSearchSearchQuery] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [newName, setNewName] = React.useState("");
@@ -41,6 +42,12 @@ export default function ContactsPage() {
 
   const { contacts, isLoading, createMutation, updateMutation } = useContacts();
   const { suggestions, mergeMutation } = useMergeContacts();
+
+  const handleContactClick = (id: string) => {
+    startTransition(() => {
+      router.push(`/contacts/${id}`);
+    });
+  };
 
   const handleCreate = () => {
     createMutation.mutate(
@@ -160,7 +167,7 @@ export default function ContactsPage() {
                     key={contact.id}
                     contact={contact}
                     onPin={() => updateMutation.mutate({ id: contact.id, data: { is_pinned: false } })}
-                    onClick={() => router.push(`/contacts/${contact.id}`)}
+                    onClick={() => handleContactClick(contact.id)}
                   />
                 ))}
               </div>
@@ -177,7 +184,7 @@ export default function ContactsPage() {
                   key={contact.id}
                   contact={contact}
                   onPin={() => updateMutation.mutate({ id: contact.id, data: { is_pinned: true } })}
-                  onClick={() => router.push(`/contacts/${contact.id}`)}
+                  onClick={() => handleContactClick(contact.id)}
                 />
               ))}
             </div>

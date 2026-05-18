@@ -2,7 +2,7 @@ use db::AppError;
 use db::entities;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use strsim::jaro_winkler;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -57,23 +57,29 @@ pub async fn get_merge_suggestions(
             .push(id);
     }
 
+    #[allow(clippy::items_after_statements)]
+    struct CachedContact<'a> {
+        contact: &'a entities::contacts::Model,
+        lower_name: String,
+    }
+
+    let cached_contacts: Vec<CachedContact<'_>> = contacts
+        .iter()
+        .map(|c| CachedContact {
+            contact: c,
+            lower_name: c.name.to_lowercase(),
+        })
+        .collect();
+
     let mut suggestions: Vec<MergeSuggestion> = Vec::new();
-    let mut processed_pairs = HashSet::new();
     let similarity_threshold = get_similarity_threshold();
 
-    for (i, c1) in contacts.iter().enumerate() {
-        for c2 in contacts.iter().skip(i + 1) {
-            let min_id = if c1.id < c2.id { &c1.id } else { &c2.id };
-            let max_id = if c1.id < c2.id { &c2.id } else { &c1.id };
-            let pair_id = format!("{min_id}-{max_id}");
-            if processed_pairs.contains(&pair_id) {
-                continue;
-            }
-
+    for (i, c1) in cached_contacts.iter().enumerate() {
+        for c2 in cached_contacts.iter().skip(i + 1) {
             let mut match_reason: Option<String> = None;
 
             // 1. Check exact phone match
-            if let (Some(p1), Some(p2)) = (&c1.phone, &c2.phone)
+            if let (Some(p1), Some(p2)) = (&c1.contact.phone, &c2.contact.phone)
                 && !p1.trim().is_empty()
                 && p1 == p2
             {
@@ -83,8 +89,12 @@ pub async fn get_merge_suggestions(
             // 2. Check identifier overlap (UPI, Bank Acc)
             if match_reason.is_none() {
                 let empty_vec: Vec<entities::contact_identifiers::Model> = Vec::new();
-                let id1s = identifiers_map.get(c1.id.as_str()).unwrap_or(&empty_vec);
-                let id2s = identifiers_map.get(c2.id.as_str()).unwrap_or(&empty_vec);
+                let id1s = identifiers_map
+                    .get(c1.contact.id.as_str())
+                    .unwrap_or(&empty_vec);
+                let id2s = identifiers_map
+                    .get(c2.contact.id.as_str())
+                    .unwrap_or(&empty_vec);
 
                 'outer: for id1 in id1s {
                     for id2 in id2s {
@@ -97,20 +107,17 @@ pub async fn get_merge_suggestions(
             }
 
             // 3. Check fuzzy name match
-            if match_reason.is_none() {
-                let name1 = c1.name.to_lowercase();
-                let name2 = c2.name.to_lowercase();
-                if jaro_winkler(&name1, &name2) > similarity_threshold {
-                    match_reason = Some("Similar name".to_string());
-                }
+            if match_reason.is_none()
+                && jaro_winkler(&c1.lower_name, &c2.lower_name) > similarity_threshold
+            {
+                match_reason = Some("Similar name".to_string());
             }
 
             if let Some(reason) = match_reason {
                 suggestions.push(MergeSuggestion {
-                    contacts: vec![c1.clone(), c2.clone()],
+                    contacts: vec![c1.contact.clone(), c2.contact.clone()],
                     reason,
                 });
-                processed_pairs.insert(pair_id);
             }
         }
     }

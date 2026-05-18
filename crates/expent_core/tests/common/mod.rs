@@ -18,7 +18,7 @@ pub async fn setup_test_core() -> Core {
     let core = Core::init(config, tx).await.expect("Failed to init core");
 
     // Run migrations
-    Migrator::up(&core.db, None)
+    Migrator::up(&*core.db, None)
         .await
         .expect("Failed to run migrations");
 
@@ -41,7 +41,7 @@ pub async fn create_test_user(core: &Core) -> String {
         updated_at: Set(Utc::now().into()),
         ..Default::default()
     };
-    user.insert(&core.db).await.expect("Failed to insert user");
+    user.insert(&*core.db).await.expect("Failed to insert user");
     user_id
 }
 
@@ -66,7 +66,7 @@ pub async fn create_test_wallet(
         ..Default::default()
     };
     wallet
-        .insert(&core.db)
+        .insert(&*core.db)
         .await
         .expect("Failed to insert wallet");
     wallet_id

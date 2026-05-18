@@ -50,27 +50,9 @@ impl OcrManager {
 
     pub async fn start_job(
         &self,
-        user_id: &str,
-        trace_id: Option<String>,
-        key: &str,
-        raw_key: Option<String>,
-        p_hash: Option<String>,
-        auto_confirm: bool,
-        wallet_id: Option<String>,
-        category_id: Option<String>,
+        params: crate::ops::lifecycle::OcrJobCreateParams,
     ) -> Result<entities::ocr_jobs::Model, db::AppError> {
-        create_ocr_job(
-            &self.db,
-            user_id,
-            trace_id,
-            key,
-            raw_key,
-            p_hash,
-            auto_confirm,
-            wallet_id,
-            category_id,
-        )
-        .await
+        create_ocr_job(&self.db, params).await
     }
 
     pub async fn process_immediately(&self, processor: Arc<dyn OcrProcessor>, job_id: String) {

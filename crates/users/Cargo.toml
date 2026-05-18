@@ -8,19 +8,19 @@ db.workspace = true
 
 anyhow.workspace     = true
 chrono.workspace     = true
+lazy_static          = "1.5.0"
+once_cell            = "1.21.4"
 regex.workspace      = true
 sea-orm.workspace    = true
 serde.workspace      = true
 serde_json.workspace = true
 tracing.workspace    = true
 uuid.workspace       = true
-once_cell = "1.21.4"
-lazy_static = "1.5.0"
 
 [lints]
 workspace = true
 
 [dev-dependencies]
-rstest = "0.26.1"
-sea-orm = { workspace = true, features = ["mock"] }
-tokio = { workspace = true, features = ["full"] }
+rstest  = "0.26.1"
+sea-orm = { features = [ "mock" ], workspace = true }
+tokio   = { features = [ "full" ], workspace = true }

@@ -89,18 +89,22 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
     setBankTransactions((prev) => prev.map((tx, i) => (i === index ? { ...tx, ...updates } : tx)));
   };
 
-  const applyGlobalCategory = (catId: string) => {
-    setCategoryId(catId);
-    setBankTransactions((prev) =>
-      prev.map((tx, i) => (selectedIndices.has(i) ? { ...tx, category_id: catId === "none" ? null : catId } : tx)),
-    );
+  const applyGlobalCategory = (catId: string | null) => {
+    if (catId) {
+      setCategoryId(catId);
+      setBankTransactions((prev) =>
+        prev.map((tx, i) => (selectedIndices.has(i) ? { ...tx, category_id: catId === "none" ? null : catId } : tx)),
+      );
+    }
   };
 
-  const applyGlobalWallet = (wId: string) => {
-    setWalletId(wId);
-    setBankTransactions((prev) =>
-      prev.map((tx, i) => (selectedIndices.has(i) ? { ...tx, wallet_id: wId === "none" ? null : wId } : tx)),
-    );
+  const applyGlobalWallet = (wId: string | null) => {
+    if (wId) {
+      setWalletId(wId);
+      setBankTransactions((prev) =>
+        prev.map((tx, i) => (selectedIndices.has(i) ? { ...tx, wallet_id: wId === "none" ? null : wId } : tx)),
+      );
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -31,7 +31,7 @@ impl AccountOps for PostgresAdapter {
             updated_at: Set(now),
         };
 
-        active_model.insert(&self.db).await.map_err(|e| {
+        active_model.insert(&*self.db).await.map_err(|e| {
             AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
         })?;
 
@@ -60,7 +60,7 @@ impl AccountOps for PostgresAdapter {
         let model = accounts::Entity::find()
             .filter(accounts::Column::ProviderId.eq(provider))
             .filter(accounts::Column::AccountId.eq(account_id))
-            .one(&self.db)
+            .one(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -72,7 +72,7 @@ impl AccountOps for PostgresAdapter {
     async fn get_user_accounts(&self, user_id: &str) -> AuthResult<Vec<Self::Account>> {
         let models = accounts::Entity::find()
             .filter(accounts::Column::UserId.eq(user_id))
-            .all(&self.db)
+            .all(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))
@@ -87,7 +87,7 @@ impl AccountOps for PostgresAdapter {
 
     async fn delete_account(&self, id: &str) -> AuthResult<()> {
         accounts::Entity::delete_by_id(id.to_string())
-            .exec(&self.db)
+            .exec(&*self.db)
             .await
             .map_err(|e| {
                 AuthError::Database(better_auth::types_mod::DatabaseError::Query(e.to_string()))

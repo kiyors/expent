@@ -203,7 +203,7 @@ pub struct OcrTransactionResponse {
     pub batch_count: i32,
 }
 
-fn default_batch_count() -> i32 {
+const fn default_batch_count() -> i32 {
     1
 }
 

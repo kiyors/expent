@@ -6,12 +6,10 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
     Set,
 };
+use std::sync::LazyLock;
 
-use lazy_static::lazy_static; // Add this import
-
-lazy_static! {
-    static ref UPI_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$").unwrap();
-}
+static UPI_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$").unwrap());
 
 pub async fn list_user_upi(
     db: &DatabaseConnection,
@@ -33,9 +31,6 @@ pub async fn add_user_upi(
     // 1. Basic UPI Format Validation (handle@bank)
     if !UPI_REGEX.is_match(&upi_id) {
         // Use the lazy_static regex
-        return Err(AppError::validation(format!(
-            "Invalid UPI ID format: '{upi_id}'"
-        )));
         return Err(AppError::validation(format!(
             "Invalid UPI ID format: '{upi_id}'"
         )));

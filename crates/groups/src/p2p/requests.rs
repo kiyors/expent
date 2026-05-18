@@ -123,10 +123,7 @@ pub async fn accept_p2p_request(
             let date = original_txn["date"]
                 .as_str()
                 .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
-                .map_or_else(
-                    || Utc::now().into(),
-                    |d| d.with_timezone(&chrono::FixedOffset::east_opt(0).unwrap()),
-                );
+                .map_or_else(|| Utc::now().into(), |d| d.with_timezone(&Utc).into());
 
             let purpose = original_txn["purpose"]
                 .as_str()
