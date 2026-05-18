@@ -38,6 +38,38 @@ export type FormatConfig =
   | { kind: "badge"; colorMap?: Record<string, Tone> }
   | { kind: "array"; maxVisible?: number };
 
+// Global cache for Intl formatters to avoid expensive constructor calls in render loops.
+const numberFormatCache = new Map<string, Intl.NumberFormat>();
+const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+const relativeTimeFormatCache = new Map<string, Intl.RelativeTimeFormat>();
+
+function getNumberFormatter(locale: string | undefined, options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = `${locale}-${JSON.stringify(options)}`;
+  if (!numberFormatCache.has(key)) {
+    numberFormatCache.set(key, new Intl.NumberFormat(locale, options));
+  }
+  return numberFormatCache.get(key)!;
+}
+
+function getDateTimeFormatter(locale: string | undefined, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}-${JSON.stringify(options)}`;
+  if (!dateTimeFormatCache.has(key)) {
+    dateTimeFormatCache.set(key, new Intl.DateTimeFormat(locale, options));
+  }
+  return dateTimeFormatCache.get(key)!;
+}
+
+function getRelativeTimeFormatter(
+  locale: string | undefined,
+  options: Intl.RelativeTimeFormatOptions,
+): Intl.RelativeTimeFormat {
+  const key = `${locale}-${JSON.stringify(options)}`;
+  if (!relativeTimeFormatCache.has(key)) {
+    relativeTimeFormatCache.set(key, new Intl.RelativeTimeFormat(locale, options));
+  }
+  return relativeTimeFormatCache.get(key)!;
+}
+
 interface DeltaValueProps {
   value: number;
   options?: Extract<FormatConfig, { kind: "delta" }>;
@@ -63,7 +95,7 @@ export function DeltaValue({ value, options, locale }: DeltaValueProps) {
       : "text-muted-foreground";
 
   const absValue = Math.abs(value);
-  const formatted = new Intl.NumberFormat(locale, {
+  const formatted = getNumberFormatter(locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(absValue);
@@ -120,7 +152,7 @@ export function CurrencyValue({ value, options, locale }: CurrencyValueProps) {
   const currency = options?.currency ?? "USD";
   const decimals = options?.decimals ?? 2;
 
-  const formatted = new Intl.NumberFormat(locale, {
+  const formatted = getNumberFormatter(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: decimals,
@@ -143,7 +175,7 @@ export function PercentValue({ value, options, locale }: PercentValueProps) {
 
   const numeric = basis === "fraction" ? value : value / 100;
 
-  const formatted = new Intl.NumberFormat(locale, {
+  const formatted = getNumberFormatter(locale, {
     style: "percent",
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -172,20 +204,20 @@ export function DateValue({ value, options, locale }: DateValueProps) {
   if (dateFormat === "relative") {
     formatted = getRelativeTime(date, locale);
   } else if (dateFormat === "long") {
-    formatted = new Intl.DateTimeFormat(locale, {
+    formatted = getDateTimeFormatter(locale, {
       year: "numeric",
       month: "long",
       day: "numeric",
     }).format(date);
   } else {
-    formatted = new Intl.DateTimeFormat(locale, {
+    formatted = getDateTimeFormatter(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
     }).format(date);
   }
 
-  const title = new Intl.DateTimeFormat(locale, {
+  const title = getDateTimeFormatter(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -207,7 +239,7 @@ function getRelativeTime(date: Date, locale?: string): string {
 
   if (absDiffInSeconds < 60) return "just now";
 
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const rtf = getRelativeTimeFormatter(locale, { numeric: "auto" });
 
   if (absDiffInSeconds < 3600) {
     const mins = Math.trunc(diffInSeconds / 60);
@@ -222,7 +254,7 @@ function getRelativeTime(date: Date, locale?: string): string {
     return rtf.format(days, "day");
   }
 
-  return new Intl.DateTimeFormat(locale, {
+  return getDateTimeFormatter(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -288,7 +320,7 @@ export function NumberValue({ value, options, locale }: NumberValueProps) {
   const compact = options?.compact ?? false;
   const showSign = options?.showSign ?? false;
 
-  const formatted = new Intl.NumberFormat(locale, {
+  const formatted = getNumberFormatter(locale, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
     notation: compact ? "compact" : "standard",

@@ -72,7 +72,7 @@ export default function TransactionsPage() {
   const [activeTab, setActiveTab] = React.useState("all");
 
   const {
-    data: rawTransactions,
+    transactions: rawTransactions,
     totalCount,
     isLoading: isTxnsLoading,
     updateMutation,
