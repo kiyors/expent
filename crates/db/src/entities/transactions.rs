@@ -17,11 +17,7 @@ impl EntityName for Entity {
 #[derive(
     Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize, TS,
 )]
-#[ts(
-    export,
-    rename = "Transaction",
-    export_to = "../../../packages/types/src/db/Transaction.ts"
-)]
+#[ts(export, rename = "Transaction")]
 pub struct Model {
     pub id: String,
     pub user_id: String,

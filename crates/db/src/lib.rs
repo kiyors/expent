@@ -11,11 +11,7 @@ pub use error::AppError;
 
 /// Represents a single line item in a purchase, typically extracted via OCR.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "LineItem",
-    export_to = "../../../packages/types/src/db/LineItem.ts"
-)]
+#[ts(export, rename = "LineItem")]
 pub struct LineItem {
     pub name: String,
     pub quantity: i32,
@@ -26,11 +22,7 @@ pub struct LineItem {
 
 /// The result of an OCR process, containing raw text and extracted transaction details.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "OcrResult",
-    export_to = "../../../packages/types/src/db/OcrResult.ts"
-)]
+#[ts(export, rename = "OcrResult")]
 pub struct OcrResult {
     pub raw_text: String,
     pub vendor: Option<String>,
@@ -53,11 +45,7 @@ fn default_confidence() -> f32 {
 
 /// Specialized extraction for Google Pay screenshots.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "GPayExtraction",
-    export_to = "../../../packages/types/src/db/GPayExtraction.ts"
-)]
+#[ts(export, rename = "GPayExtraction")]
 pub struct GPayExtraction {
     #[ts(type = "string")]
     #[serde(with = "rust_decimal::serde::str")]
@@ -80,11 +68,7 @@ pub struct GPayExtraction {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "BankTransaction",
-    export_to = "../../../packages/types/src/db/BankTransaction.ts"
-)]
+#[ts(export, rename = "BankTransaction")]
 pub struct BankTransaction {
     pub transaction_date: String,
     pub description: String,
@@ -108,11 +92,7 @@ pub struct BankTransaction {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "BankStatementResponse",
-    export_to = "../../../packages/types/src/db/BankStatementResponse.ts"
-)]
+#[ts(export, rename = "BankStatementResponse")]
 pub struct BankStatementResponse {
     pub transactions: Vec<BankTransaction>,
     pub bank_name: String,
@@ -121,11 +101,7 @@ pub struct BankStatementResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "BankExtractionResult",
-    export_to = "../../../packages/types/src/db/BankExtractionResult.ts"
-)]
+#[ts(export, rename = "BankExtractionResult")]
 pub struct BankExtractionResult {
     pub raw_text: String,
     pub doc_type: String,
@@ -135,11 +111,7 @@ pub struct BankExtractionResult {
 
 /// Unified OCR data from the Python worker.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "ProcessedOcr",
-    export_to = "../../../packages/types/src/db/ProcessedOcr.ts"
-)]
+#[ts(export, rename = "ProcessedOcr")]
 pub struct ProcessedOcr {
     pub doc_type: String,        // "GPAY" or "GENERIC"
     pub data: ExportedJsonValue, // Use ExportedJsonValue instead of serde_json::Value
@@ -148,13 +120,30 @@ pub struct ProcessedOcr {
     pub is_high_res: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[serde(tag = "doc_type", rename_all = "SCREAMING_SNAKE_CASE")]
+#[ts(export)]
+pub enum TypedProcessedOcr {
+    #[serde(rename = "GPAY")]
+    Gpay {
+        data: GPayExtraction,
+        r2_key: Option<String>,
+    },
+    #[serde(rename = "BANK_STATEMENT")]
+    BankStatement {
+        data: BankExtractionResult,
+        r2_key: Option<String>,
+    },
+    #[serde(rename = "GENERIC")]
+    Generic {
+        data: OcrResult,
+        r2_key: Option<String>,
+    },
+}
+
 /// A type alias for `serde_json::Value` to control its TypeScript export location.
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(
-    export,
-    rename = "JsonValue",
-    export_to = "../../../packages/types/src/db/JsonValue.ts"
-)]
+#[ts(export, rename = "JsonValue")]
 pub struct ExportedJsonValue(
     #[ts(
         type = "number | string | boolean | Array<JsonValue> | { [key: string]: JsonValue } | null"
@@ -164,11 +153,7 @@ pub struct ExportedJsonValue(
 
 /// Details for splitting a transaction among multiple users.
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(
-    export,
-    rename = "SplitDetail",
-    export_to = "../../../packages/types/src/db/SplitDetail.ts"
-)]
+#[ts(export, rename = "SplitDetail")]
 pub struct SplitDetail {
     pub receiver_email: String,
     #[ts(type = "string")]
@@ -178,11 +163,7 @@ pub struct SplitDetail {
 
 /// P2P request with sender's name.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "P2pRequestWithSender",
-    export_to = "../../../packages/types/src/db/P2pRequestWithSender.ts"
-)]
+#[ts(export, rename = "P2pRequestWithSender")]
 pub struct P2pRequestWithSender {
     #[serde(flatten)]
     pub request: entities::p2p_requests::Model,
@@ -191,11 +172,7 @@ pub struct P2pRequestWithSender {
 
 /// Response for OCR transaction creation.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "OcrTransactionResponse",
-    export_to = "../../../packages/types/src/db/OcrTransactionResponse.ts"
-)]
+#[ts(export, rename = "OcrTransactionResponse")]
 pub struct OcrTransactionResponse {
     pub transaction: entities::transactions::Model,
     pub contact_created: bool,
@@ -209,11 +186,7 @@ const fn default_batch_count() -> i32 {
 
 /// Transaction with optional wallet and contact info.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "TransactionWithDetail",
-    export_to = "../../../packages/types/src/db/TransactionWithDetail.ts"
-)]
+#[ts(export, rename = "TransactionWithDetail")]
 pub struct TransactionWithDetail {
     #[serde(flatten)]
     pub transaction: entities::transactions::Model,
@@ -225,11 +198,7 @@ pub struct TransactionWithDetail {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS, FromQueryResult)]
-#[ts(
-    export,
-    rename = "GroupMemberDetail",
-    export_to = "../../../packages/types/src/db/GroupMemberDetail.ts"
-)]
+#[ts(export, rename = "GroupMemberDetail")]
 pub struct GroupMemberDetail {
     pub user_id: String,
     pub name: String,
@@ -238,11 +207,7 @@ pub struct GroupMemberDetail {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "ContactDetail",
-    export_to = "../../../packages/types/src/db/ContactDetail.ts"
-)]
+#[ts(export, rename = "ContactDetail")]
 pub struct ContactDetail {
     pub contact: entities::contacts::Model,
     pub identifiers: Vec<entities::contact_identifiers::Model>,
@@ -251,11 +216,7 @@ pub struct ContactDetail {
 
 /// Paginated response for transactions.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "PaginatedTransactions",
-    export_to = "../../../packages/types/src/db/PaginatedTransactions.ts"
-)]
+#[ts(export, rename = "PaginatedTransactions")]
 pub struct PaginatedTransactions {
     pub items: Vec<TransactionWithDetail>,
     pub total_count: u64,
@@ -263,11 +224,7 @@ pub struct PaginatedTransactions {
 
 /// Trend data for a single month.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "MonthlyTrend",
-    export_to = "../../../packages/types/src/db/MonthlyTrend.ts"
-)]
+#[ts(export, rename = "MonthlyTrend")]
 pub struct MonthlyTrend {
     pub month: String,
     #[ts(type = "string")]
@@ -278,11 +235,7 @@ pub struct MonthlyTrend {
 
 /// Distribution of expenses by category or contact.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "NamedAmount",
-    export_to = "../../../packages/types/src/db/NamedAmount.ts"
-)]
+#[ts(export, rename = "NamedAmount")]
 pub struct NamedAmount {
     pub name: String,
     #[ts(type = "string")]
@@ -291,11 +244,7 @@ pub struct NamedAmount {
 
 /// Summary data for the dashboard.
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-#[ts(
-    export,
-    rename = "DashboardSummary",
-    export_to = "../../../packages/types/src/db/DashboardSummary.ts"
-)]
+#[ts(export, rename = "DashboardSummary")]
 pub struct DashboardSummary {
     #[ts(type = "string")]
     pub total_balance: Decimal,
