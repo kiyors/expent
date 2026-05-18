@@ -14,7 +14,7 @@ wallets.workspace      = true
 
 [dev-dependencies]
 migration = { path = "../migration" }
-tokio     = { features = [ "full" ], version = "1.44" }
+tokio     = { features = [ "full" ], version = "1.52" }
 
 [lints]
 workspace = true
