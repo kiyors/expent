@@ -5,7 +5,7 @@ edition.workspace = true
 
 [dependencies]
 aws-sdk-s3.workspace = true
-bytes                = "1.0"
+bytes                = "1.11"
 image                = "0.25"
 image_hasher         = "3.1"
 infer                = "0.16"
