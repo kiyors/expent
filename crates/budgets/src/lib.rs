@@ -13,7 +13,7 @@ use ts_rs::TS;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../packages/types/src/db/BudgetHealth.ts")]
+#[ts(export)]
 pub struct BudgetHealth {
     pub budget_id: String,
     pub category_name: Option<String>,

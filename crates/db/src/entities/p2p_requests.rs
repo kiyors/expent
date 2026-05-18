@@ -17,11 +17,7 @@ impl EntityName for Entity {
 #[derive(
     Clone, Debug, PartialEq, DeriveModel, DeriveActiveModel, Eq, Serialize, Deserialize, TS,
 )]
-#[ts(
-    export,
-    rename = "P2pRequest",
-    export_to = "../../../packages/types/src/db/P2pRequest.ts"
-)]
+#[ts(export, rename = "P2pRequest")]
 pub struct Model {
     pub id: String,
     pub sender_user_id: String,
