@@ -4,8 +4,8 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-db.workspace = true
 chrono.workspace       = true
+db.workspace           = true
 moka.workspace         = true
 rust_decimal.workspace = true
 sea-orm.workspace      = true

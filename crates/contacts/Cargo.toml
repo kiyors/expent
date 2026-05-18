@@ -8,10 +8,10 @@ db.workspace = true
 
 any_ascii.workspace = true
 rphonetic.workspace = true
+sea-orm.workspace   = true
+serde.workspace     = true
 strsim              = "0.11.1"
-sea-orm.workspace      = true
-serde.workspace        = true
-uuid.workspace         = true
+uuid.workspace      = true
 
 [lints]
 workspace = true

@@ -4,11 +4,11 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-db.workspace = true
-chrono.workspace     = true
-moka.workspace       = true
-sea-orm.workspace    = true
-uuid.workspace       = true
+chrono.workspace  = true
+db.workspace      = true
+moka.workspace    = true
+sea-orm.workspace = true
+uuid.workspace    = true
 
 [lints]
 workspace = true
