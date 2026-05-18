@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "motion/react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
+import { TooltipProvider } from "@expent/ui/components/tooltip";
 import { ThemeProvider } from "@/components/ui-elements/theme-provider";
 
 function AppToaster() {
@@ -30,7 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <HotkeysProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <MotionConfig reducedMotion="user">
-            {children}
+            <TooltipProvider delay={300}>{children}</TooltipProvider>
             <AppToaster />
           </MotionConfig>
         </ThemeProvider>

@@ -16,7 +16,6 @@ import {
   TableRow,
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "./_adapter";
 import type { FormatConfig } from "./formatters";
@@ -332,15 +331,13 @@ function DataTableHeader() {
   const { columns } = useDataTable();
 
   return (
-    <TooltipProvider>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          {columns.map((column, columnIndex) => (
-            <DataTableHead key={column.key} column={column} columnIndex={columnIndex} totalColumns={columns.length} />
-          ))}
-        </TableRow>
-      </TableHeader>
-    </TooltipProvider>
+    <TableHeader>
+      <TableRow className="hover:bg-transparent">
+        {columns.map((column, columnIndex) => (
+          <DataTableHead key={column.key} column={column} columnIndex={columnIndex} totalColumns={columns.length} />
+        ))}
+      </TableRow>
+    </TableHeader>
   );
 }
 

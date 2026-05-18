@@ -17,7 +17,7 @@ import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@expent/ui/components/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@expent/ui/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@expent/ui/components/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRightIcon, InfoIcon, PlusIcon, ReceiptIcon, Trash2Icon, UserPlusIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
@@ -183,18 +183,16 @@ function GroupDetails({ group }: { group: Group }) {
           <ReceiptIcon className="h-4 w-4 text-primary" /> Recent Activity
         </h3>
         <div className="flex gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger
-                render={<Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Information" />}
-              >
-                <InfoIcon className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Transactions shared directly with this group</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              render={<Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Information" />}
+            >
+              <InfoIcon className="h-4 w-4 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Transactions shared directly with this group</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 

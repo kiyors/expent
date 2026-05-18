@@ -23,7 +23,6 @@ export {
 export {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@expent/ui/components/tooltip";
 export { cn } from "@expent/ui/lib/utils";
