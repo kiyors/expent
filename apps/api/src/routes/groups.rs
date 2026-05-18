@@ -79,20 +79,28 @@ pub async fn invite_to_group_handler(
 
 pub async fn list_group_transactions_handler(
     State(state): State<AppState>,
-    _session: AuthSession,
+    session: AuthSession,
     Path(id): Path<String>,
 ) -> Result<Json<Vec<db::entities::transactions::Model>>, ApiError> {
-    let result = state.core.groups.list_group_transactions(&id).await?;
+    let result = state
+        .core
+        .groups
+        .list_group_transactions(&session.user.id, &id)
+        .await?;
 
     Ok(Json(result))
 }
 
 pub async fn list_group_members_handler(
     State(state): State<AppState>,
-    _session: AuthSession,
+    session: AuthSession,
     Path(id): Path<String>,
 ) -> Result<Json<Vec<db::GroupMemberDetail>>, ApiError> {
-    let result = state.core.groups.list_group_members(&id).await?;
+    let result = state
+        .core
+        .groups
+        .list_group_members(&session.user.id, &id)
+        .await?;
     Ok(Json(result))
 }
 

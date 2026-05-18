@@ -9,8 +9,19 @@ use sea_orm::{
 
 pub async fn list_group_members(
     db: &DatabaseConnection,
+    user_id: &str,
     group_id: &str,
 ) -> Result<Vec<GroupMemberDetail>, AppError> {
+    // Verify membership to prevent IDOR
+    let is_member =
+        entities::user_groups::Entity::find_by_id((user_id.to_string(), group_id.to_string()))
+            .one(db)
+            .await?;
+
+    if is_member.is_none() {
+        return Err(AppError::unauthorized("User is not a member of this group"));
+    }
+
     // Join user_groups with users to get member details
     let results = entities::user_groups::Entity::find()
         .filter(entities::user_groups::Column::GroupId.eq(group_id.to_string()))

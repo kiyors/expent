@@ -87,16 +87,18 @@ impl GroupsManager {
 
     pub async fn list_group_transactions(
         &self,
+        user_id: &str,
         group_id: &str,
     ) -> Result<Vec<entities::transactions::Model>, AppError> {
-        groups::list_group_transactions(&*self.db, group_id).await
+        groups::list_group_transactions(&*self.db, user_id, group_id).await
     }
 
     pub async fn list_group_members(
         &self,
+        user_id: &str,
         group_id: &str,
     ) -> Result<Vec<db::GroupMemberDetail>, AppError> {
-        groups::members::list_group_members(&*self.db, group_id).await
+        groups::members::list_group_members(&*self.db, user_id, group_id).await
     }
 
     // --- P2P API ---
