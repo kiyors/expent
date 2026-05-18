@@ -5,4 +5,4 @@ import type { NamedAmount } from "./NamedAmount";
 /**
  * Summary data for the dashboard.
  */
-export type DashboardSummary = { total_balance: string, monthly_spend: string, monthly_income: string, pending_p2p_count: bigint, total_transactions: bigint, monthly_trends: Array<MonthlyTrend>, weekly_trends: Array<MonthlyTrend>, category_distribution: Array<NamedAmount>, top_expenses: Array<NamedAmount>, top_income: Array<NamedAmount>, };
+export type DashboardSummary = { total_balance: string, monthly_spend: string, monthly_income: string, pending_p2p_count: number, total_transactions: number, monthly_trends: Array<MonthlyTrend>, weekly_trends: Array<MonthlyTrend>, category_distribution: Array<NamedAmount>, top_expenses: Array<NamedAmount>, top_income: Array<NamedAmount>, };

@@ -51,6 +51,7 @@ export * from "./TransactionStatus";
 export * from "./TransactionWithDetail";
 export * from "./TxnParty";
 export * from "./TxnPartyRole";
+export * from "./TypedProcessedOcr";
 export * from "./User";
 export * from "./UserGroup";
 export * from "./UserUpiId";

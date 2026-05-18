@@ -4,4 +4,4 @@ import type { TransactionWithDetail } from "./TransactionWithDetail";
 /**
  * Paginated response for transactions.
  */
-export type PaginatedTransactions = { items: Array<TransactionWithDetail>, total_count: bigint, };
+export type PaginatedTransactions = { items: Array<TransactionWithDetail>, total_count: number, };
