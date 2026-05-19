@@ -5,6 +5,8 @@ import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
 import { toast } from "@expent/ui/components/goey-toaster";
+import { Input } from "@expent/ui/components/input";
+import { Label } from "@expent/ui/components/label";
 import { Progress } from "@expent/ui/components/progress";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -270,7 +272,3 @@ function RowMatchItem({ row, onConfirm }: { row: BankStatementRow; onConfirm: (t
     </Card>
   );
 }
-
-// Needed for the hidden input
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";

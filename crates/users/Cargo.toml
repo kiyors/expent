@@ -11,9 +11,10 @@ regex.workspace   = true
 sea-orm.workspace = true
 uuid.workspace    = true
 
+
 [lints]
 workspace = true
 
 [dev-dependencies]
-sea-orm = { features = [ "mock" ], workspace = true }
-tokio   = { features = [ "full" ], workspace = true }
+sea-orm = { workspace = true, features = ["mock"] }
+tokio = { workspace = true, features = ["full"] }

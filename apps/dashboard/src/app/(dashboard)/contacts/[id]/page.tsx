@@ -45,7 +45,6 @@ export default function ContactDetailPage() {
   const { contactData, isLoading, addIdentifierMutation } = useContactDetail(id);
   const { deleteMutation } = useContacts();
   const [_isPending, startTransition] = React.useTransition();
-
   if (isLoading) {
     return <div className="p-8 text-center">Loading contact details…</div>;
   }

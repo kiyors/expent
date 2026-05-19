@@ -174,10 +174,34 @@ export function CommandCenter() {
 
   const navItems = React.useMemo(
     () => [
-      { label: "Dashboard", href: "/", icon: LayoutDashboardIcon, shortcut: "G D", color: "text-blue-500" },
-      { label: "Transactions", href: "/transactions", icon: ReceiptIcon, shortcut: "G T", color: "text-emerald-500" },
-      { label: "Wallets", href: "/wallets", icon: WalletIcon, shortcut: "G W", color: "text-orange-500" },
-      { label: "Contacts", href: "/contacts", icon: UsersIcon, shortcut: "G C", color: "text-purple-500" },
+      {
+        label: "Dashboard",
+        href: "/",
+        icon: LayoutDashboardIcon,
+        shortcut: "G D",
+        color: "text-blue-500",
+      },
+      {
+        label: "Transactions",
+        href: "/transactions",
+        icon: ReceiptIcon,
+        shortcut: "G T",
+        color: "text-emerald-500",
+      },
+      {
+        label: "Wallets",
+        href: "/wallets",
+        icon: WalletIcon,
+        shortcut: "G W",
+        color: "text-orange-500",
+      },
+      {
+        label: "Contacts",
+        href: "/contacts",
+        icon: UsersIcon,
+        shortcut: "G C",
+        color: "text-purple-500",
+      },
     ],
     [],
   );
@@ -187,7 +211,11 @@ export function CommandCenter() {
       { label: "Profile Settings", href: "/settings/profile", icon: UserIcon },
       { label: "Appearance", href: "/settings/appearance", icon: PaletteIcon },
       { label: "Categories", href: "/settings/categories", icon: TagIcon },
-      { label: "Notifications", href: "/settings/notifications", icon: BellIcon },
+      {
+        label: "Notifications",
+        href: "/settings/notifications",
+        icon: BellIcon,
+      },
       { label: "Display", href: "/settings/display", icon: MonitorIcon },
       { label: "Account", href: "/settings/account", icon: SettingsIcon },
     ],

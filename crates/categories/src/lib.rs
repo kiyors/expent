@@ -67,6 +67,6 @@ impl CategoriesManager {
 
     #[allow(clippy::missing_errors_doc)]
     pub async fn ensure_system_categories(&self) -> Result<(), AppError> {
-        ops::ensure_system_categories(&self.db).await
+        ops::ensure_system_categories(&*self.db).await
     }
 }
