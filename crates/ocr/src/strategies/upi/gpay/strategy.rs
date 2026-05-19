@@ -1,4 +1,4 @@
-use super::OcrExtractionStrategy;
+use crate::strategies::OcrExtractionStrategy;
 use ::contacts::ContactsManager;
 use ::wallets::WalletsManager;
 use async_trait::async_trait;

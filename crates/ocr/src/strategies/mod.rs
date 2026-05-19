@@ -27,15 +27,14 @@ pub trait OcrExtractionStrategy: Send + Sync {
         processed: ProcessedOcr,
     ) -> Result<OcrTransactionResponse, AppError>;
 }
-
-pub mod bank_statement;
+pub mod bank;
 pub mod generic;
-pub mod gpay;
+pub mod upi;
 
 pub fn get_strategy(doc_type: &str) -> Box<dyn OcrExtractionStrategy> {
     match doc_type {
-        "BANK_STATEMENT" => Box::new(bank_statement::BankStatementStrategy),
-        "GPAY" => Box::new(gpay::GPayStrategy),
+        "BANK_STATEMENT" => Box::new(bank::BankStatementStrategy),
+        "GPAY" => Box::new(upi::GPayStrategy),
         _ => Box::new(generic::GenericStrategy),
     }
 }

@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         s3_secret_access_key: std::env::var("S3_SECRET_ACCESS_KEY")
             .expect("S3_SECRET_ACCESS_KEY must be set"),
         s3_bucket_name: std::env::var("S3_BUCKET_NAME").expect("S3_BUCKET_NAME must be set"),
-        ocr_worker_url: std::env::var("OCR_WORKER_URL").ok(),
+        google_api_key: std::env::var("GOOGLE_API_KEY").ok(),
         better_auth_secret: std::env::var("BETTER_AUTH_SECRET")
             .or_else(|_| std::env::var("BETTERAUTH_SECRET"))
             .expect("BETTER_AUTH_SECRET must be set"),

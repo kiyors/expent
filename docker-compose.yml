@@ -20,22 +20,7 @@ services:
     ports:
       - "7878:7878"
     environment:
-      - OCR_WORKER_URL=http://ocr:8090/ocr
       - RUST_LOG=info
-    env_file:
-      - .env
-    depends_on:
-      - ocr
-    restart: unless-stopped
-
-  ocr:
-    build:
-      context: .
-      dockerfile: apps/ocr/Dockerfile
-    ports:
-      - "8090:8090"
-    environment:
-      - PYTHONUNBUFFERED=1
     env_file:
       - .env
     restart: unless-stopped

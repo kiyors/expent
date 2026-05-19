@@ -62,7 +62,8 @@ Expent is an intelligent expense management platform built with Rust, TypeScript
 | `S3_ACCESS_KEY_ID`     | Access key for storage                  |
 | `S3_SECRET_ACCESS_KEY` | Secret key for storage                  |
 | `S3_BUCKET_NAME`       | Name of the bucket for uploads          |
-| `OCR_WORKER_URL`       | URL where the Python worker is running  |
+| `GOOGLE_API_KEY`        | Google Gemini API Key for OCR           |
+| `GEMINI_MODEL`          | Gemini model version (e.g. `gemini-2.0-flash-exp`) |
 
 <!-- BEGIN:nextjs-agent-rules -->
 

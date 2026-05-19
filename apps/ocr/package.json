@@ -1,8 +1,0 @@
-{
-  "name": "@expent/ocr",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "uv run uvicorn main:app --host 0.0.0.0 --port 8090 --reload"
-  }
-}

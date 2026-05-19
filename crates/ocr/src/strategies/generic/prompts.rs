@@ -1,4 +1,4 @@
-SYSTEM_PROMPT = """
+pub const SYSTEM_PROMPT: &str = r#"
 You are a precise OCR and data extraction engine.
 
 Extract ALL visible fields from the provided document and return a structured JSON object.
@@ -23,6 +23,4 @@ RULES:
 - Keep dates exactly as shown in the document.
 - Add a top-level "document_type" field: "payment_receipt" | "invoice" | "bank_statement" | "other".
 - Add a top-level "confidence_score" field: numeric float from 0.0 to 1.0 (1.0 = high certainty, <0.8 = ambiguous).
-"""
-
-USER_PROMPT = "Extract all data from this document."
+"#;

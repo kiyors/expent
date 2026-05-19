@@ -1,15 +1,17 @@
 use anyhow::Result;
-use reqwest::multipart;
 use sea_orm::DatabaseConnection;
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::sync::Arc;
 use tracing::info;
 
+pub mod gemini;
 pub mod ops;
+pub mod schema;
 pub mod strategies;
 pub mod utils;
 pub mod worker;
 
+pub use gemini::GeminiOcrClient;
 pub use ops::confirm::{confirm_ocr_job, resolve_contact_collision};
 pub use ops::lifecycle::{create_ocr_job, get_ocr_job, list_pending_ocr_jobs, update_ocr_job};
 pub use ops::process::{OcrProcessor, process_job};
@@ -23,30 +25,21 @@ pub struct OcrUpdate {
     pub trace_id: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct OcrService {
-    worker_url: String,
-    client: reqwest::Client,
+    gemini: Arc<GeminiOcrClient>,
 }
 
 impl OcrService {
-    pub async fn new(worker_url: Option<String>) -> Result<Self> {
-        let mut url = worker_url.unwrap_or_else(|| {
-            std::env::var("OCR_WORKER_URL").unwrap_or_else(|_| "http://localhost:8090".to_string())
-        });
+    pub async fn new(api_key: Option<String>) -> Result<Self> {
+        let key = api_key
+            .or_else(|| std::env::var("GOOGLE_API_KEY").ok())
+            .ok_or_else(|| anyhow::anyhow!("GOOGLE_API_KEY not found"))?;
 
-        if !url.contains("/extract") && !url.contains("/ocr") && !url.contains("/process") {
-            if !url.ends_with('/') {
-                url.push('/');
-            }
-            url.push_str("extract");
-        }
-
-        let client = reqwest::Client::new();
-        info!("🚀 OCR Service (Proxy) initialized with worker at: {}", url);
+        let gemini = GeminiOcrClient::new(key);
+        info!("🚀 OCR Service (Native) initialized with Gemini client.");
         Ok(Self {
-            worker_url: url,
-            client,
+            gemini: Arc::new(gemini),
         })
     }
 
@@ -54,33 +47,48 @@ impl OcrService {
         &self,
         file_bytes: &[u8],
         filename: &str,
-        mime_type: &str,
+        _mime_type: &str,
     ) -> Result<Value> {
         info!(
-            "📄 Forwarding file '{}' ({}) for extraction ({} bytes)",
+            "📄 Processing file '{}' for extraction ({} bytes) via Gemini",
             filename,
-            mime_type,
             file_bytes.len()
         );
 
-        let part = multipart::Part::bytes(file_bytes.to_vec())
-            .file_name(filename.to_string())
-            .mime_str(mime_type)?;
+        let extracted = self.gemini.extract_from_bytes(file_bytes, filename).await?;
 
-        let form = multipart::Form::new().part("file", part);
+        // Map UnifiedExtraction to the ProcessedOcr format Rust expects
+        let doc_type = match extracted.doc_type {
+            schema::DocType::Gpay => "GPAY",
+            schema::DocType::BankStatement => "BANK_STATEMENT",
+            schema::DocType::Generic => "GENERIC",
+        };
 
-        let res = self
-            .client
-            .post(&self.worker_url)
-            .multipart(form)
-            .send()
-            .await?
-            .error_for_status()?
-            .json::<Value>()
-            .await?;
+        let data = match extracted.doc_type {
+            schema::DocType::Gpay => serde_json::to_value(
+                extracted
+                    .gpay_data
+                    .ok_or_else(|| anyhow::anyhow!("GPAY data missing"))?,
+            )?,
+            schema::DocType::BankStatement => serde_json::to_value(db::BankExtractionResult {
+                raw_text: extracted.raw_text.clone().unwrap_or_default(),
+                doc_type: "bank_statement".to_string(),
+                confidence_score: extracted.confidence_score,
+                bank_data: extracted
+                    .bank_data
+                    .ok_or_else(|| anyhow::anyhow!("Bank data missing"))?,
+            })?,
+            schema::DocType::Generic => serde_json::to_value(
+                extracted
+                    .generic_data
+                    .ok_or_else(|| anyhow::anyhow!("Generic data missing"))?,
+            )?,
+        };
 
-        info!("📝 Extraction completed successfully via Python worker.");
-        Ok(res)
+        Ok(json!({
+            "doc_type": doc_type,
+            "data": data,
+        }))
     }
 
     pub async fn process_image(&self, image_bytes: &[u8]) -> Result<Value> {

@@ -1,5 +1,6 @@
 use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
+use schemars::JsonSchema;
 use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -10,24 +11,27 @@ pub mod error;
 pub use error::AppError;
 
 /// Represents a single line item in a purchase, typically extracted via OCR.
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "LineItem")]
 pub struct LineItem {
     pub name: String,
     pub quantity: i32,
     #[ts(type = "string")]
     #[serde(with = "rust_decimal::serde::str")]
+    #[schemars(with = "String")]
     pub price: Decimal,
 }
 
 /// The result of an OCR process, containing raw text and extracted transaction details.
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "OcrResult")]
 pub struct OcrResult {
     pub raw_text: String,
     pub vendor: Option<String>,
     #[ts(type = "string | null")]
+    #[schemars(with = "Option<String>")]
     pub amount: Option<Decimal>,
+    #[schemars(with = "Option<String>")]
     pub date: Option<DateTime<FixedOffset>>,
     pub upi_id: Option<String>,
     pub category_id: Option<String>,
@@ -44,11 +48,12 @@ fn default_confidence() -> f32 {
 }
 
 /// Specialized extraction for Google Pay screenshots.
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "GPayExtraction")]
 pub struct GPayExtraction {
     #[ts(type = "string")]
     #[serde(with = "rust_decimal::serde::str")]
+    #[schemars(with = "String")]
     pub amount: Decimal,
     pub direction: String, // "IN" | "OUT"
     pub datetime_str: Option<String>,
@@ -67,7 +72,7 @@ pub struct GPayExtraction {
     pub confidence_score: f32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "BankTransaction")]
 pub struct BankTransaction {
     pub transaction_date: String,
@@ -75,12 +80,15 @@ pub struct BankTransaction {
     pub mode: Option<String>,
     #[ts(type = "string | null")]
     #[serde(with = "rust_decimal::serde::str_option")]
+    #[schemars(with = "Option<String>")]
     pub debit_amount: Option<Decimal>,
     #[ts(type = "string | null")]
     #[serde(with = "rust_decimal::serde::str_option")]
+    #[schemars(with = "Option<String>")]
     pub credit_amount: Option<Decimal>,
     #[ts(type = "string | null")]
     #[serde(with = "rust_decimal::serde::str_option")]
+    #[schemars(with = "Option<String>")]
     pub balance: Option<Decimal>,
     pub contact_name: Option<String>,
     pub upi_id: Option<String>,
@@ -91,7 +99,7 @@ pub struct BankTransaction {
     pub metadata: Option<ExportedJsonValue>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "BankStatementResponse")]
 pub struct BankStatementResponse {
     pub transactions: Vec<BankTransaction>,
@@ -100,7 +108,7 @@ pub struct BankStatementResponse {
     pub statement_period: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "BankExtractionResult")]
 pub struct BankExtractionResult {
     pub raw_text: String,
@@ -110,7 +118,7 @@ pub struct BankExtractionResult {
 }
 
 /// Unified OCR data from the Python worker.
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[ts(export, rename = "ProcessedOcr")]
 pub struct ProcessedOcr {
     pub doc_type: String,        // "GPAY" or "GENERIC"
@@ -120,7 +128,7 @@ pub struct ProcessedOcr {
     pub is_high_res: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
 #[serde(tag = "doc_type", rename_all = "SCREAMING_SNAKE_CASE")]
 #[ts(export)]
 pub enum TypedProcessedOcr {
@@ -142,7 +150,7 @@ pub enum TypedProcessedOcr {
 }
 
 /// A type alias for `serde_json::Value` to control its TypeScript export location.
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, rename = "JsonValue")]
 pub struct ExportedJsonValue(
     #[ts(

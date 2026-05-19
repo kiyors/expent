@@ -1,4 +1,4 @@
-ICICI_PROMPT = """
+pub const ICICI_PROMPT: &str = r#"
 You are an expert financial data extractor specializing in ICICI Bank statements.
 Your goal is to extract every transaction from the provided document into a structured JSON format.
 
@@ -32,4 +32,4 @@ Your goal is to extract every transaction from the provided document into a stru
 
 6. **Unified Schema**:
    - Always return data strictly following the `BankStatementResponse` schema.
-"""
+"#;

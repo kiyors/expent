@@ -29,10 +29,6 @@ jobs:
             context: .
             dockerfile: apps/server/Dockerfile
             image: ghcr.io/${{ github.repository }}-server
-          - service: ocr
-            context: .
-            dockerfile: apps/ocr/Dockerfile
-            image: ghcr.io/${{ github.repository }}-ocr
 
     steps:
       - name: Checkout repository

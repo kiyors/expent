@@ -1,4 +1,4 @@
-GPAY_SYSTEM_PROMPT = """
+pub const SYSTEM_PROMPT: &str = r#"
 You are a highly precise financial data extractor analyzing Google Pay screenshots.
 Your goal is to extract transaction details into a structured JSON format.
 
@@ -26,4 +26,4 @@ CRITICAL RULES FOR GOOGLE PAY:
    - Strip the currency symbol (₹) and commas from the amount.
 6. Confidence:
    - Set "confidence_score" (0.0 to 1.0) based on image clarity and data certainty. If everything is clear, set to 1.0. If blurry or ambiguous, lower it.
-"""
+"#;

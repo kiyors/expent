@@ -135,7 +135,7 @@ pub struct CoreConfig {
     pub s3_access_key_id: String,
     pub s3_secret_access_key: String,
     pub s3_bucket_name: String,
-    pub ocr_worker_url: Option<String>,
+    pub google_api_key: Option<String>,
     pub better_auth_secret: String,
     pub better_auth_base_url: String,
 }
@@ -190,7 +190,7 @@ impl Core {
 
         // Initialize OCR Service
         let ocr_service = Arc::new(
-            OcrService::new(config.ocr_worker_url)
+            OcrService::new(config.google_api_key)
                 .await
                 .map_err(|e| anyhow::anyhow!("OCR init failed: {e}"))?,
         );

@@ -4,101 +4,124 @@
     "agents-md": {
       "source": "getsentry/skills",
       "sourceType": "github",
-      "computedHash": "2c9df6461b050a8010354c5c41aaf1c93487363d8fd0e04121e91829d0007201"
+      "skillPath": "skills/agents-md/SKILL.md",
+      "computedHash": "7ff79d6771cdf3db33606251eb15bbc5203b68a94b036ee471869842118ea02a"
     },
     "better-auth-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",
+      "skillPath": "better-auth/best-practices/SKILL.md",
       "computedHash": "a4c830509e85557b59339d8d93a4e243e9e59c686e7678854d39230e12c2a6dc"
     },
     "better-auth-security-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",
+      "skillPath": "security/SKILL.md",
       "computedHash": "5717187bba9c22030c7174c74012f01c359f21e2ce87e0eb80e24244d8b8c915"
     },
     "biome-developer": {
       "source": "biomejs/biome",
       "sourceType": "github",
-      "computedHash": "3a9e05cb3f7254cc8adb9341716f3a056beaee54836f76bfd9968e71a510a513"
+      "skillPath": ".claude/skills/biome-developer/SKILL.md",
+      "computedHash": "395e868b6dee6e283f7e16e761e3ff72227a3f9aa6451aeee78daf6f2cb4b857"
     },
     "building-components": {
       "source": "vercel/components.build",
       "sourceType": "github",
-      "computedHash": "20889af7cb9b3abca1e38824f7fffaa873eb0cc4d45187967b97bd85462cf934"
+      "skillPath": "skills/building-components/SKILL.md",
+      "computedHash": "ca96444b70257eb3f4f4c76dfdd4a32312c835fe3c8755d2e3d75ac78d384bfd"
     },
     "building-native-ui": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/building-native-ui/SKILL.md",
       "computedHash": "342df93f481a0dba919f372d6c7b40d2b4bf5b51dd24363aea2e5d0bae27a6fa"
     },
     "code-reviewer": {
       "source": "google-gemini/gemini-cli",
       "sourceType": "github",
+      "skillPath": ".gemini/skills/code-reviewer/SKILL.md",
       "computedHash": "270f0dd1d4c15a798bad5253a309cdc2056fe5322f99ba06ca22ce50581adc02"
     },
     "create-auth-skill": {
       "source": "better-auth/skills",
       "sourceType": "github",
+      "skillPath": "better-auth/create-auth/SKILL.md",
       "computedHash": "31c027d02dbf1faa37f58191f574b9443143042fb2b684fe32df53ab0270487c"
     },
     "database-schema-designer": {
       "source": "softaworks/agent-toolkit",
       "sourceType": "github",
+      "skillPath": "skills/database-schema-designer/SKILL.md",
       "computedHash": "6a26ca15216bb4bfee66ebf813edcb1e31a8002f3f641f16f550df814b522217"
+    },
+    "db-core": {
+      "source": "@tanstack/db",
+      "sourceType": "node_modules",
+      "computedHash": "44b7bf13a048b9ae15d6d831dcf43bdd12284aa71c270b13aad691bd2e05eb7b"
     },
     "dotenv": {
       "source": "dotenv",
       "sourceType": "node_modules",
-      "computedHash": "e64c5ecfb1239ab1d3b344bd44d67957c15535779acddb3311f5ed1108ca92fb"
+      "computedHash": "7580a9737aebb75d98d174bed9b3545586db2d3a112f0fe69c8b79eecfd5ce99"
     },
     "dotenvx": {
       "source": "dotenv",
       "sourceType": "node_modules",
-      "computedHash": "49dad51b8b8363e9ea0497e6ec71fef6a2afef58f3b219ccccc81ab7f79df3c4"
+      "computedHash": "851072ff03649019eeadb9780b87eacdc3e0b39b8407105354144f692ebc699b"
     },
     "email-and-password-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",
+      "skillPath": "better-auth/emailAndPassword/SKILL.md",
       "computedHash": "747d7f73bd9e2ec5317b8ef88dc70f97df716d00e3d02de4051feebaa48b062d"
     },
     "expo-api-routes": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-api-routes/SKILL.md",
       "computedHash": "015c6b849507fda73fcc32d2448f033aaaaa21f5229085342b8421727a90cafb"
     },
     "expo-cicd-workflows": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-cicd-workflows/SKILL.md",
       "computedHash": "700b20b575fcbe75ad238b41a0bd57938abe495e62dc53e05400712ab01ee7c0"
     },
     "expo-deployment": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-deployment/SKILL.md",
       "computedHash": "9ea9f16374765c1b16764a51bd43a64098921b33f48e94d9c5c1cce24b335c10"
     },
     "expo-dev-client": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-dev-client/SKILL.md",
       "computedHash": "234e2633b7fbcef2d479f8fe8ab20d53d08ed3e4beec7c965da4aff5b43affe7"
     },
     "expo-module": {
       "source": "expo/skills",
       "sourceType": "github",
-      "computedHash": "c1e47893d207b68c9a2a5b0de3f97042f82a65c0b3c3a33a7114029211b8e89b"
+      "skillPath": "plugins/expo/skills/expo-module/SKILL.md",
+      "computedHash": "439263df82d935eb35fa3074b7cc176b1cbc26cd95c619ba8c1f9331242016ec"
     },
     "expo-tailwind-setup": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-tailwind-setup/SKILL.md",
       "computedHash": "d39e806942fe880347f161056729b588a3cb0f1796270eebf52633fe11cfdce1"
     },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
-      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
     },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
       "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
     },
     "h3": {
@@ -109,27 +132,36 @@
     "hula-skill": {
       "source": "hulaspark/hula",
       "sourceType": "github",
+      "skillPath": "skills/hula-skill/SKILL.md",
       "computedHash": "57a9917a087318b7884f1a52b16f9ef2e1e5dd02507b68bb6ea1b19249b415a0"
     },
-    "image-ocr": {
-      "source": "fearovex/claude-config",
-      "sourceType": "github",
-      "computedHash": "b6d11818afcad4e114cd5816da05127dc5f6b9bf0a42a940d7b64ed87591b564"
+    "meta-framework": {
+      "source": "@tanstack/db",
+      "sourceType": "node_modules",
+      "computedHash": "31e08164bbb301a2c241104f413a63129072d05605fedf43f48af97a2c64d23b"
     },
     "native-data-fetching": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/native-data-fetching/SKILL.md",
       "computedHash": "3cd0ba91f359f9f84cd40f36f356287994a0e952520fac6e03ef7952d0397879"
     },
     "next-best-practices": {
       "source": "vercel-labs/next-skills",
       "sourceType": "github",
-      "computedHash": "db85045827ebeb83ac8dbc992b69188755eeb74dcf01cbf5e694d58aa494a106"
+      "skillPath": "skills/next-best-practices/SKILL.md",
+      "computedHash": "923cf68cb8f4ce917d81744b78b93ff586d3146b6c96dacfef797237b4897f16"
     },
     "organization-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",
+      "skillPath": "better-auth/organization/SKILL.md",
       "computedHash": "79a5a85b43d10e9fe37582b3506b051a33a991817b938f349099baa5ddba21aa"
+    },
+    "react-db": {
+      "source": "@tanstack/react-db",
+      "sourceType": "node_modules",
+      "computedHash": "bea666abfdf61cd0c355ebb620880b707fb7ac797823d36390ee2951fa513dcc"
     },
     "react-start": {
       "source": "@tanstack/react-start",
@@ -149,12 +181,20 @@
     "rust-best-practices": {
       "source": "apollographql/skills",
       "sourceType": "github",
+      "skillPath": "skills/rust-best-practices/SKILL.md",
       "computedHash": "fd336f2f772eb46ddf8658de5f9dd8faa1f35615b316665307fc82eeb4b2e658"
+    },
+    "rust-wasm": {
+      "source": "pluginagentmarketplace/custom-plugin-rust",
+      "sourceType": "github",
+      "skillPath": "skills/rust-wasm/SKILL.md",
+      "computedHash": "cc1d37d632641d8cd05b8405c2fb522d6bbd46330745ef5fb03234b16609d444"
     },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
-      "computedHash": "507f011a70e8b3ae242bdc0bb5b39fd91a1d4049a0f3c281991ccf84973d591c"
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "80a6226e78f6d1fe464214ae0ef449d49d8ffaa3e7704f011e9b418c678ad4d1"
     },
     "start-core": {
       "source": "@tanstack/start-client-core",
@@ -169,52 +209,67 @@
     "two-factor-authentication-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",
+      "skillPath": "better-auth/twoFactor/SKILL.md",
       "computedHash": "7e297aaf887e11fdc03e52bdbf44974e161e8f7c393170ced7dc66cace4f6d46"
     },
     "typescript-advanced-types": {
       "source": "wshobson/agents",
       "sourceType": "github",
+      "skillPath": "plugins/javascript-typescript/skills/typescript-advanced-types/SKILL.md",
       "computedHash": "3a3be8c925f96ac4e1280db28a01677e7ca5197f3792de2bbf35ab3bb324b6dd"
     },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
       "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
       "computedHash": "0a413bf988d06481f69bb81df2070741c3ba12dd9f1be2706d57f259c905992d"
     },
     "upgrading-expo": {
       "source": "expo/skills",
       "sourceType": "github",
-      "computedHash": "939a6820e0d6ead943bb4ad93cec647815e73fbc04043401773b2138e9e13b69"
+      "skillPath": "plugins/expo/skills/upgrading-expo/SKILL.md",
+      "computedHash": "2c65483a035341da654b92b130fd5b45690b139b624613dc94c414bae1067f6c"
     },
     "use-dom": {
       "source": "expo/skills",
       "sourceType": "github",
+      "skillPath": "plugins/expo/skills/use-dom/SKILL.md",
       "computedHash": "8eca0e229f16e3499e5dbf791a79f5a5cba1e98b4af88ca495c903930d7f1ba0"
     },
     "uv-package-manager": {
       "source": "wshobson/agents",
       "sourceType": "github",
-      "computedHash": "8b02057eb73c69f292981b3325447c0c852fb547b5a22312dd4ecff825e7a404"
+      "skillPath": "plugins/python-development/skills/uv-package-manager/SKILL.md",
+      "computedHash": "c2bf8833d6c3ffa283171ef3b8da90274451605e170077f1ee6529cc38aa6438"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
-      "computedHash": "ca7b0c0c6e5f2750043f7f0cd72d16ac4e2abc48f9b5500d047a4b77a2506212"
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
     },
     "vercel-react-view-transitions": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
-      "computedHash": "c8952fc9127fa0564d0cb71dccb4215a5608ac933b5831104f09173a97a46f85"
+      "skillPath": "skills/react-view-transitions/SKILL.md",
+      "computedHash": "4fea9144f604256d0a21faaea904b7e205e7676e316721ba5fdd68c2600c7d42"
     },
     "virtual-file-routes": {
       "source": "@tanstack/virtual-file-routes",
       "sourceType": "node_modules",
       "computedHash": "aa6d51e675f35d932406c95c830e93e73f7fe3409471be92f533491ce6b3bb01"
     },
+    "wasm-compatibility": {
+      "source": "marimo-team/skills",
+      "sourceType": "github",
+      "skillPath": "skills/wasm-compatibility/SKILL.md",
+      "computedHash": "9f1f2d2510d00d71422b585b057d9caa58c3adfe077172409aa872de097cb0a3"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
-      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     }
   }
 }
