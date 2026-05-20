@@ -5,6 +5,7 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { api } from "@/lib/api-client";
+import { validatePdfPageCount } from "@/lib/pdf-utils";
 
 export type UploadStepStatus = "pending" | "in-progress" | "completed" | "failed";
 
@@ -37,12 +38,9 @@ export function useOcrUpload() {
       }
 
       if (job.status === "CONTACT_COLLISION") {
-        // This is a special state where we have data but need contact resolution
-        // The processed_data should still be there but flagged
         return job.processed_data as TypedProcessedOcr;
       }
 
-      // Update progress description if we have information
       if (job.status === "PROCESSING") {
         setUploadSteps((prev) =>
           prev.map((s) =>
@@ -64,6 +62,10 @@ export function useOcrUpload() {
 
   const uploadFile = useCallback(
     async (file: File) => {
+      // PDF Page Count Validation (Client-side WASM)
+      const isValid = await validatePdfPageCount(file);
+      if (!isValid) return null;
+
       setIsUploading(true);
       setProcessedOcr(null);
 
@@ -105,7 +107,6 @@ export function useOcrUpload() {
 
         const result = await pollJobStatus(job_id);
 
-        // Invalidate queries to pick up any auto-created wallets or contacts
         queryClient.invalidateQueries({ queryKey: ["wallets"] });
         queryClient.invalidateQueries({ queryKey: ["contacts"] });
 

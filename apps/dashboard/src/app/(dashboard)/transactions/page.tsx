@@ -1,5 +1,5 @@
 "use client";
-import type { OcrJob, OcrTransactionResponse, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
+import type { OcrTransactionResponse, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -56,6 +56,8 @@ import { TransactionViewer } from "@/components/transactions/transaction-viewer"
 import { useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
 
+import { useOcrUpload } from "@/hooks/use-ocr";
+
 // Route Component
 export default function TransactionsPage() {
   const queryClient = useQueryClient();
@@ -93,15 +95,7 @@ export default function TransactionsPage() {
   const [editingTxnId, setEditingTxnId] = React.useState<string | null>(null);
 
   // Upload State
-  const [isUploading, setIsUploading] = React.useState(false);
-  const [uploadSteps, setUploadSteps] = React.useState<
-    {
-      id: string;
-      label: string;
-      status: "pending" | "completed" | "failed" | "in-progress";
-    }[]
-  >([]);
-  const [processedOcr, setProcessedOcr] = React.useState<TypedProcessedOcr | null>(null);
+  const { isUploading, uploadSteps, processedOcr, uploadFile, setProcessedOcr } = useOcrUpload();
   const [isSavingOcr, setIsSavingOcr] = React.useState(false);
 
   const data = React.useMemo<TransactionWithDetail[]>(() => {
@@ -120,59 +114,7 @@ export default function TransactionsPage() {
   }, []);
 
   const handleUpload = async (file: File) => {
-    setIsUploading(true);
-    setProcessedOcr(null);
-
-    const steps: {
-      id: string;
-      label: string;
-      status: "pending" | "completed" | "failed" | "in-progress";
-    }[] = [
-      { id: "1", label: "Uploading file…", status: "in-progress" },
-      { id: "2", label: "Classifying…", status: "pending" },
-      { id: "3", label: "Extracting…", status: "pending" },
-    ];
-    setUploadSteps(steps);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7878";
-      const uploadRes = await fetch(`${API_BASE_URL}/api/upload`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      if (!uploadRes.ok) throw new Error("Upload failed");
-      const { key } = await uploadRes.json();
-
-      setUploadSteps((prev) =>
-        prev.map((s) =>
-          s.id === "1" ? { ...s, status: "completed" } : s.id === "2" ? { ...s, status: "in-progress" } : s,
-        ),
-      );
-
-      const result = await api.post<OcrJob>("/api/ocr/process", { key });
-
-      setUploadSteps((prev) =>
-        prev.map((s) =>
-          s.id === "2" ? { ...s, status: "completed" } : s.id === "3" ? { ...s, status: "in-progress" } : s,
-        ),
-      );
-
-      setUploadSteps((prev) => prev.map((s) => (s.id === "3" ? { ...s, status: "completed" } : s)));
-
-      setProcessedOcr(result.processed_data as TypedProcessedOcr);
-      toast.success("Extraction complete!");
-      setTimeout(() => setIsUploading(false), 1000);
-    } catch (error) {
-      console.error(error);
-      setUploadSteps((prev) => prev.map((s) => (s.status === "in-progress" ? { ...s, status: "failed" } : s)));
-      toast.error("Upload or processing failed.");
-      setTimeout(() => setIsUploading(false), 2000);
-    }
+    await uploadFile(file);
   };
 
   const handleConfirmOcr = async (finalData: TypedProcessedOcr) => {
