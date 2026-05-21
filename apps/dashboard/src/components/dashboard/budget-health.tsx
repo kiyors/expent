@@ -1,17 +1,52 @@
 "use client";
 
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@expent/ui/components/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
 import { cn } from "@expent/ui/lib/utils";
 import { TargetIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
 import { useBudgets } from "@/hooks/use-budgets";
+import { calculateSpendingVelocityWasm } from "@/lib/wasm-utils";
+
+interface VelocityDisplay {
+  budget_id: string;
+  projected_total: number;
+  is_overpacing: boolean;
+}
 
 export function BudgetHealthWidget() {
   const { health, isLoading } = useBudgets();
   const router = useRouter();
   const [_isPending, startTransition] = useTransition();
+  const [velocities, setVelocities] = useState<Record<string, VelocityDisplay>>({});
+
+  useEffect(() => {
+    if (!health) return;
+
+    async function computeProjections() {
+      if (!health) return;
+      const newVelocities: Record<string, VelocityDisplay> = {};
+
+      for (const b of health) {
+        try {
+          const vel = await calculateSpendingVelocityWasm(b.spent_amount, b.limit_amount, b.period);
+          if (vel) {
+            newVelocities[b.budget_id] = {
+              budget_id: b.budget_id,
+              projected_total: vel.projected_total,
+              is_overpacing: vel.is_overpacing,
+            };
+          }
+        } catch (e) {
+          console.error("Velocity computation failed", e);
+        }
+      }
+      setVelocities(newVelocities);
+    }
+
+    computeProjections();
+  }, [health]);
 
   if (isLoading) {
     return (
@@ -46,26 +81,56 @@ export function BudgetHealthWidget() {
       <div className="space-y-4">
         {health.slice(0, 4).map((b) => {
           const percentage = Number(b.percentage_consumed);
+          const velocity = velocities[b.budget_id];
           const isOver = percentage > 100;
+          const isOverpacing = velocity?.is_overpacing;
           const isWarning = percentage > 85;
 
           return (
             <div key={b.budget_id} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-medium truncate max-w-[150px]">{b.category_name}</span>
-                <span
-                  className={cn(
-                    "font-bold",
-                    isOver ? "text-destructive" : isWarning ? "text-amber-500" : "text-primary",
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-medium truncate max-w-[150px]">{b.category_name}</span>
+                  {velocity && (
+                    <span className="text-[10px] text-muted-foreground">
+                      Proj: ₹{velocity.projected_total.toFixed(0)}
+                    </span>
                   )}
-                >
-                  {percentage.toFixed(0)}%
-                </span>
+                </div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span
+                    className={cn(
+                      "font-bold",
+                      isOver
+                        ? "text-destructive"
+                        : isOverpacing
+                          ? "text-amber-600"
+                          : isWarning
+                            ? "text-amber-500"
+                            : "text-primary",
+                    )}
+                  >
+                    {percentage.toFixed(0)}%
+                  </span>
+                  {isOverpacing && !isOver && (
+                    <span className="text-[9px] font-semibold text-amber-600 uppercase tracking-tighter">
+                      Overpacing
+                    </span>
+                  )}
+                </div>
               </div>
               <Progress value={Math.min(percentage, 100)}>
                 <ProgressTrack className="h-1.5 bg-muted/50">
                   <ProgressIndicator
-                    className={cn(isOver ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-primary")}
+                    className={cn(
+                      isOver
+                        ? "bg-destructive"
+                        : isOverpacing
+                          ? "bg-amber-600"
+                          : isWarning
+                            ? "bg-amber-500"
+                            : "bg-primary",
+                    )}
                   />
                 </ProgressTrack>
               </Progress>
