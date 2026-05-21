@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const parse_numeric_like: (a: number, b: number) => [number, number];
 export const __wbg_get_periodbounds_end_ms: (a: number) => bigint;
 export const __wbg_get_periodbounds_start_ms: (a: number) => bigint;
 export const __wbg_get_savingsprojection_is_attainable: (a: number) => number;
@@ -27,8 +28,20 @@ export const is_transaction_in_period: (a: bigint, b: number, c: number) => numb
 export const project_savings_goal: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
 export const __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;
 export const __wbg_set_spendingvelocity_daily_burn_rate: (a: number, b: number) => void;
-export const __wbindgen_externrefs: WebAssembly.Table;
+export const aggregate_transactions: (a: any) => [number, number, number];
+export const detect_subscription_patterns: (a: any) => [number, number, number];
+export const parse_csv_to_json: (a: number, b: number) => [number, number, number];
+export const parse_excel_to_json: (a: number, b: number) => [number, number, number];
+export const batch_fuzzy_search: (a: number, b: number, c: number, d: number, e: number) => any;
+export const calculate_match_score: (a: bigint, b: number, c: number, d: number, e: number, f: bigint, g: number, h: number, i: number, j: number) => number;
+export const fuzzy_score: (a: number, b: number, c: number, d: number) => number;
+export const normalize_text: (a: number, b: number) => [number, number];
+export const phonetic_encode: (a: number, b: number) => [number, number];
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_exn_store: (a: number) => void;
+export const __externref_table_alloc: () => number;
+export const __wbindgen_externrefs: WebAssembly.Table;
+export const __externref_table_dealloc: (a: number) => void;
 export const __wbindgen_free: (a: number, b: number, c: number) => void;
 export const __wbindgen_start: () => void;

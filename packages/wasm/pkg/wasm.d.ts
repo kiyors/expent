@@ -28,13 +28,33 @@ export class SpendingVelocity {
     target_daily_rate: number;
 }
 
+export function aggregate_transactions(transactions: any): any;
+
+export function batch_fuzzy_search(query: string, items: string[], threshold: number): any;
+
 export function calculate_budget_percentage(spent: string, limit: string): string;
 
+export function calculate_match_score(row_date_ms: bigint, row_desc: string, row_amount: string, txn_date_ms: bigint, txn_desc: string, txn_amount: string): number;
+
 export function calculate_spending_velocity(spent: string, limit: string, period: string): SpendingVelocity | undefined;
+
+export function detect_subscription_patterns(transactions: any): any;
+
+export function fuzzy_score(a: string, b: string): number;
 
 export function get_period_bounds(period: string): PeriodBounds | undefined;
 
 export function is_transaction_in_period(txn_date_ms: bigint, period: string): boolean;
+
+export function normalize_text(text: string): string;
+
+export function parse_csv_to_json(data: Uint8Array): any;
+
+export function parse_excel_to_json(data: Uint8Array): any;
+
+export function parse_numeric_like(input: string): number | undefined;
+
+export function phonetic_encode(text: string): string;
 
 export function project_savings_goal(current_balance: string, target_amount: string, monthly_income: string, monthly_expenses: string): SavingsProjection | undefined;
 
@@ -42,6 +62,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly parse_numeric_like: (a: number, b: number) => [number, number];
     readonly __wbg_get_periodbounds_end_ms: (a: number) => bigint;
     readonly __wbg_get_periodbounds_start_ms: (a: number) => bigint;
     readonly __wbg_get_savingsprojection_is_attainable: (a: number) => number;
@@ -68,9 +89,21 @@ export interface InitOutput {
     readonly project_savings_goal: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
     readonly __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;
     readonly __wbg_set_spendingvelocity_daily_burn_rate: (a: number, b: number) => void;
-    readonly __wbindgen_externrefs: WebAssembly.Table;
+    readonly aggregate_transactions: (a: any) => [number, number, number];
+    readonly detect_subscription_patterns: (a: any) => [number, number, number];
+    readonly parse_csv_to_json: (a: number, b: number) => [number, number, number];
+    readonly parse_excel_to_json: (a: number, b: number) => [number, number, number];
+    readonly batch_fuzzy_search: (a: number, b: number, c: number, d: number, e: number) => any;
+    readonly calculate_match_score: (a: bigint, b: number, c: number, d: number, e: number, f: bigint, g: number, h: number, i: number, j: number) => number;
+    readonly fuzzy_score: (a: number, b: number, c: number, d: number) => number;
+    readonly normalize_text: (a: number, b: number) => [number, number];
+    readonly phonetic_encode: (a: number, b: number) => [number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_exn_store: (a: number) => void;
+    readonly __externref_table_alloc: () => number;
+    readonly __wbindgen_externrefs: WebAssembly.Table;
+    readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_start: () => void;
 }
