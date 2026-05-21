@@ -3,6 +3,9 @@ name              = "users"
 version.workspace = true
 edition.workspace = true
 
+[lib]
+doctest = false
+
 [dependencies]
 db.workspace = true
 

@@ -23,25 +23,26 @@ resolver = "2"
 
 [workspace.package]
 edition = "2024"
-version = "0.1.0"
+version = "0.2.0"
 
 [workspace.dependencies]
-auth       = { path = "crates/auth", version = "0.1.0" }
-budgets    = { path = "crates/budgets", version = "0.1.0" }
-categories = { path = "crates/categories", version = "0.1.0" }
-contacts   = { path = "crates/contacts", version = "0.1.0" }
-db         = { path = "crates/db", version = "0.1.0" }
+auth       = { path = "crates/auth", version = "0.2.0" }
+budgets    = { path = "crates/budgets", version = "0.2.0" }
+categories = { path = "crates/categories", version = "0.2.0" }
+contacts   = { path = "crates/contacts", version = "0.2.0" }
+db         = { path = "crates/db", version = "0.2.0" }
 
-expent_core    = { path = "crates/expent_core", version = "0.1.0" }
-groups         = { path = "crates/groups", version = "0.1.0" }
-jobs           = { path = "crates/jobs", version = "0.1.0" }
-ocr            = { path = "crates/ocr", version = "0.1.0" }
-reconciliation = { path = "crates/reconciliation", version = "0.1.0" }
-subscriptions  = { path = "crates/subscriptions", version = "0.1.0" }
-transactions   = { path = "crates/transactions", version = "0.1.0" }
-upload         = { path = "crates/upload", version = "0.1.0" }
-users          = { path = "crates/users", version = "0.1.0" }
-wallets        = { path = "crates/wallets", version = "0.1.0" }
+expent_core    = { path = "crates/expent_core", version = "0.2.0" }
+groups         = { path = "crates/groups", version = "0.2.0" }
+jobs           = { path = "crates/jobs", version = "0.2.0" }
+ocr            = { path = "crates/ocr", version = "0.2.0" }
+reconciliation = { path = "crates/reconciliation", version = "0.2.0" }
+subscriptions  = { path = "crates/subscriptions", version = "0.2.0" }
+transactions   = { path = "crates/transactions", version = "0.2.0" }
+upload         = { path = "crates/upload", version = "0.2.0" }
+users          = { path = "crates/users", version = "0.2.0" }
+wallets        = { path = "crates/wallets", version = "0.2.0" }
+wasm           = { path = "crates/wasm", version = "0.2.0" }
 
 # External crates
 any_ascii = "0.1"
@@ -49,7 +50,7 @@ anyhow = "1.0"
 async-stream = "0.3"
 async-trait = "0.1"
 aws-config = "1.8"
-aws-sdk-s3 = "1.132"
+aws-sdk-s3 = "1.133"
 axum = { features = [ "multipart" ], version = "0.8" }
 better-auth = { features = [ "axum", "derive" ], version = "0.9.0" }
 chrono = { features = [ "serde" ], version = "0.4" }

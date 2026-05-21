@@ -3,6 +3,9 @@ name              = "wallets"
 edition.workspace = true
 version.workspace = true
 
+[lib]
+doctest = false
+
 [dependencies]
 chrono.workspace       = true
 db.workspace           = true

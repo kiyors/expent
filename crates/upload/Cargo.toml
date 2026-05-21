@@ -3,6 +3,9 @@ name              = "upload"
 version.workspace = true
 edition.workspace = true
 
+[lib]
+doctest = false
+
 [dependencies]
 aws-sdk-s3.workspace = true
 bytes                = "1.11"

@@ -3,6 +3,9 @@ name              = "transactions"
 edition.workspace = true
 version.workspace = true
 
+[lib]
+doctest = false
+
 [dependencies]
 chrono.workspace       = true
 db.workspace           = true
@@ -13,8 +16,8 @@ uuid.workspace         = true
 wallets.workspace      = true
 
 [dev-dependencies]
-migration = { path = "../migration" }
-tokio     = { features = [ "full" ], version = "1.52" }
+migration       = { path = "../migration" }
+tokio.workspace = true
 
 [lints]
 workspace = true

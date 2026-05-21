@@ -5,8 +5,10 @@ edition.workspace = true
 publish           = false
 
 [lib]
-name = "migration"
-path = "src/lib.rs"
+doctest = false
+name    = "migration"
+path    = "src/lib.rs"
+test    = false
 
 [dependencies]
 async-std                   = { features = [ "attributes", "tokio1" ], version = "1" }
