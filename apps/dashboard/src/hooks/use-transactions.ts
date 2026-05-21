@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
+import { aggregateTransactionsWasm } from "@/lib/wasm-utils";
 
 export function useTransactions(params: { limit?: number; offset?: number } = {}) {
   const session = useSession();
@@ -84,5 +85,23 @@ export function useTransactionSummary() {
     isFetching: query.isFetching,
     error: query.error,
     refetch: query.refetch,
+  };
+}
+
+export function useLocalSummary() {
+  const { transactions, isLoading } = useTransactions({ limit: 1000 });
+
+  const { data: localSummary, isLoading: isComputing } = useQuery({
+    queryKey: ["local-summary", transactions?.length],
+    queryFn: async () => {
+      if (!transactions || transactions.length === 0) return null;
+      return aggregateTransactionsWasm(transactions);
+    },
+    enabled: !!transactions && transactions.length > 0,
+  });
+
+  return {
+    summary: localSummary,
+    isLoading: isLoading || isComputing,
   };
 }

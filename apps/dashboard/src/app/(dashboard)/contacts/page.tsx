@@ -31,11 +31,12 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
+import { useFuzzySearch } from "@/hooks/use-wasm-search";
 
 export default function ContactsPage() {
   const router = useRouter();
   const [_isPending, startTransition] = React.useTransition();
-  const [searchQuery, setSearchSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [newName, setNewName] = React.useState("");
   const [newPhone, setNewPhone] = React.useState("");
@@ -62,13 +63,10 @@ export default function ContactsPage() {
     );
   };
 
-  const filteredContacts = React.useMemo(() => {
-    if (!contacts) return [];
-    return contacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [contacts, searchQuery]);
+  const filteredContacts = useFuzzySearch(contacts, searchQuery, (c) => c.name, 0.4);
 
-  const pinnedContacts = filteredContacts.filter((c) => c.is_pinned);
-  const otherContacts = filteredContacts.filter((c) => !c.is_pinned);
+  const pinnedContacts = React.useMemo(() => filteredContacts.filter((c) => c.is_pinned), [filteredContacts]);
+  const otherContacts = React.useMemo(() => filteredContacts.filter((c) => !c.is_pinned), [filteredContacts]);
 
   return (
     <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
@@ -126,7 +124,7 @@ export default function ContactsPage() {
           placeholder="Search contacts by name…"
           className="pl-10 h-11 bg-card shadow-xs"
           value={searchQuery}
-          onChange={(e) => setSearchSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 

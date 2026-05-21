@@ -30,12 +30,14 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
+import { useLocalSubscriptionDetection } from "@/hooks/use-wasm-logic";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 
 export default function SubscriptionsComponent() {
   const queryClient = useQueryClient();
   const session = useSession();
+  const { detectedSubscriptions, isLoading: isLocalDetecting } = useLocalSubscriptionDetection();
 
   const { data: confirmedSubs } = useQuery({
     queryKey: ["subscriptions"],
@@ -91,13 +93,21 @@ export default function SubscriptionsComponent() {
       </div>
 
       <Tabs defaultValue="active" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
           <TabsTrigger value="active">Active Tracked</TabsTrigger>
           <TabsTrigger value="detected">
-            Detected
+            Server Detected
             {potentialSubs && potentialSubs.length > 0 && (
               <Badge variant="secondary" className="ml-2 h-4 px-1.5 min-w-[1.25rem]">
                 {potentialSubs.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="local">
+            Local WASM
+            {detectedSubscriptions && detectedSubscriptions.length > 0 && (
+              <Badge variant="secondary" className="ml-2 h-4 px-1.5 min-w-[1.25rem] bg-primary/10 text-primary">
+                {detectedSubscriptions.length}
               </Badge>
             )}
           </TabsTrigger>
@@ -145,6 +155,51 @@ export default function SubscriptionsComponent() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {potentialSubs.map((sub) => (
                 <SubscriptionCard key={sub.id} sub={sub} onAction={() => confirmMutation.mutate(sub)} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="local" className="mt-6">
+          {isLocalDetecting ? (
+            <div className="text-center py-20 text-muted-foreground">WASM is scanning your local history…</div>
+          ) : !detectedSubscriptions || detectedSubscriptions.length === 0 ? (
+            <Card className="border-dashed py-20">
+              <CardContent className="flex flex-col items-center text-center">
+                <SparklesIcon className="h-12 w-12 text-muted-foreground/20 mb-4" />
+                <h3 className="text-lg font-semibold">No local patterns found</h3>
+                <p className="text-muted-foreground max-w-xs mt-1">
+                  Try adding more transaction history to help WASM identify recurring payments.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {detectedSubscriptions.map((sub, i) => (
+                <SubscriptionCard
+                  key={`local-${i}`}
+                  sub={
+                    {
+                      id: `temp-${i}`,
+                      name: sub.name,
+                      amount: sub.amount,
+                      cycle: sub.cycle,
+                      start_date: sub.last_date,
+                      next_charge_date: sub.last_date, // Placeholder
+                      detection_keywords: [sub.name],
+                    } as any
+                  }
+                  onAction={() =>
+                    confirmMutation.mutate({
+                      name: sub.name,
+                      amount: sub.amount,
+                      cycle: sub.cycle,
+                      start_date: sub.last_date,
+                      next_charge_date: sub.last_date,
+                      detection_keywords: [sub.name],
+                    } as any)
+                  }
+                />
               ))}
             </div>
           )}

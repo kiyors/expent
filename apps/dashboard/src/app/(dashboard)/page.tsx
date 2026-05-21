@@ -1,6 +1,7 @@
 "use client";
 
 import type { P2pRequestWithSender, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
+import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
 import {
@@ -64,7 +65,7 @@ import { TransactionViewer } from "@/components/transactions/transaction-viewer"
 import { DashboardSkeleton } from "@/components/ui-elements/dashboard-skeleton";
 import { useOcrUpload } from "@/hooks/use-ocr";
 import { useP2P } from "@/hooks/use-p2p";
-import { useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
+import { useLocalSummary, useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
 import type { Column } from "@/lib/data-table-types";
 import { useGlobalStore } from "@/lib/store";
@@ -96,6 +97,7 @@ function DashboardContent() {
 
   const { transactions, isLoading: isTxnsLoading, updateMutation, deleteMutation } = useTransactions({ limit: 5 });
   const { summary, isLoading: isSummaryLoading } = useTransactionSummary();
+  const { summary: localSummary } = useLocalSummary();
   const { p2pRequests, acceptMutation } = useP2P();
   const { setTransactionModalOpen } = useGlobalStore();
   const { isUploading, uploadSteps, processedOcr, uploadFile, setProcessedOcr } = useOcrUpload();
@@ -225,7 +227,14 @@ function DashboardContent() {
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+              {localSummary && (
+                <Badge variant="outline" className="bg-primary/5 text-[10px] h-4 px-1.5 border-primary/20">
+                  WASM Sync Active
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground text-sm">Welcome back! Here is your financial summary.</p>
           </div>
           <div className="flex items-center space-x-2">
