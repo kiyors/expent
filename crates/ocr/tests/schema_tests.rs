@@ -1,5 +1,4 @@
-use ocr::schema::{UnifiedExtraction, generate_cleaned_schema};
-use serde_json::Value;
+use ocr::schema::generate_cleaned_schema;
 
 #[test]
 fn test_generate_cleaned_schema() {

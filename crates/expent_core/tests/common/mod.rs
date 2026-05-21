@@ -1,6 +1,5 @@
 use expent_core::{Core, CoreConfig};
 use migration::{Migrator, MigratorTrait};
-use std::env;
 
 pub async fn setup_test_core() -> Core {
     let config = CoreConfig {
