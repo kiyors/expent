@@ -88,7 +88,7 @@ export default function SubscriptionsComponent() {
           <p className="text-muted-foreground text-sm">Manage and track your recurring payments.</p>
         </div>
         <Button onClick={() => detect()} variant="outline" size="sm">
-          <SparklesIcon className="mr-2 size-4" /> Scan for Patterns
+          <SparklesIcon className="mr-2 h-4 w-4" /> Scan for Patterns
         </Button>
       </div>
 
@@ -117,7 +117,7 @@ export default function SubscriptionsComponent() {
           {!confirmedSubs || confirmedSubs.length === 0 ? (
             <Card className="border-dashed py-20">
               <CardContent className="flex flex-col items-center text-center">
-                <CalendarIcon className="size-12 text-muted-foreground/40 mb-4" />
+                <CalendarIcon className="h-12 w-12 text-muted-foreground/40 mb-4" />
                 <h3 className="text-lg font-semibold">No tracked subscriptions</h3>
                 <p className="text-muted-foreground max-w-xs mt-1">
                   Go to the 'Detected' tab to confirm subscriptions we've found in your transactions.
@@ -144,7 +144,7 @@ export default function SubscriptionsComponent() {
           ) : !potentialSubs || potentialSubs.length === 0 ? (
             <Card className="border-dashed py-20">
               <CardContent className="flex flex-col items-center text-center">
-                <SparklesIcon className="size-12 text-muted-foreground/40 mb-4" />
+                <SparklesIcon className="h-12 w-12 text-muted-foreground/40 mb-4" />
                 <h3 className="text-lg font-semibold">All caught up</h3>
                 <p className="text-muted-foreground max-w-xs mt-1">
                   We haven't detected any new recurring patterns recently.
@@ -166,7 +166,7 @@ export default function SubscriptionsComponent() {
           ) : !detectedSubscriptions || detectedSubscriptions.length === 0 ? (
             <Card className="border-dashed py-20">
               <CardContent className="flex flex-col items-center text-center">
-                <SparklesIcon className="size-12 text-muted-foreground/20 mb-4" />
+                <SparklesIcon className="h-12 w-12 text-muted-foreground/20 mb-4" />
                 <h3 className="text-lg font-semibold">No local patterns found</h3>
                 <p className="text-muted-foreground max-w-xs mt-1">
                   Try adding more transaction history to help WASM identify recurring payments.
@@ -175,29 +175,29 @@ export default function SubscriptionsComponent() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {detectedSubscriptions.map((sub, i) => (
+              {detectedSubscriptions.map((sub) => (
                 <SubscriptionCard
-                  key={`local-${i}`}
+                  key={`local-${sub.name}-${sub.amount}`}
                   sub={
                     {
-                      id: `temp-${i}`,
+                      id: `temp-${sub.name}`,
                       name: sub.name,
                       amount: sub.amount,
-                      cycle: sub.cycle,
+                      cycle: sub.cycle as any,
                       start_date: sub.last_date,
                       next_charge_date: sub.last_date, // Placeholder
-                      detection_keywords: [sub.name],
-                    } as any
+                      detection_keywords: [sub.name] as any,
+                    } as Subscription
                   }
                   onAction={() =>
                     confirmMutation.mutate({
                       name: sub.name,
                       amount: sub.amount,
-                      cycle: sub.cycle,
+                      cycle: sub.cycle as any,
                       start_date: sub.last_date,
                       next_charge_date: sub.last_date,
-                      detection_keywords: [sub.name],
-                    } as any)
+                      detection_keywords: [sub.name] as any,
+                    } as Subscription)
                   }
                 />
               ))}
@@ -338,12 +338,12 @@ function AlertConfigDialog({
               <SelectContent>
                 <SelectItem value="EMAIL">
                   <div className="flex items-center gap-2">
-                    <MailIcon className="size-3" /> Email
+                    <MailIcon className="h-3 w-3" /> Email
                   </div>
                 </SelectItem>
                 <SelectItem value="PUSH">
                   <div className="flex items-center gap-2">
-                    <SmartphoneIcon className="size-3" /> Push Notification
+                    <SmartphoneIcon className="h-3 w-3" /> Push Notification
                   </div>
                 </SelectItem>
               </SelectContent>

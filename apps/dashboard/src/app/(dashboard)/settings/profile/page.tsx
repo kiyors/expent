@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@expent/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@expent/ui/components/avatar";
 import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
@@ -21,8 +22,8 @@ type ProfileState = {
 };
 
 type ProfileAction =
-  | { type: "SET_FIELD"; field: keyof ProfileState; value: any }
-  | { type: "SET_USER_DATA"; user: any };
+  | { type: "SET_FIELD"; field: keyof ProfileState; value: string | boolean | null }
+  | { type: "SET_USER_DATA"; user: User };
 
 function profileReducer(state: ProfileState, action: ProfileAction): ProfileState {
   switch (action.type) {
@@ -59,7 +60,7 @@ export default function SettingsProfilePage() {
   // Populate form fields when session loads
   React.useEffect(() => {
     if (user) {
-      dispatch({ type: "SET_USER_DATA", user });
+      dispatch({ type: "SET_USER_DATA", user: user as any });
     }
   }, [user]);
 
