@@ -25,6 +25,8 @@ pub struct OcrJobCreateParams {
     pub auto_confirm: bool,
     pub wallet_id: Option<String>,
     pub category_id: Option<String>,
+    pub batch_id: Option<String>,
+    pub idempotency_key: Option<String>,
 }
 
 pub async fn create_ocr_job(
@@ -44,6 +46,8 @@ pub async fn create_ocr_job(
         category_id: Set(params.category_id),
         schema_version: Set(CURRENT_SCHEMA_VERSION),
         trace_id: Set(params.trace_id),
+        batch_id: Set(params.batch_id),
+        idempotency_key: Set(params.idempotency_key),
         created_at: Set(now),
         updated_at: Set(now),
         ..Default::default()
@@ -56,6 +60,18 @@ pub async fn get_ocr_job(
     job_id: &str,
 ) -> Result<Option<entities::ocr_jobs::Model>, AppError> {
     Ok(entities::ocr_jobs::Entity::find_by_id(job_id.to_string())
+        .one(db)
+        .await?)
+}
+
+pub async fn get_ocr_job_by_idempotency_key(
+    db: &DatabaseConnection,
+    user_id: &str,
+    idempotency_key: &str,
+) -> Result<Option<entities::ocr_jobs::Model>, AppError> {
+    Ok(entities::ocr_jobs::Entity::find()
+        .filter(entities::ocr_jobs::Column::UserId.eq(user_id.to_string()))
+        .filter(entities::ocr_jobs::Column::IdempotencyKey.eq(idempotency_key.to_string()))
         .one(db)
         .await?)
 }

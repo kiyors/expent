@@ -5,6 +5,7 @@ use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+pub mod dto;
 pub mod entities;
 pub mod error;
 
