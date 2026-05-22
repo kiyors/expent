@@ -2,15 +2,16 @@ use axum::Router;
 use axum::extract::{Json, Path, Query, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, patch, post};
-use db::SplitDetail;
+use db::dto::{
+    CreateManualTransactionRequest, PaginationParams, SplitTransactionRequest,
+    UpdateTransactionRequest,
+};
 use expent_core::ocr::OcrProcessor;
-use serde::Deserialize;
 
 use crate::middleware::error::ApiError;
 use crate::{AppState, AuthSession};
 
 use crate::extractors::ValidatedJson;
-use validator::Validate;
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -21,28 +22,6 @@ pub fn router() -> Router<AppState> {
         .route("/{id}", patch(update_transaction_handler))
         .route("/{id}", delete(delete_transaction_handler))
         .route("/split", post(split_transaction_handler))
-}
-
-#[derive(Deserialize, Validate)]
-pub struct CreateManualTransactionRequest {
-    #[validate(custom(function = "validate_amount"))]
-    pub amount: rust_decimal::Decimal,
-    pub date: chrono::DateTime<chrono::FixedOffset>,
-    #[validate(length(min = 1, max = 255))]
-    pub purpose_tag: String,
-    pub category_id: Option<String>,
-    pub direction: db::entities::enums::TransactionDirection,
-    pub source_wallet_id: Option<String>,
-    pub destination_wallet_id: Option<String>,
-    pub contact_id: Option<String>,
-    pub notes: Option<String>,
-}
-
-fn validate_amount(amount: &rust_decimal::Decimal) -> Result<(), validator::ValidationError> {
-    if amount <= &rust_decimal::Decimal::ZERO {
-        return Err(validator::ValidationError::new("amount_must_be_positive"));
-    }
-    Ok(())
 }
 
 pub async fn create_manual_transaction_handler(
@@ -69,12 +48,6 @@ pub async fn create_manual_transaction_handler(
         .await?;
 
     Ok(Json(result))
-}
-
-#[derive(Deserialize)]
-pub struct PaginationParams {
-    pub limit: Option<u64>,
-    pub offset: Option<u64>,
 }
 
 pub async fn list_transactions_handler(
@@ -112,19 +85,6 @@ pub async fn create_from_ocr_handler(
         .process_ocr(&state.core.db, &session.user.id, payload)
         .await?;
     Ok(Json(result))
-}
-
-#[derive(Deserialize)]
-pub struct UpdateTransactionRequest {
-    pub amount: Option<rust_decimal::Decimal>,
-    pub date: Option<chrono::DateTime<chrono::FixedOffset>>,
-    pub purpose_tag: Option<String>,
-    pub category_id: Option<String>,
-    pub status: Option<db::entities::enums::TransactionStatus>,
-    pub notes: Option<String>,
-    pub source_wallet_id: Option<String>,
-    pub destination_wallet_id: Option<String>,
-    pub contact_id: Option<String>,
 }
 
 pub async fn update_transaction_handler(
@@ -165,12 +125,6 @@ pub async fn delete_transaction_handler(
         .delete(&session.user.id, &id)
         .await?;
     Ok(StatusCode::NO_CONTENT)
-}
-
-#[derive(Deserialize)]
-pub struct SplitTransactionRequest {
-    pub transaction_id: String,
-    pub splits: Vec<SplitDetail>,
 }
 
 pub async fn split_transaction_handler(

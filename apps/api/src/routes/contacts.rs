@@ -2,8 +2,9 @@ use axum::Router;
 use axum::extract::{Json, Path, State};
 use axum::http::StatusCode;
 use axum::routing::{get, post};
-use serde::Deserialize;
-use validator::Validate;
+use db::dto::{
+    AddIdentifierRequest, CreateContactRequest, MergeContactsRequest, UpdateContactRequest,
+};
 
 use crate::extractors::ValidatedJson;
 use crate::middleware::error::ApiError;
@@ -31,14 +32,6 @@ pub async fn list_contacts_handler(
     Ok(Json(result))
 }
 
-#[derive(Deserialize, Validate)]
-pub struct CreateContactRequest {
-    #[validate(length(min = 1, max = 100))]
-    pub name: String,
-    #[validate(length(min = 10, max = 15))]
-    pub phone: Option<String>,
-}
-
 pub async fn create_contact_handler(
     State(state): State<AppState>,
     session: AuthSession,
@@ -50,15 +43,6 @@ pub async fn create_contact_handler(
         .create(&session.user.id, &payload.name, payload.phone)
         .await?;
     Ok(Json(result))
-}
-
-#[derive(Deserialize, Validate)]
-pub struct UpdateContactRequest {
-    #[validate(length(min = 1, max = 100))]
-    pub name: Option<String>,
-    #[validate(length(min = 10, max = 15))]
-    pub phone: Option<String>,
-    pub is_pinned: Option<bool>,
 }
 
 pub async fn update_contact_handler(
@@ -103,15 +87,6 @@ pub async fn get_contact_detail_handler(
     Ok(Json(detail))
 }
 
-use db::entities::enums::IdentifierType;
-
-#[derive(Deserialize, Validate)]
-pub struct AddIdentifierRequest {
-    pub r#type: IdentifierType,
-    #[validate(length(min = 1, max = 255))]
-    pub value: String,
-}
-
 pub async fn add_contact_identifier_handler(
     State(state): State<AppState>,
     session: AuthSession,
@@ -136,14 +111,6 @@ pub async fn get_merge_suggestions_handler(
         .get_merge_suggestions(&session.user.id)
         .await?;
     Ok(Json(result))
-}
-
-#[derive(Deserialize, Validate)]
-pub struct MergeContactsRequest {
-    #[validate(length(min = 1, max = 255))]
-    pub primary_id: String,
-    #[validate(length(min = 1, max = 255))]
-    pub secondary_id: String,
 }
 
 pub async fn merge_contacts_handler(

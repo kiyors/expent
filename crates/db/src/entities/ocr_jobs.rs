@@ -42,6 +42,8 @@ pub struct Model {
     #[ts(as = "Option<crate::ExportedJsonValue>")]
     pub resolution_candidates: Option<Json>,
     pub trace_id: Option<String>,
+    pub batch_id: Option<String>,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -68,6 +70,8 @@ pub enum Column {
     SchemaVersion,
     ResolutionCandidates,
     TraceId,
+    BatchId,
+    IdempotencyKey,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -100,7 +104,9 @@ impl ColumnTrait for Column {
             | Self::TransactionId
             | Self::LastError
             | Self::RawKey
-            | Self::TraceId => ColumnType::String(StringLen::None).def().null(),
+            | Self::TraceId
+            | Self::BatchId
+            | Self::IdempotencyKey => ColumnType::String(StringLen::None).def().null(),
             Self::CreatedAt | Self::UpdatedAt => ColumnType::DateTime.def(),
             Self::AutoConfirm | Self::IsHighRes => ColumnType::Boolean.def(),
             Self::StartedAt | Self::ScheduledAt => ColumnType::DateTime.def().null(),

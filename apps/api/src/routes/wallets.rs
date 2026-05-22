@@ -1,7 +1,7 @@
 use axum::Router;
 use axum::extract::{Json, Path, State};
 use axum::routing::{get, put};
-use serde::Deserialize;
+use db::dto::{CreateWalletRequest, UpdateWalletRequest};
 
 use crate::middleware::error::ApiError;
 use crate::{AppState, AuthSession};
@@ -23,13 +23,6 @@ pub async fn list_wallets_handler(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
-pub struct CreateWalletRequest {
-    pub name: String,
-    pub r#type: db::entities::enums::WalletType,
-    pub initial_balance: rust_decimal::Decimal,
-}
-
 pub async fn create_wallet_handler(
     State(state): State<AppState>,
     session: AuthSession,
@@ -46,12 +39,6 @@ pub async fn create_wallet_handler(
         )
         .await?;
     Ok(Json(result))
-}
-
-#[derive(Deserialize)]
-pub struct UpdateWalletRequest {
-    pub name: Option<String>,
-    pub balance: Option<rust_decimal::Decimal>,
 }
 
 pub async fn update_wallet_handler(

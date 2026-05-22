@@ -3,11 +3,8 @@ use axum::{
     extract::{Path, State},
     routing::{get, patch},
 };
-use db::entities::enums::BudgetPeriod;
+use db::dto::{CreateBudgetRequest, UpdateBudgetRequest};
 use expent_core::auth::AuthSession;
-use rust_decimal::Decimal;
-use serde::Deserialize;
-use validator::Validate;
 
 use crate::AppState;
 use crate::extractors::ValidatedJson;
@@ -21,35 +18,6 @@ pub fn router() -> Router<AppState> {
             "/{id}",
             patch(update_budget_handler).delete(delete_budget_handler),
         )
-}
-
-#[derive(Deserialize, Validate)]
-pub struct CreateBudgetRequest {
-    pub category_id: Option<String>,
-    #[validate(custom(function = "validate_amount"))]
-    pub amount: Decimal,
-    pub period: BudgetPeriod,
-}
-
-#[derive(Deserialize, Validate)]
-pub struct UpdateBudgetRequest {
-    #[validate(custom(function = "validate_optional_amount"))]
-    pub amount: Option<Decimal>,
-    pub period: Option<BudgetPeriod>,
-}
-
-fn validate_amount(amount: &Decimal) -> Result<(), validator::ValidationError> {
-    if amount <= &Decimal::ZERO {
-        return Err(validator::ValidationError::new("amount_must_be_positive"));
-    }
-    Ok(())
-}
-
-fn validate_optional_amount(amount: &Decimal) -> Result<(), validator::ValidationError> {
-    if amount <= &Decimal::ZERO {
-        return Err(validator::ValidationError::new("amount_must_be_positive"));
-    }
-    Ok(())
 }
 
 async fn create_budget_handler(

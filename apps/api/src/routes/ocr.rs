@@ -1,11 +1,14 @@
 use axum::Router;
 use axum::extract::{Json, Path, State};
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, StatusCode};
 use axum::response::sse::{Event, Sse};
 use axum::routing::{get, post};
+use db::dto::{
+    BulkConfirmOcrRequest, ConfirmOcrRequest, OcrJobResponse, ProcessImageOcrRequest,
+    ResolveContactRequest,
+};
 use expent_core::ocr;
 use futures::stream::Stream;
-use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::sync::Arc;
 
@@ -53,27 +56,32 @@ pub async fn ocr_stream_handler(
     Sse::new(stream).keep_alive(axum::response::sse::KeepAlive::default())
 }
 
-#[derive(Deserialize)]
-pub struct ProcessImageOcrRequest {
-    pub key: String,
-    pub raw_key: Option<String>,
-    pub p_hash: Option<String>,
-    pub auto_confirm: Option<bool>,
-    pub wallet_id: Option<String>,
-    pub category_id: Option<String>,
-}
-
-#[derive(Serialize)]
-pub struct OcrJobResponse {
-    pub job_id: String,
-    pub status: String,
-}
-
 pub async fn process_image_ocr_handler(
     State(state): State<AppState>,
     session: AuthSession,
+    headers: HeaderMap,
     Json(payload): Json<ProcessImageOcrRequest>,
 ) -> Result<(StatusCode, Json<OcrJobResponse>), ApiError> {
+    // 0. Check for idempotency key
+    let idempotency_key = headers
+        .get("x-idempotency-key")
+        .and_then(|h| h.to_str().ok())
+        .map(|s| s.to_string());
+
+    if let Some(ref key) = idempotency_key {
+        if let Some(existing_job) =
+            ocr::get_ocr_job_by_idempotency_key(&state.core.db, &session.user.id, key).await?
+        {
+            return Ok((
+                StatusCode::OK,
+                Json(OcrJobResponse {
+                    job_id: existing_job.id,
+                    status: existing_job.status,
+                }),
+            ));
+        }
+    }
+
     // Per-user rate limiting
     if !state.ocr_limiter.check(&session.user.id) {
         return Err(ApiError::BadRequest(
@@ -123,6 +131,8 @@ pub async fn process_image_ocr_handler(
             auto_confirm,
             wallet_id: payload.wallet_id.clone(),
             category_id: payload.category_id.clone(),
+            batch_id: payload.batch_id.clone(),
+            idempotency_key,
         })
         .await?;
     let job_id = job.id.clone();
@@ -173,11 +183,6 @@ pub async fn list_pending_ocr_jobs_handler(
     Ok(Json(jobs))
 }
 
-#[derive(Deserialize)]
-pub struct ConfirmOcrRequest {
-    pub manual_data: Option<db::ProcessedOcr>,
-}
-
 pub async fn confirm_ocr_job_handler(
     State(state): State<AppState>,
     session: AuthSession,
@@ -195,17 +200,6 @@ pub async fn confirm_ocr_job_handler(
         )
         .await?;
     Ok(Json(result))
-}
-
-#[derive(Deserialize)]
-pub struct BulkConfirmOcrRequest {
-    pub job_ids: Vec<String>,
-}
-
-#[derive(Serialize)]
-pub struct BulkConfirmOcrResponse {
-    pub succeeded: Vec<String>,
-    pub failed: Vec<(String, String)>,
 }
 
 pub async fn bulk_confirm_ocr_jobs_handler(
@@ -228,11 +222,6 @@ pub async fn bulk_confirm_ocr_jobs_handler(
         .map_err(|e| ApiError::Internal(e.to_string()))?;
 
     Ok(StatusCode::ACCEPTED)
-}
-
-#[derive(Deserialize)]
-pub struct ResolveContactRequest {
-    pub contact_id: String,
 }
 
 pub async fn resolve_ocr_job_handler(

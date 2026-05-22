@@ -2,7 +2,7 @@ use axum::Router;
 use axum::extract::{Json, Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get};
-use serde::Deserialize;
+use db::dto::CreateCategoryRequest;
 
 use crate::middleware::error::ApiError;
 use crate::{AppState, AuthSession};
@@ -22,13 +22,6 @@ pub async fn list_categories_handler(
 ) -> Result<Json<Vec<db::entities::categories::Model>>, ApiError> {
     let result = state.core.categories.list(&session.user.id).await?;
     Ok(Json(result))
-}
-
-#[derive(Deserialize)]
-pub struct CreateCategoryRequest {
-    pub name: String,
-    pub icon: Option<String>,
-    pub color: Option<String>,
 }
 
 pub async fn create_category_handler(
