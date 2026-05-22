@@ -1,9 +1,238 @@
 use crate::text::normalize_text;
+use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
+use db::{DashboardSummary, MonthlyTrend, NamedAmount};
 use rust_decimal::Decimal;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::str::FromStr;
 use ts_rs::TS;
 use wasm_bindgen::prelude::*;
+
+#[derive(serde::Deserialize, TS)]
+#[ts(export)]
+pub struct FullTxn {
+    pub amount: String,
+    pub direction: String,
+    pub date: String,
+    pub status: Option<String>,
+    pub category_id: Option<String>,
+    pub contact_name: Option<String>,
+    pub purpose_tag: Option<String>,
+}
+
+#[derive(serde::Deserialize, TS)]
+#[ts(export)]
+pub struct WalletMinimal {
+    pub balance: String,
+}
+
+#[derive(serde::Deserialize, TS)]
+#[ts(export)]
+pub struct CategoryMinimal {
+    pub id: String,
+    pub name: String,
+}
+
+#[wasm_bindgen]
+pub fn generate_dashboard_summary(
+    transactions: JsValue,
+    wallets: JsValue,
+    categories: JsValue,
+) -> Result<JsValue, JsError> {
+    let txns: Vec<FullTxn> = serde_wasm_bindgen::from_value(transactions)?;
+    let wallets: Vec<WalletMinimal> = serde_wasm_bindgen::from_value(wallets)?;
+    let categories: Vec<CategoryMinimal> = serde_wasm_bindgen::from_value(categories)?;
+
+    let cat_map: HashMap<String, String> = categories.into_iter().map(|c| (c.id, c.name)).collect();
+
+    let now = Utc::now();
+    let start_of_month = Utc
+        .with_ymd_and_hms(now.year(), now.month(), 1, 0, 0, 0)
+        .latest()
+        .unwrap_or(now);
+
+    let mut total_balance = Decimal::ZERO;
+    for w in wallets {
+        total_balance += Decimal::from_str(&w.balance).unwrap_or(Decimal::ZERO);
+    }
+
+    let mut monthly_spend = Decimal::ZERO;
+    let mut monthly_income = Decimal::ZERO;
+    let mut total_transactions = 0;
+
+    let mut monthly_trends_map = BTreeMap::new();
+    for i in (0..6).rev() {
+        let date = now - Duration::days(i64::from(i) * 30);
+        let key = format!("{}-{:02}", date.year(), date.month());
+        monthly_trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
+    }
+
+    let mut weekly_trends_map = BTreeMap::new();
+    for i in (0..7).rev() {
+        let date = now - Duration::days(i64::from(i));
+        let key = format!("{}-{:02}-{:02}", date.year(), date.month(), date.day());
+        weekly_trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
+    }
+
+    let mut cat_dist_map: HashMap<String, Decimal> = HashMap::new();
+    let mut contact_exp_map: HashMap<String, Decimal> = HashMap::new();
+    let mut contact_inc_map: HashMap<String, Decimal> = HashMap::new();
+
+    for tx in &txns {
+        if tx.status.as_deref() == Some("CANCELLED") {
+            continue;
+        }
+        total_transactions += 1;
+        let amt = Decimal::from_str(&tx.amount).unwrap_or(Decimal::ZERO);
+        let tx_date = DateTime::parse_from_rfc3339(&tx.date)
+            .map(|d| d.with_timezone(&Utc))
+            .unwrap_or(now);
+
+        if tx_date >= start_of_month {
+            if tx.direction == "IN" {
+                monthly_income += amt;
+            } else {
+                monthly_spend += amt;
+            }
+        }
+
+        // Monthly trends
+        let m_key = format!("{}-{:02}", tx_date.year(), tx_date.month());
+        if let Some(entry) = monthly_trends_map.get_mut(&m_key) {
+            if tx.direction == "IN" {
+                entry.0 += amt;
+            } else {
+                entry.1 += amt;
+            }
+        }
+
+        // Weekly trends (last 7 days)
+        let w_key = format!(
+            "{}-{:02}-{:02}",
+            tx_date.year(),
+            tx_date.month(),
+            tx_date.day()
+        );
+        if let Some(entry) = weekly_trends_map.get_mut(&w_key) {
+            if tx.direction == "IN" {
+                entry.0 += amt;
+            } else {
+                entry.1 += amt;
+            }
+        }
+
+        if tx.direction == "OUT" {
+            // Category distribution
+            if let Some(cat_id) = &tx.category_id {
+                if let Some(cat_name) = cat_map.get(cat_id) {
+                    *cat_dist_map.entry(cat_name.clone()).or_default() += amt;
+                }
+            }
+            // Top expenses
+            if let Some(name) = &tx.contact_name {
+                *contact_exp_map.entry(name.clone()).or_default() += amt;
+            }
+        } else if tx.direction == "IN" {
+            // Top income
+            if let Some(name) = &tx.contact_name {
+                *contact_inc_map.entry(name.clone()).or_default() += amt;
+            }
+        }
+    }
+
+    let monthly_trends = monthly_trends_map
+        .into_iter()
+        .map(|(key, (inc, exp))| {
+            let month_num = key
+                .split('-')
+                .nth(1)
+                .and_then(|s| s.parse::<u32>().ok())
+                .unwrap_or(0);
+            let month_name = match month_num {
+                1 => "Jan",
+                2 => "Feb",
+                3 => "Mar",
+                4 => "Apr",
+                5 => "May",
+                6 => "Jun",
+                7 => "Jul",
+                8 => "Aug",
+                9 => "Sep",
+                10 => "Oct",
+                11 => "Nov",
+                12 => "Dec",
+                _ => "???",
+            };
+            MonthlyTrend {
+                month: month_name.to_string(),
+                income: inc,
+                expense: exp,
+            }
+        })
+        .collect();
+
+    let weekly_trends = weekly_trends_map
+        .into_iter()
+        .map(|(key, (inc, exp))| {
+            let parts: Vec<&str> = key.split('-').collect();
+            let y = parts
+                .get(0)
+                .and_then(|s| s.parse::<i32>().ok())
+                .unwrap_or(0);
+            let m = parts
+                .get(1)
+                .and_then(|s| s.parse::<u32>().ok())
+                .unwrap_or(0);
+            let d = parts
+                .get(2)
+                .and_then(|s| s.parse::<u32>().ok())
+                .unwrap_or(0);
+            let date = Utc
+                .with_ymd_and_hms(y, m, d, 0, 0, 0)
+                .single()
+                .unwrap_or(now);
+            MonthlyTrend {
+                month: date.format("%a").to_string(),
+                income: inc,
+                expense: exp,
+            }
+        })
+        .collect();
+
+    let mut category_distribution: Vec<NamedAmount> = cat_dist_map
+        .into_iter()
+        .map(|(name, amount)| NamedAmount { name, amount })
+        .collect();
+    category_distribution.sort_by(|a, b| b.amount.cmp(&a.amount));
+
+    let mut top_expenses: Vec<NamedAmount> = contact_exp_map
+        .into_iter()
+        .map(|(name, amount)| NamedAmount { name, amount })
+        .collect();
+    top_expenses.sort_by(|a, b| b.amount.cmp(&a.amount));
+    top_expenses.truncate(5);
+
+    let mut top_income: Vec<NamedAmount> = contact_inc_map
+        .into_iter()
+        .map(|(name, amount)| NamedAmount { name, amount })
+        .collect();
+    top_income.sort_by(|a, b| b.amount.cmp(&a.amount));
+    top_income.truncate(5);
+
+    let result = DashboardSummary {
+        total_balance,
+        monthly_spend,
+        monthly_income,
+        pending_p2p_count: 0, // Cannot calculate pending P2P locally without all requests
+        total_transactions: total_transactions as u64,
+        monthly_trends,
+        weekly_trends,
+        category_distribution,
+        top_expenses,
+        top_income,
+    };
+
+    Ok(serde_wasm_bindgen::to_value(&result)?)
+}
 
 #[derive(serde::Deserialize, serde::Serialize, TS)]
 #[ts(export)]

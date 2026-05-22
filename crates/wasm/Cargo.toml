@@ -19,4 +19,5 @@ serde_json   = { workspace = true }
 serde-wasm-bindgen = "0.6"
 strsim       = "0.11"
 ts-rs        = { workspace = true }
+db           = { path = "../db" }
 wasm-bindgen = "0.2.121"
