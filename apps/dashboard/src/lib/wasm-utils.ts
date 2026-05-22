@@ -1,14 +1,17 @@
 import type {
   AggregatedMetrics,
+  BatchMatchResult,
   BudgetPeriod,
+  DashboardSummary,
   DetectedSubscription,
   FuzzySearchResult,
   SavingsProjection,
+  SearchableField,
+  SearchableItem,
   SpendingVelocity,
   Txn,
   TxnPattern,
 } from "@expent/types";
-
 /**
  * Loads the wasm module.
  * Note: This must be called inside a useEffect or after a user interaction
@@ -108,11 +111,27 @@ export async function calculateMatchScoreWasm(
 }
 
 /**
+ * Performs a batch matching of statement rows against transactions using Rust/WASM.
+ */
+export async function matchStatementBatchWasm(statementRows: any[], transactions: any[]) {
+  const wasm = await loadExpentWasm();
+  return wasm.match_statement_batch(statementRows, transactions) as BatchMatchResult[];
+}
+
+/**
  * Performs a batch fuzzy search using Rust/WASM.
  */
 export async function batchFuzzySearchWasm(query: string, items: string[], threshold: number = 0.5) {
   const wasm = await loadExpentWasm();
   return wasm.batch_fuzzy_search(query, items, threshold) as FuzzySearchResult[];
+}
+
+/**
+ * Performs an advanced batch fuzzy search with multiple weighted fields using Rust/WASM.
+ */
+export async function advancedFuzzySearchWasm(query: string, items: SearchableItem[], threshold: number = 0.5) {
+  const wasm = await loadExpentWasm();
+  return wasm.advanced_fuzzy_search(query, items, threshold) as FuzzySearchResult[];
 }
 
 /**
@@ -129,6 +148,14 @@ export async function parseNumericLikeWasm(input: string) {
 export async function aggregateTransactionsWasm(transactions: Txn[]) {
   const wasm = await loadExpentWasm();
   return wasm.aggregate_transactions(transactions) as AggregatedMetrics;
+}
+
+/**
+ * Generates a full dashboard summary locally using Rust/WASM.
+ */
+export async function generateDashboardSummaryWasm(transactions: any[], wallets: any[], categories: any[]) {
+  const wasm = await loadExpentWasm();
+  return wasm.generate_dashboard_summary(transactions, wallets, categories) as DashboardSummary;
 }
 
 /**

@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import { batchFuzzySearchWasm } from "@/lib/wasm-utils";
+import { advancedFuzzySearchWasm } from "@/lib/wasm-utils";
+import type { SearchableItem } from "@expent/types";
 
 /**
  * A hook that performs fuzzy search on a list of items using Rust/WASM.
  * @param items The list of items to search
  * @param query The search query
- * @param selector A function to get the searchable string from an item
+ * @param selector A function to get the searchable fields from an item
  * @param threshold Minimum score (0-1) to include an item
  */
 export function useFuzzySearch<T>(
   items: T[] | undefined,
   query: string,
-  selector: (item: T) => string,
+  selector: (item: T) => { value: string; weight: number }[],
   threshold: number = 0.5,
 ) {
   const [results, setFilteredResults] = useState<T[]>([]);
@@ -30,8 +31,11 @@ export function useFuzzySearch<T>(
     async function performSearch() {
       if (!items) return;
 
-      const targetStrings = items.map(selector);
-      const batchResults = await batchFuzzySearchWasm(query, targetStrings, threshold);
+      const searchableItems: SearchableItem[] = items.map((item) => ({
+        fields: selector(item),
+      }));
+
+      const batchResults = await advancedFuzzySearchWasm(query, searchableItems, threshold);
 
       const filtered = batchResults.map((res) => items[res.index]);
 

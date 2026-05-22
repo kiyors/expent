@@ -4,8 +4,10 @@ import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
+import { useCategories } from "./use-categories";
+import { useWallets } from "./use-wallets";
 import { db } from "@/lib/db";
-import { aggregateTransactionsWasm } from "@/lib/wasm-utils";
+import { aggregateTransactionsWasm, generateDashboardSummaryWasm } from "@/lib/wasm-utils";
 
 export function useTransactions(params: { limit?: number; offset?: number } = {}) {
   const session = useSession();
@@ -89,19 +91,21 @@ export function useTransactionSummary() {
 }
 
 export function useLocalSummary() {
-  const { transactions, isLoading } = useTransactions({ limit: 1000 });
+  const { transactions, isLoading: isTxnsLoading } = useTransactions({ limit: 1000 });
+  const { wallets, isLoading: isWalletsLoading } = useWallets();
+  const { categories, isLoading: isCatsLoading } = useCategories();
 
   const { data: localSummary, isLoading: isComputing } = useQuery({
-    queryKey: ["local-summary", transactions?.length],
+    queryKey: ["local-summary", transactions?.length, wallets?.length, categories?.length],
     queryFn: async () => {
       if (!transactions || transactions.length === 0) return null;
-      return aggregateTransactionsWasm(transactions);
+      return generateDashboardSummaryWasm(transactions, wallets || [], categories || []);
     },
     enabled: !!transactions && transactions.length > 0,
   });
 
   return {
     summary: localSummary,
-    isLoading: isLoading || isComputing,
+    isLoading: isTxnsLoading || isWalletsLoading || isCatsLoading || isComputing,
   };
 }
