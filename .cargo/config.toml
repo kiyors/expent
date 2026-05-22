@@ -4,3 +4,6 @@ TS_RS_LARGE_INT  = "number"
 
 [alias]
 types = "test -p wasm --lib -p db -p budgets"
+
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-feature=-bulk-memory"]

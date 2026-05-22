@@ -58,6 +58,7 @@ dashmap = "6.2"
 dotenvy = "0.15"
 futures = "0.3"
 governor = "0.10"
+lopdf = "0.38"
 mimalloc = "0.1"
 moka = { features = [ "future" ], version = "0.12" }
 rand = "0.9"
@@ -101,3 +102,10 @@ all      = { level = "deny", priority = -1 }
 pedantic = { level = "warn", priority = -2 }
 perf     = { level = "deny", priority = -3 }
 style    = { level = "warn", priority = -4 }
+
+[profile.release]
+lto = true
+opt-level = "s"
+strip = true
+panic = "abort"
+codegen-units = 1
