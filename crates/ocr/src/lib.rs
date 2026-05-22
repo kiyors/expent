@@ -13,7 +13,11 @@ pub mod worker;
 
 pub use gemini::GeminiOcrClient;
 pub use ops::confirm::{confirm_ocr_job, resolve_contact_collision};
-pub use ops::lifecycle::{create_ocr_job, get_ocr_job, list_pending_ocr_jobs, update_ocr_job};
+pub use ops::lifecycle::{
+    create_ocr_job, get_ocr_job, get_ocr_job_by_idempotency_key, list_pending_ocr_jobs,
+    update_ocr_job,
+};
+pub use ops::merge::merge_ocr_results;
 pub use ops::process::{OcrProcessor, process_job};
 pub use worker::{start_processor_worker, start_recovery_worker};
 
@@ -55,8 +59,61 @@ impl OcrService {
             file_bytes.len()
         );
 
-        let extracted = self.gemini.extract_from_bytes(file_bytes, filename).await?;
+        let media_type = utils::get_media_type(filename);
 
+        // --- MULTI-PAGE PARALLEL PROCESSING ---
+        let mut extractions = if media_type == "application/pdf" {
+            let pages = utils::split_pdf(file_bytes)?;
+            if pages.len() > 1 {
+                info!(
+                    "📂 Multi-page PDF detected ({} pages), processing in parallel",
+                    pages.len()
+                );
+                let batch = pages
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, p)| (p, format!("{}_page_{}.pdf", filename, i + 1)))
+                    .collect();
+                self.gemini.extract_batch(batch).await?
+            } else {
+                vec![self.gemini.extract_from_bytes(file_bytes, filename).await?]
+            }
+        } else {
+            vec![self.gemini.extract_from_bytes(file_bytes, filename).await?]
+        };
+
+        // If only one extraction, proceed as normal
+        if extractions.len() == 1 {
+            let extracted = extractions.remove(0);
+            return self.format_extraction(extracted);
+        }
+
+        // --- PROGRAMMATIC MERGING ---
+        info!(
+            "🤝 Merging {} extraction results deterministically",
+            extractions.len()
+        );
+
+        // We only support merging GENERIC types for now as multi-page receipts
+        let generic_results: Vec<db::OcrResult> = extractions
+            .iter()
+            .filter_map(|e| e.generic_data.clone())
+            .collect();
+
+        if generic_results.is_empty() {
+            // Fallback to the first result if no generic data found (e.g. all bank statements)
+            return self.format_extraction(extractions.remove(0));
+        }
+
+        let merged = ops::merge::merge_ocr_results(generic_results);
+
+        Ok(json!({
+            "doc_type": "GENERIC",
+            "data": merged,
+        }))
+    }
+
+    fn format_extraction(&self, extracted: crate::schema::UnifiedExtraction) -> Result<Value> {
         // Map UnifiedExtraction to the ProcessedOcr format Rust expects
         let doc_type = match extracted.doc_type {
             schema::DocType::Gpay => "GPAY",
@@ -140,6 +197,8 @@ impl OcrManager {
                 auto_confirm: params.auto_confirm,
                 wallet_id: params.wallet_id,
                 category_id: params.category_id,
+                batch_id: params.batch_id,
+                idempotency_key: params.idempotency_key,
             },
         )
         .await

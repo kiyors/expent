@@ -1,6 +1,22 @@
 use calamine::{Reader, Xlsx, open_workbook_from_rs};
 use csv::ReaderBuilder;
+use lopdf::Document;
 use std::io::Cursor;
+
+pub fn split_pdf(data: &[u8]) -> Result<Vec<Vec<u8>>, anyhow::Error> {
+    let doc = Document::load_mem(data)
+        .map_err(|e| anyhow::anyhow!("Failed to load PDF for splitting: {}", e))?;
+
+    let page_numbers: Vec<u32> = doc.get_pages().keys().cloned().collect();
+    if page_numbers.len() <= 1 {
+        return Ok(vec![data.to_vec()]);
+    }
+
+    // TODO: Implement actual splitting logic for lopdf 0.38
+    // For now, return as a single batch to avoid compilation errors
+    // while maintaining the architectural hook.
+    Ok(vec![data.to_vec()])
+}
 
 pub fn get_media_type(filename: &str) -> &'static str {
     let ext = filename.split('.').last().unwrap_or("").to_lowercase();

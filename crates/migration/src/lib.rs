@@ -25,6 +25,7 @@ pub mod m20260423_000001_add_cached_names_to_contacts;
 pub mod m20260511_114743_update_wallet_type_enum_values;
 pub mod m20260512_000001_add_bank_details_to_wallets;
 pub mod m20260516_000001_create_background_jobs_table;
+pub mod m20260522_000001_add_ocr_jobs_batch_and_idempotency;
 
 pub struct Migrator;
 
@@ -57,6 +58,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260511_114743_update_wallet_type_enum_values::Migration),
             Box::new(m20260512_000001_add_bank_details_to_wallets::Migration),
             Box::new(m20260516_000001_create_background_jobs_table::Migration),
+            Box::new(m20260522_000001_add_ocr_jobs_batch_and_idempotency::Migration),
         ]
     }
 }

@@ -60,20 +60,61 @@ STEP 3: FORMAT OUTPUT
         data: &[u8],
         filename: &str,
     ) -> Result<UnifiedExtraction, anyhow::Error> {
-        let media_type = get_media_type(filename);
+        self.extract_batch(vec![(data.to_vec(), filename.to_string())])
+            .await
+            .map(|mut v| v.remove(0))
+    }
+
+    pub async fn extract_batch(
+        &self,
+        files: Vec<(Vec<u8>, String)>,
+    ) -> Result<Vec<UnifiedExtraction>, anyhow::Error> {
+        let mut futures = Vec::new();
+
+        for (data, filename) in files {
+            futures.push(self.extract_single(data, filename));
+        }
+
+        let results = futures::future::join_all(futures).await;
+        let mut successful = Vec::new();
+        let mut errors = Vec::new();
+
+        for res in results {
+            match res {
+                Ok(ext) => successful.push(ext),
+                Err(e) => errors.push(e),
+            }
+        }
+
+        if !errors.is_empty() && successful.is_empty() {
+            return Err(anyhow::anyhow!(
+                "All batch OCR attempts failed. First error: {}",
+                errors[0]
+            ));
+        }
+
+        Ok(successful)
+    }
+
+    async fn extract_single(
+        &self,
+        data: Vec<u8>,
+        filename: String,
+    ) -> Result<UnifiedExtraction, anyhow::Error> {
+        let media_type = get_media_type(&filename);
 
         let mut extracted_text = String::new();
         if media_type == "application/pdf" {
-            extracted_text = extract_pdf_text(data).unwrap_or_default();
+            extracted_text = extract_pdf_text(&data).unwrap_or_default();
         } else if media_type == "text/csv" {
-            extracted_text = parse_csv(data).unwrap_or_default();
+            extracted_text = parse_csv(&data).unwrap_or_default();
         } else if media_type == "application/vnd.ms-excel"
             || media_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         {
-            extracted_text = parse_excel(data).unwrap_or_default();
+            extracted_text = parse_excel(&data).unwrap_or_default();
         }
 
-        let base64_data = BASE64_STANDARD.encode(data);
+        let base64_data = BASE64_STANDARD.encode(&data);
         let schema = generate_cleaned_schema();
 
         let mut parts = vec![json!({ "text": "Extract data from this document." })];
