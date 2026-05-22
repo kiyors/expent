@@ -12,13 +12,14 @@ import type {
   Txn,
   TxnPattern,
 } from "@expent/types";
+
 /**
  * Loads the wasm module.
  * Note: This must be called inside a useEffect or after a user interaction
  * because it is an async WebAssembly module.
  */
 export async function loadExpentWasm() {
-  const wasm = await import("@expent/wasm");
+  const wasm = await import("../pkg/wasm");
   // Initialize the WASM module (required for --target web)
   await wasm.default();
   return wasm;

@@ -31,7 +31,7 @@ import { m } from "motion/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
-import { useFuzzySearch } from "@/hooks/use-wasm-search";
+import { useFuzzySearch } from "@expent/wasm";
 
 export default function ContactsPage() {
   const { push } = useRouter();

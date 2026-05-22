@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { advancedFuzzySearchWasm } from "@/lib/wasm-utils";
+import { advancedFuzzySearchWasm } from "./utils";
 import type { SearchableItem } from "@expent/types";
 
 /**

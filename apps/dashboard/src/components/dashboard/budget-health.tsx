@@ -7,7 +7,7 @@ import { cn } from "@expent/ui/lib/utils";
 import { TargetIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useBudgets } from "@/hooks/use-budgets";
-import { calculateSpendingVelocityWasm } from "@/lib/wasm-utils";
+import { calculateSpendingVelocityWasm } from "@expent/wasm";
 
 interface VelocityDisplay {
   budget_id: string;

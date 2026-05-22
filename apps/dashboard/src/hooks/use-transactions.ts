@@ -7,7 +7,7 @@ import { useSession } from "@/lib/auth-client";
 import { useCategories } from "./use-categories";
 import { useWallets } from "./use-wallets";
 import { db } from "@/lib/db";
-import { aggregateTransactionsWasm, generateDashboardSummaryWasm } from "@/lib/wasm-utils";
+import { aggregateTransactionsWasm, generateDashboardSummaryWasm } from "@expent/wasm";
 
 export function useTransactions(params: { limit?: number; offset?: number } = {}) {
   const session = useSession();

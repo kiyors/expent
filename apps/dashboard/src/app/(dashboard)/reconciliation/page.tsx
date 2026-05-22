@@ -24,7 +24,7 @@ import { useOcrUpload } from "@/hooks/use-ocr";
 import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
 import { useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
-import { matchStatementBatchWasm } from "@/lib/wasm-utils";
+import { matchStatementBatchWasm } from "@expent/wasm";
 
 export default function ReconciliationPage() {
   const queryClient = useQueryClient();

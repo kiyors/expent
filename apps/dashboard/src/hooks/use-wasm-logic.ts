@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { detectSubscriptionPatternsWasm } from "@/lib/wasm-utils";
+import { detectSubscriptionPatternsWasm } from "@expent/wasm";
 import { useTransactions } from "./use-transactions";
 
 /**
