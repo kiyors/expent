@@ -1,6 +1,12 @@
 "use client";
 
-import type { Category, Transaction, TransactionWithDetail } from "@expent/types";
+import type {
+  Category,
+  Transaction,
+  TransactionStatus,
+  TransactionWithDetail,
+  UpdateTransactionRequest,
+} from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
@@ -27,7 +33,7 @@ import { api } from "@/lib/api-client";
 
 interface TransactionViewerProps {
   item: TransactionWithDetail;
-  onUpdate: (id: string, data: Partial<TransactionWithDetail>) => void;
+  onUpdate: (id: string, data: UpdateTransactionRequest) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -129,13 +135,14 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
               onUpdate(item.id, {
                 purpose_tag: source,
                 category_id: categoryId === "none" ? undefined : categoryId,
-                status: status as Transaction["status"],
+                status: status as TransactionStatus,
                 amount,
                 notes: note,
                 date: new Date(date).toISOString(),
-                source_wallet_id: item.direction === "OUT" ? (walletId === "none" ? "" : walletId) : undefined,
-                destination_wallet_id: item.direction === "IN" ? (walletId === "none" ? "" : walletId) : undefined,
-                contact_id: contactId === "none" ? "" : contactId,
+                source_wallet_id: item.direction === "OUT" ? (walletId === "none" ? undefined : walletId) : undefined,
+                destination_wallet_id:
+                  item.direction === "IN" ? (walletId === "none" ? undefined : walletId) : undefined,
+                contact_id: contactId === "none" ? undefined : contactId,
               });
             }}
           >

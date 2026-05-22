@@ -1,6 +1,6 @@
 "use client";
 
-import type { TypedProcessedOcr } from "@expent/types";
+import type { OcrJob, OcrJobResponse, ProcessImageOcrRequest, TypedProcessedOcr } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
@@ -22,42 +22,63 @@ export function useOcrUpload() {
   const [uploadSteps, setUploadSteps] = useState<UploadStep[]>([]);
   const [processedOcr, setProcessedOcr] = useState<TypedProcessedOcr | null>(null);
 
-  const pollJobStatus = async (jobId: string): Promise<TypedProcessedOcr> => {
-    const maxAttempts = 150; // 5 minutes with 2s intervals
-    let attempts = 0;
+  const waitForJobCompletion = async (jobId: string): Promise<TypedProcessedOcr> => {
+    return new Promise((resolve, reject) => {
+      const eventSource = new EventSource("/api/ocr/stream");
 
-    while (attempts < maxAttempts) {
-      const job = await api.get<any>(`/api/ocr/status/${jobId}`);
+      const cleanup = () => {
+        eventSource.close();
+      };
 
-      if (job.status === "COMPLETED") {
-        return job.processed_data as TypedProcessedOcr;
-      }
+      eventSource.onmessage = async (event) => {
+        try {
+          const update = JSON.parse(event.data);
+          if (update.job_id !== jobId) return;
 
-      if (job.status === "FAILED" || job.status === "DEAD_LETTER") {
-        throw new Error(job.error_message || "OCR processing failed");
-      }
+          if (update.status === "PROCESSING") {
+            setUploadSteps((prev) =>
+              prev.map((s) =>
+                s.id === "2"
+                  ? { ...s, status: "completed" }
+                  : s.id === "3"
+                    ? { ...s, status: "in-progress", description: "Thinking hard..." }
+                    : s,
+              ),
+            );
+          }
 
-      if (job.status === "CONTACT_COLLISION") {
-        return job.processed_data as TypedProcessedOcr;
-      }
+          if (update.status === "COMPLETED" || update.status === "CONTACT_COLLISION") {
+            cleanup();
+            // Fetch final data
+            const job = await api.get<OcrJob>(`/api/ocr/status/${jobId}`);
+            if (job.processed_data) {
+              resolve(job.processed_data as unknown as TypedProcessedOcr);
+            } else {
+              reject(new Error("Job completed but no data found"));
+            }
+          }
 
-      if (job.status === "PROCESSING") {
-        setUploadSteps((prev) =>
-          prev.map((s) =>
-            s.id === "2"
-              ? { ...s, status: "completed" }
-              : s.id === "3"
-                ? { ...s, status: "in-progress", description: "Thinking hard..." }
-                : s,
-          ),
-        );
-      }
+          if (update.status === "FAILED" || update.status === "DEAD_LETTER") {
+            cleanup();
+            reject(new Error("OCR processing failed"));
+          }
+        } catch (err) {
+          cleanup();
+          reject(err);
+        }
+      };
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      attempts++;
-    }
+      eventSource.onerror = (err) => {
+        cleanup();
+        reject(new Error("SSE connection failed"));
+      };
 
-    throw new Error("OCR processing timed out. It might still finish in the background.");
+      // Set a timeout just in case
+      setTimeout(() => {
+        cleanup();
+        reject(new Error("OCR processing timed out"));
+      }, 300000); // 5 minutes
+    });
   };
 
   const uploadFile = useCallback(
@@ -97,7 +118,10 @@ export function useOcrUpload() {
           ),
         );
 
-        const { job_id } = await api.post<any>("/api/ocr/process", { key });
+        const { job_id } = await api.post<OcrJobResponse, ProcessImageOcrRequest>("/api/ocr/process", {
+          key,
+          batch_id: undefined,
+        });
 
         setUploadSteps((prev) =>
           prev.map((s) =>
@@ -105,7 +129,7 @@ export function useOcrUpload() {
           ),
         );
 
-        const result = await pollJobStatus(job_id);
+        const result = await waitForJobCompletion(job_id);
 
         queryClient.invalidateQueries({ queryKey: ["wallets"] });
         queryClient.invalidateQueries({ queryKey: ["contacts"] });
@@ -124,7 +148,7 @@ export function useOcrUpload() {
         return null;
       }
     },
-    [queryClient.invalidateQueries, pollJobStatus],
+    [queryClient.invalidateQueries, waitForJobCompletion],
   );
 
   const reset = useCallback(() => {

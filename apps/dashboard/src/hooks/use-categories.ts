@@ -1,38 +1,41 @@
-import type { Category } from "@expent/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Category, CreateCategoryRequest } from "@expent/types";
+import { useLiveQuery } from "@tanstack/react-db";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
+import { db } from "@/lib/db";
 
 export function useCategories() {
   const queryClient = useQueryClient();
   const session = useSession();
 
-  const query = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => api.get<Category[]>("/api/categories"),
-    enabled: !!session.data,
-    staleTime: 1000 * 60 * 60, // 1 hour
-  });
+  const query = useLiveQuery((q) => q.from({ categories: db.categories }), [session.data]);
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; icon?: string; color?: string }) => api.post<Category>("/api/categories", data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    mutationFn: (data: CreateCategoryRequest) => api.post<Category, CreateCategoryRequest>("/api/categories", data),
+    onSuccess: (newCat) => {
+      db.categories.insert(newCat);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/api/categories/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    onMutate: async (id) => {
+      const previousCat = db.categories.get(id);
+      db.categories.delete(id);
+      return { previousCat };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousCat) {
+        db.categories.insert(context.previousCat);
+      }
     },
   });
 
   return {
-    categories: query.data,
+    categories: query.data as unknown as Category[],
     isLoading: query.isLoading,
     isError: query.isError,
-    error: query.error,
     createMutation,
     deleteMutation,
   };

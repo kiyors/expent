@@ -77,8 +77,8 @@ export default function WalletsPage() {
     createMutation.mutate(
       {
         name: newName,
-        type: newType,
-        initial_balance: parseFloat(newBalance),
+        type: newType as any,
+        initial_balance: newBalance,
       },
       {
         onSuccess: () => {
@@ -181,7 +181,7 @@ export default function WalletsPage() {
               key={wallet.id}
               wallet={wallet}
               walletTransactions={transactionsByWallet[wallet.id] || []}
-              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data })}
+              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data: data as any })}
               onDelete={() => deleteMutation.mutate(wallet.id)}
             />
           ))}

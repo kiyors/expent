@@ -1,64 +1,101 @@
-import type { Contact, ContactIdentifier, Transaction } from "@expent/types";
+import type {
+  AddIdentifierRequest,
+  Contact,
+  ContactDetail,
+  ContactIdentifier,
+  CreateContactRequest,
+  MergeContactsRequest,
+  Transaction,
+  UpdateContactRequest,
+  ValidationResult,
+} from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
+import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
+import { db } from "@/lib/db";
+import { validateContactWasm } from "@expent/wasm";
 
 export function useContacts() {
   const session = useSession();
   const queryClient = useQueryClient();
 
-  const query = useQuery({
-    queryKey: ["contacts"],
-    queryFn: () => api.get<Contact[]>("/api/contacts"),
-    enabled: !!session.data,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  const query = useLiveQuery((q) => q.from({ contacts: db.contacts }), [session.data]);
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; phone?: string | null }) => api.post<Contact>("/api/contacts", data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+    mutationFn: async (data: CreateContactRequest) => {
+      // 0. Shared WASM Validation
+      const result = (await validateContactWasm(data.name)) as unknown as ValidationResult;
+      if (!result.is_valid) {
+        throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+      }
+      return api.post<Contact, CreateContactRequest>("/api/contacts", data);
+    },
+    onSuccess: (newContact) => {
+      db.contacts.insert(newContact);
       toast.success("Contact added");
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Contact> }) => api.put<Contact>(`/api/contacts/${id}`, data),
+    mutationFn: async ({ id, data }: { id: string; data: UpdateContactRequest }) => {
+      // 0. Shared WASM Validation
+      if (data.name) {
+        const result = (await validateContactWasm(data.name)) as unknown as ValidationResult;
+        if (!result.is_valid) {
+          throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+        }
+      }
+      return api.put<Contact, UpdateContactRequest>(`/api/contacts/${id}`, data);
+    },
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["contacts"] });
-      const previousContacts = queryClient.getQueryData<Contact[]>(["contacts"]);
+      const previousContact = db.contacts.get(id);
 
-      queryClient.setQueryData<Contact[]>(["contacts"], (old) => {
-        if (!old) return old;
-        return old.map((c) => (c.id === id ? { ...c, ...data } : c));
+      db.contacts.update(id, (draft) => {
+        Object.assign(draft, data);
       });
 
-      return { previousContacts };
+      return { previousContact };
     },
-    onError: (err, _variables, context) => {
-      queryClient.setQueryData(["contacts"], context?.previousContacts);
+    onError: (err, { id }, context) => {
+      if (context?.previousContact) {
+        db.contacts.update(id, (draft) => {
+          Object.assign(draft, context.previousContact);
+        });
+      }
       toast.error(err.message);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+    onSuccess: (updatedContact, { id }) => {
+      db.contacts.update(id, (draft) => {
+        Object.assign(draft, updatedContact);
+      });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/api/contacts/${id}`),
+    onMutate: async (id) => {
+      const previousContact = db.contacts.get(id);
+      db.contacts.delete(id);
+      return { previousContact };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousContact) {
+        db.contacts.insert(context.previousContact);
+      }
+      toast.error(err.message);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
       toast.success("Contact removed");
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   return {
-    contacts: query.data,
+    contacts: query.data as unknown as Contact[],
     isLoading: query.isLoading,
-    error: query.error,
+    error: query.isError ? "Error loading contacts" : null,
     createMutation,
     updateMutation,
     deleteMutation,
@@ -76,7 +113,7 @@ export function useMergeContacts() {
   });
 
   const mergeMutation = useMutation({
-    mutationFn: (data: { primary_id: string; secondary_id: string }) => api.post<Contact>("/api/contacts/merge", data),
+    mutationFn: (data: MergeContactsRequest) => api.post<Contact, MergeContactsRequest>("/api/contacts/merge", data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
       queryClient.invalidateQueries({ queryKey: ["contacts-suggestions"] });
@@ -99,19 +136,14 @@ export function useContactDetail(id: string) {
 
   const query = useQuery({
     queryKey: ["contact-detail", id],
-    queryFn: () =>
-      api.get<{
-        contact: Contact;
-        identifiers: ContactIdentifier[];
-        transactions: Transaction[];
-      }>(`/api/contacts/${id}`),
+    queryFn: () => api.get<ContactDetail>(`/api/contacts/${id}`),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const addIdentifierMutation = useMutation({
-    mutationFn: (data: { type: string; value: string }) =>
-      api.post<ContactIdentifier>(`/api/contacts/${id}/identifiers`, data),
+    mutationFn: (data: AddIdentifierRequest) =>
+      api.post<ContactIdentifier, AddIdentifierRequest>(`/api/contacts/${id}/identifiers`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contact-detail", id] });
       toast.success("Identifier added");

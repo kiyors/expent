@@ -1,4 +1,4 @@
-import type { PaginatedTransactions, Transaction, Wallet } from "@expent/types";
+import type { Budget, Category, Contact, PaginatedTransactions, Transaction, Wallet } from "@expent/types";
 import { BTreeIndex, createCollection, localStorageCollectionOptions } from "@tanstack/db";
 import { api } from "./api-client";
 
@@ -16,15 +16,27 @@ const transactionsOptions = localStorageCollectionOptions({
   defaultIndexType: BTreeIndex,
 });
 
+const budgetOptions = localStorageCollectionOptions({
+  storageKey: "expent_budgets",
+  getKey: (budget: Budget) => budget.id,
+});
+
+const categoryOptions = localStorageCollectionOptions({
+  storageKey: "expent_categories",
+  getKey: (cat: Category) => cat.id,
+});
+
+const contactOptions = localStorageCollectionOptions({
+  storageKey: "expent_contacts",
+  getKey: (contact: Contact) => contact.id,
+});
+
 export const db = {
   wallets: createCollection({
     ...walletOptions,
     sync: {
       sync: (params) => {
-        // 1. Initial hydration from local storage
         walletOptions.sync.sync(params);
-
-        // 2. Refresh from remote API
         api
           .get<Wallet[]>("/api/wallets")
           .then((wallets) => {
@@ -42,10 +54,7 @@ export const db = {
     ...transactionsOptions,
     sync: {
       sync: (params) => {
-        // 1. Initial hydration from local storage
         transactionsOptions.sync.sync(params);
-
-        // 2. Refresh from remote API (limited to last 100 for hydration)
         api
           .get<PaginatedTransactions>("/api/transactions?limit=100")
           .then((res) => {
@@ -56,6 +65,60 @@ export const db = {
             params.commit();
           })
           .catch((error) => console.error("Failed to sync transactions:", error));
+      },
+    },
+  }),
+  budgets: createCollection({
+    ...budgetOptions,
+    sync: {
+      sync: (params) => {
+        budgetOptions.sync.sync(params);
+        api
+          .get<Budget[]>("/api/budgets")
+          .then((budgets) => {
+            params.begin();
+            for (const budget of budgets) {
+              params.write({ type: "insert", value: budget });
+            }
+            params.commit();
+          })
+          .catch((error) => console.error("Failed to sync budgets:", error));
+      },
+    },
+  }),
+  categories: createCollection({
+    ...categoryOptions,
+    sync: {
+      sync: (params) => {
+        categoryOptions.sync.sync(params);
+        api
+          .get<Category[]>("/api/categories")
+          .then((categories) => {
+            params.begin();
+            for (const cat of categories) {
+              params.write({ type: "insert", value: cat });
+            }
+            params.commit();
+          })
+          .catch((error) => console.error("Failed to sync categories:", error));
+      },
+    },
+  }),
+  contacts: createCollection({
+    ...contactOptions,
+    sync: {
+      sync: (params) => {
+        contactOptions.sync.sync(params);
+        api
+          .get<Contact[]>("/api/contacts")
+          .then((contacts) => {
+            params.begin();
+            for (const contact of contacts) {
+              params.write({ type: "insert", value: contact });
+            }
+            params.commit();
+          })
+          .catch((error) => console.error("Failed to sync contacts:", error));
       },
     },
   }),

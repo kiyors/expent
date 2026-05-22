@@ -159,7 +159,7 @@ function DashboardContent() {
   const txnCellRenderers = useMemo(
     () => ({
       source: (row: TransactionWithDetail) => (
-        <TransactionViewer item={row} onUpdate={(id, data) => updateMutation.mutate({ id, data })} />
+        <TransactionViewer item={row} onUpdate={(id, data) => updateMutation.mutate({ id, data: data as any })} />
       ),
       action: (row: TransactionWithDetail) => (
         <DropdownMenu>

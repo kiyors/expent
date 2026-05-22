@@ -15,6 +15,7 @@ import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import * as React from "react";
 import { useWallets } from "@/hooks/use-wallets";
+import type { WalletType } from "@expent/types";
 
 interface CreateWalletDialogProps {
   open: boolean;
@@ -24,7 +25,7 @@ interface CreateWalletDialogProps {
 
 export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWalletDialogProps) {
   const [newName, setNewName] = React.useState("");
-  const [newType, setNewType] = React.useState("CASH");
+  const [newType, setNewType] = React.useState<string>("CASH");
   const [newBalance, setNewBalance] = React.useState("0");
 
   const { createMutation } = useWallets();
@@ -46,8 +47,8 @@ export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWall
     createMutation.mutate(
       {
         name: newName.trim(),
-        type: newType,
-        initial_balance: parseFloat(newBalance) || 0,
+        type: newType as WalletType,
+        initial_balance: newBalance,
       },
       {
         onSuccess: (data: { id: string }) => {

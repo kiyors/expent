@@ -159,7 +159,7 @@ export default function ContactDetailPage() {
                       <Button
                         onClick={() =>
                           addIdentifierMutation.mutate(
-                            { type: newIdType, value: newIdValue },
+                            { type: newIdType as any, value: newIdValue },
                             {
                               onSuccess: () => setIsAddIdDialogOpen(false),
                             },

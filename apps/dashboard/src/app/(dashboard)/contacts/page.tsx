@@ -52,7 +52,7 @@ export default function ContactsPage() {
 
   const handleCreate = () => {
     createMutation.mutate(
-      { name: newName, phone: newPhone || null },
+      { name: newName, phone: newPhone || undefined },
       {
         onSuccess: () => {
           setIsAddDialogOpen(false);
@@ -176,7 +176,7 @@ export default function ContactsPage() {
                       updateMutation.mutate({
                         id: contact.id,
                         data: { is_pinned: false },
-                      })
+                      } as any)
                     }
                     onClick={() => handleContactClick(contact.id)}
                   />
@@ -198,7 +198,7 @@ export default function ContactsPage() {
                     updateMutation.mutate({
                       id: contact.id,
                       data: { is_pinned: true },
-                    })
+                    } as any)
                   }
                   onClick={() => handleContactClick(contact.id)}
                 />

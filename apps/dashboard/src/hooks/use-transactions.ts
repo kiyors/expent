@@ -1,4 +1,11 @@
-import type { DashboardSummary, Transaction, TransactionWithDetail } from "@expent/types";
+import type {
+  DashboardSummary,
+  PaginationParams,
+  Transaction,
+  TransactionWithDetail,
+  UpdateTransactionRequest,
+  ValidationResult,
+} from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,9 +14,14 @@ import { useSession } from "@/lib/auth-client";
 import { useCategories } from "./use-categories";
 import { useWallets } from "./use-wallets";
 import { db } from "@/lib/db";
-import { aggregateTransactionsWasm, generateDashboardSummaryWasm } from "@expent/wasm";
+import {
+  aggregateTransactionsWasm,
+  generateDashboardSummaryWasm,
+  validateTransactionWasm,
+  useWasmWorker,
+} from "@expent/wasm";
 
-export function useTransactions(params: { limit?: number; offset?: number } = {}) {
+export function useTransactions(params: PaginationParams = {}) {
   const session = useSession();
   const queryClient = useQueryClient();
 
@@ -25,39 +37,80 @@ export function useTransactions(params: { limit?: number; offset?: number } = {}
   );
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<TransactionWithDetail> }) => {
-      // 1. Send to server
-      const updatedTxn = await api.patch<Transaction>(`/api/transactions/${id}`, data);
+    mutationFn: async ({ id, data }: { id: string; data: UpdateTransactionRequest }) => {
+      // 0. Shared WASM Validation
+      if (data.amount || data.purpose_tag) {
+        const currentTxn = db.transactions.get(id);
+        const amount = data.amount?.toString() || currentTxn?.amount || "0";
+        const purpose = data.purpose_tag || currentTxn?.purpose_tag || "";
 
-      // 2. Update local DB
+        const result = (await validateTransactionWasm(amount, purpose)) as unknown as ValidationResult;
+        if (!result.is_valid) {
+          throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+        }
+      }
+
+      return api.patch<Transaction, UpdateTransactionRequest>(`/api/transactions/${id}`, data);
+    },
+    onMutate: async ({ id, data }) => {
+      // 1. Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["transaction-summary"] });
+
+      // 2. Snapshot the previous state (TanStack DB handles its own snapshots usually, but we might want to be safe)
+      const previousTxn = db.transactions.get(id);
+
+      // 3. Optimistically update local DB
+      db.transactions.update(id, (draft) => {
+        Object.assign(draft, data);
+      });
+
+      return { previousTxn };
+    },
+    onError: (err, { id }, context) => {
+      // Rollback on error
+      if (context?.previousTxn) {
+        db.transactions.update(id, (draft) => {
+          Object.assign(draft, context.previousTxn);
+        });
+      }
+      toast.error(err.message);
+    },
+    onSuccess: (updatedTxn, { id }) => {
+      // Ensure local DB is in sync with server's final version
       db.transactions.update(id, (draft) => {
         Object.assign(draft, updatedTxn);
       });
-
-      return updatedTxn;
-    },
-    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
       queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
       toast.success("Transaction updated");
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // 1. Send to server
       await api.delete(`/api/transactions/${id}`);
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["transaction-summary"] });
+      const previousTxn = db.transactions.get(id);
 
-      // 2. Delete from local DB
+      // Optimistically delete
       db.transactions.delete(id);
+
+      return { previousTxn };
+    },
+    onError: (err, id, context) => {
+      // Rollback
+      if (context?.previousTxn) {
+        db.transactions.insert(context.previousTxn);
+      }
+      toast.error(err.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
       queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
       toast.success("Transaction deleted");
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   return {
@@ -94,12 +147,17 @@ export function useLocalSummary() {
   const { transactions, isLoading: isTxnsLoading } = useTransactions({ limit: 1000 });
   const { wallets, isLoading: isWalletsLoading } = useWallets();
   const { categories, isLoading: isCatsLoading } = useCategories();
+  const { runTask } = useWasmWorker();
 
   const { data: localSummary, isLoading: isComputing } = useQuery({
     queryKey: ["local-summary", transactions?.length, wallets?.length, categories?.length],
     queryFn: async () => {
       if (!transactions || transactions.length === 0) return null;
-      return generateDashboardSummaryWasm(transactions, wallets || [], categories || []);
+      return runTask<DashboardSummary>("GENERATE_SUMMARY", {
+        transactions,
+        wallets: wallets || [],
+        categories: categories || [],
+      });
     },
     enabled: !!transactions && transactions.length > 0,
   });

@@ -1,10 +1,11 @@
-import type { Wallet } from "@expent/types";
+import type { CreateWalletRequest, UpdateWalletRequest, ValidationResult, Wallet } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
+import { validateWalletWasm } from "@expent/wasm";
 
 export function useWallets() {
   const session = useSession();
@@ -13,51 +14,83 @@ export function useWallets() {
   const query = useLiveQuery((q) => q.from({ wallets: db.wallets }), [session.data]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: { name: string; type: string; initial_balance: number }) => {
-      // 1. Send to server
-      const newWallet = await api.post<Wallet>("/api/wallets", data);
-
-      // 2. Insert into local DB (TanStack DB will react immediately)
-      db.wallets.insert(newWallet);
-
-      return newWallet;
+    mutationFn: async (data: CreateWalletRequest) => {
+      // 0. Shared WASM Validation
+      const result = (await validateWalletWasm(
+        data.name,
+        data.initial_balance.toString(),
+      )) as unknown as ValidationResult;
+      if (!result.is_valid) {
+        throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+      }
+      return api.post<Wallet, CreateWalletRequest>("/api/wallets", data);
     },
-    onSuccess: () => {
+    onSuccess: (newWallet) => {
+      db.wallets.insert(newWallet);
       toast.success("Wallet created");
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Wallet> }) => {
-      // 1. Send to server
-      const updatedWallet = await api.put<Wallet>(`/api/wallets/${id}`, data);
+    mutationFn: async ({ id, data }: { id: string; data: UpdateWalletRequest }) => {
+      // 0. Shared WASM Validation
+      if (data.name || data.balance) {
+        const currentWallet = db.wallets.get(id);
+        const name = data.name || currentWallet?.name || "";
+        const balance = data.balance?.toString() || currentWallet?.balance || "0";
 
-      // 2. Update local DB
+        const result = (await validateWalletWasm(name, balance)) as unknown as ValidationResult;
+        if (!result.is_valid) {
+          throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+        }
+      }
+      return api.put<Wallet, UpdateWalletRequest>(`/api/wallets/${id}`, data);
+    },
+    onMutate: async ({ id, data }) => {
+      const previousWallet = db.wallets.get(id);
+
+      // Optimistically update local DB
+      db.wallets.update(id, (draft) => {
+        Object.assign(draft, data);
+      });
+
+      return { previousWallet };
+    },
+    onError: (err, { id }, context) => {
+      if (context?.previousWallet) {
+        db.wallets.update(id, (draft) => {
+          Object.assign(draft, context.previousWallet);
+        });
+      }
+      toast.error(err.message);
+    },
+    onSuccess: (updatedWallet, { id }) => {
       db.wallets.update(id, (draft) => {
         Object.assign(draft, updatedWallet);
       });
-
-      return updatedWallet;
-    },
-    onSuccess: () => {
       toast.success("Wallet updated");
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      // 1. Send to server
       await api.delete(`/api/wallets/${id}`);
-
-      // 2. Delete from local DB
+    },
+    onMutate: async (id) => {
+      const previousWallet = db.wallets.get(id);
       db.wallets.delete(id);
+      return { previousWallet };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousWallet) {
+        db.wallets.insert(context.previousWallet);
+      }
+      toast.error(err.message);
     },
     onSuccess: () => {
       toast.success("Wallet deleted");
     },
-    onError: (error: Error) => toast.error(error.message),
   });
 
   return {

@@ -44,7 +44,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
     createMutation.mutate(
       {
         name: name.trim(),
-        phone: phone.trim() || null,
+        phone: phone.trim() || undefined,
       },
       {
         onSuccess: (data: Contact) => {
