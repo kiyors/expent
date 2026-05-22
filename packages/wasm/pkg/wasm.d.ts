@@ -64,6 +64,14 @@ export function phonetic_encode(text: string): string;
 
 export function project_savings_goal(current_balance: string, target_amount: string, monthly_income: string, monthly_expenses: string): SavingsProjection | undefined;
 
+export function validate_budget_wasm(amount: string): any;
+
+export function validate_contact_wasm(name: string): any;
+
+export function validate_transaction_wasm(amount: string, purpose: string): any;
+
+export function validate_wallet_wasm(name: string, balance: string): any;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
@@ -86,35 +94,36 @@ export interface InitOutput {
     readonly __wbg_set_spendingvelocity_projected_total: (a: number, b: number) => void;
     readonly __wbg_set_spendingvelocity_target_daily_rate: (a: number, b: number) => void;
     readonly __wbg_spendingvelocity_free: (a: number, b: number) => void;
-    readonly calculate_budget_percentage: (a: number, b: number, c: number, d: number) => [number, number];
+    readonly advanced_fuzzy_search: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly aggregate_transactions: (a: number, b: number) => void;
+    readonly batch_fuzzy_search: (a: number, b: number, c: number, d: number, e: number) => number;
+    readonly calculate_budget_percentage: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly calculate_match_score: (a: bigint, b: number, c: number, d: number, e: number, f: bigint, g: number, h: number, i: number, j: number) => number;
     readonly calculate_spending_velocity: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+    readonly detect_subscription_patterns: (a: number, b: number) => void;
+    readonly fuzzy_score: (a: number, b: number, c: number, d: number) => number;
+    readonly generate_dashboard_summary: (a: number, b: number, c: number, d: number) => void;
     readonly get_period_bounds: (a: number, b: number) => number;
     readonly is_transaction_in_period: (a: bigint, b: number, c: number) => number;
+    readonly match_statement_batch: (a: number, b: number, c: number) => void;
+    readonly normalize_text: (a: number, b: number, c: number) => void;
+    readonly parse_csv_to_json: (a: number, b: number, c: number) => void;
+    readonly parse_excel_to_json: (a: number, b: number, c: number) => void;
+    readonly parse_numeric_like: (a: number, b: number, c: number) => void;
+    readonly phonetic_encode: (a: number, b: number, c: number) => void;
     readonly project_savings_goal: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+    readonly validate_budget_wasm: (a: number, b: number) => number;
+    readonly validate_contact_wasm: (a: number, b: number) => number;
+    readonly validate_transaction_wasm: (a: number, b: number, c: number, d: number) => number;
+    readonly validate_wallet_wasm: (a: number, b: number, c: number, d: number) => number;
     readonly __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;
     readonly __wbg_set_spendingvelocity_daily_burn_rate: (a: number, b: number) => void;
     readonly __wbg_savingsprojection_free: (a: number, b: number) => void;
-    readonly parse_numeric_like: (a: number, b: number) => [number, number];
-    readonly aggregate_transactions: (a: any) => [number, number, number];
-    readonly detect_subscription_patterns: (a: any) => [number, number, number];
-    readonly generate_dashboard_summary: (a: any, b: any, c: any) => [number, number, number];
-    readonly advanced_fuzzy_search: (a: number, b: number, c: any, d: number) => [number, number, number];
-    readonly batch_fuzzy_search: (a: number, b: number, c: number, d: number, e: number) => any;
-    readonly calculate_match_score: (a: bigint, b: number, c: number, d: number, e: number, f: bigint, g: number, h: number, i: number, j: number) => number;
-    readonly fuzzy_score: (a: number, b: number, c: number, d: number) => number;
-    readonly match_statement_batch: (a: any, b: any) => [number, number, number];
-    readonly normalize_text: (a: number, b: number) => [number, number];
-    readonly phonetic_encode: (a: number, b: number) => [number, number];
-    readonly parse_csv_to_json: (a: number, b: number) => [number, number, number];
-    readonly parse_excel_to_json: (a: number, b: number) => [number, number, number];
-    readonly __wbindgen_malloc: (a: number, b: number) => number;
-    readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-    readonly __wbindgen_exn_store: (a: number) => void;
-    readonly __externref_table_alloc: () => number;
-    readonly __wbindgen_externrefs: WebAssembly.Table;
-    readonly __externref_table_dealloc: (a: number) => void;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-    readonly __wbindgen_start: () => void;
+    readonly __wbindgen_export: (a: number, b: number) => number;
+    readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_export3: (a: number) => void;
+    readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+    readonly __wbindgen_export4: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

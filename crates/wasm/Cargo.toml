@@ -21,3 +21,7 @@ strsim       = "0.11"
 ts-rs        = { workspace = true }
 getrandom    = { version = "0.2", features = ["js"] }
 wasm-bindgen = "0.2.121"
+dlmalloc     = { version = "0.2", features = ["global"] }
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["--enable-bulk-memory", "--enable-nontrapping-float-to-int", "-O"]

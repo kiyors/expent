@@ -182,3 +182,35 @@ export async function parseExcelToWasm(data: Uint8Array) {
   const wasm = await loadExpentWasm();
   return wasm.parse_excel_to_json(data);
 }
+
+/**
+ * Validates a transaction using Rust/WASM.
+ */
+export async function validateTransactionWasm(amount: string, purpose: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_transaction_wasm(amount, purpose);
+}
+
+/**
+ * Validates a budget using Rust/WASM.
+ */
+export async function validateBudgetWasm(amount: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_budget_wasm(amount);
+}
+
+/**
+ * Validates a wallet using Rust/WASM.
+ */
+export async function validateWalletWasm(name: string, balance: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_wallet_wasm(name, balance);
+}
+
+/**
+ * Validates a contact using Rust/WASM.
+ */
+export async function validateContactWasm(name: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_contact_wasm(name);
+}
