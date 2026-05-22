@@ -1,11 +1,50 @@
 use crate::text::normalize_text;
 use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
-use db::{DashboardSummary, MonthlyTrend, NamedAmount};
 use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::str::FromStr;
 use ts_rs::TS;
 use wasm_bindgen::prelude::*;
+
+/// Trend data for a single month.
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(export)]
+pub struct MonthlyTrend {
+    pub month: String,
+    #[ts(type = "string")]
+    pub income: Decimal,
+    #[ts(type = "string")]
+    pub expense: Decimal,
+}
+
+/// Distribution of expenses by category or contact.
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(export)]
+pub struct NamedAmount {
+    pub name: String,
+    #[ts(type = "string")]
+    pub amount: Decimal,
+}
+
+/// Summary data for the dashboard.
+#[derive(Debug, Serialize, Deserialize, Clone, TS)]
+#[ts(export)]
+pub struct DashboardSummary {
+    #[ts(type = "string")]
+    pub total_balance: Decimal,
+    #[ts(type = "string")]
+    pub monthly_spend: Decimal,
+    #[ts(type = "string")]
+    pub monthly_income: Decimal,
+    pub pending_p2p_count: u64,
+    pub total_transactions: u64,
+    pub monthly_trends: Vec<MonthlyTrend>,
+    pub weekly_trends: Vec<MonthlyTrend>, // Reuse MonthlyTrend for weekly too
+    pub category_distribution: Vec<NamedAmount>,
+    pub top_expenses: Vec<NamedAmount>,
+    pub top_income: Vec<NamedAmount>,
+}
 
 #[derive(serde::Deserialize, TS)]
 #[ts(export)]

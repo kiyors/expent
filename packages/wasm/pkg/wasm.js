@@ -178,6 +178,22 @@ export class SpendingVelocity {
 if (Symbol.dispose) SpendingVelocity.prototype[Symbol.dispose] = SpendingVelocity.prototype.free;
 
 /**
+ * @param {string} query
+ * @param {any} items
+ * @param {number} threshold
+ * @returns {any}
+ */
+export function advanced_fuzzy_search(query, items, threshold) {
+    const ptr0 = passStringToWasm0(query, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.advanced_fuzzy_search(ptr0, len0, items, threshold);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
  * @param {any} transactions
  * @returns {any}
  */
@@ -292,6 +308,20 @@ export function fuzzy_score(a, b) {
 }
 
 /**
+ * @param {any} transactions
+ * @param {any} wallets
+ * @param {any} categories
+ * @returns {any}
+ */
+export function generate_dashboard_summary(transactions, wallets, categories) {
+    const ret = wasm.generate_dashboard_summary(transactions, wallets, categories);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
  * @param {string} period
  * @returns {PeriodBounds | undefined}
  */
@@ -312,6 +342,19 @@ export function is_transaction_in_period(txn_date_ms, period) {
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.is_transaction_in_period(txn_date_ms, ptr0, len0);
     return ret !== 0;
+}
+
+/**
+ * @param {any} statement_rows
+ * @param {any} transactions
+ * @returns {any}
+ */
+export function match_statement_batch(statement_rows, transactions) {
+    const ret = wasm.match_statement_batch(statement_rows, transactions);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**

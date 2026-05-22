@@ -7071,7 +7071,7 @@ dependencies = [
  "calamine 0.26.1",
  "chrono",
  "csv",
- "db",
+ "getrandom 0.2.17",
  "regex",
  "rphonetic",
  "rust_decimal",

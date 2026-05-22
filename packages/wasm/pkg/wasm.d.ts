@@ -28,6 +28,8 @@ export class SpendingVelocity {
     target_daily_rate: number;
 }
 
+export function advanced_fuzzy_search(query: string, items: any, threshold: number): any;
+
 export function aggregate_transactions(transactions: any): any;
 
 export function batch_fuzzy_search(query: string, items: string[], threshold: number): any;
@@ -42,9 +44,13 @@ export function detect_subscription_patterns(transactions: any): any;
 
 export function fuzzy_score(a: string, b: string): number;
 
+export function generate_dashboard_summary(transactions: any, wallets: any, categories: any): any;
+
 export function get_period_bounds(period: string): PeriodBounds | undefined;
 
 export function is_transaction_in_period(txn_date_ms: bigint, period: string): boolean;
+
+export function match_statement_batch(statement_rows: any, transactions: any): any;
 
 export function normalize_text(text: string): string;
 
@@ -62,7 +68,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly parse_numeric_like: (a: number, b: number) => [number, number];
     readonly __wbg_get_periodbounds_end_ms: (a: number) => bigint;
     readonly __wbg_get_periodbounds_start_ms: (a: number) => bigint;
     readonly __wbg_get_savingsprojection_is_attainable: (a: number) => number;
@@ -72,7 +77,6 @@ export interface InitOutput {
     readonly __wbg_get_spendingvelocity_projected_total: (a: number) => number;
     readonly __wbg_get_spendingvelocity_target_daily_rate: (a: number) => number;
     readonly __wbg_periodbounds_free: (a: number, b: number) => void;
-    readonly __wbg_savingsprojection_free: (a: number, b: number) => void;
     readonly __wbg_set_periodbounds_end_ms: (a: number, b: bigint) => void;
     readonly __wbg_set_periodbounds_start_ms: (a: number, b: bigint) => void;
     readonly __wbg_set_savingsprojection_is_attainable: (a: number, b: number) => void;
@@ -89,15 +93,20 @@ export interface InitOutput {
     readonly project_savings_goal: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
     readonly __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;
     readonly __wbg_set_spendingvelocity_daily_burn_rate: (a: number, b: number) => void;
+    readonly __wbg_savingsprojection_free: (a: number, b: number) => void;
+    readonly parse_numeric_like: (a: number, b: number) => [number, number];
     readonly aggregate_transactions: (a: any) => [number, number, number];
     readonly detect_subscription_patterns: (a: any) => [number, number, number];
-    readonly parse_csv_to_json: (a: number, b: number) => [number, number, number];
-    readonly parse_excel_to_json: (a: number, b: number) => [number, number, number];
+    readonly generate_dashboard_summary: (a: any, b: any, c: any) => [number, number, number];
+    readonly advanced_fuzzy_search: (a: number, b: number, c: any, d: number) => [number, number, number];
     readonly batch_fuzzy_search: (a: number, b: number, c: number, d: number, e: number) => any;
     readonly calculate_match_score: (a: bigint, b: number, c: number, d: number, e: number, f: bigint, g: number, h: number, i: number, j: number) => number;
     readonly fuzzy_score: (a: number, b: number, c: number, d: number) => number;
+    readonly match_statement_batch: (a: any, b: any) => [number, number, number];
     readonly normalize_text: (a: number, b: number) => [number, number];
     readonly phonetic_encode: (a: number, b: number) => [number, number];
+    readonly parse_csv_to_json: (a: number, b: number) => [number, number, number];
+    readonly parse_excel_to_json: (a: number, b: number) => [number, number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;
