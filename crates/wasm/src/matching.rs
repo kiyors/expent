@@ -40,49 +40,63 @@ pub fn match_statement_batch(
     let rows: Vec<StatementRowMinimal> = serde_wasm_bindgen::from_value(statement_rows)?;
     let txns: Vec<TransactionMinimal> = serde_wasm_bindgen::from_value(transactions)?;
 
-    let mut results = Vec::new();
-
-    for row in &rows {
-        let mut best_match: Option<BatchMatchResult> = None;
-
-        let row_amount = row
-            .debit
-            .as_ref()
-            .or(row.credit.as_ref())
-            .and_then(|a| Decimal::from_str(a).ok())
-            .unwrap_or(Decimal::ZERO)
-            .abs();
-
-        let row_date_ms = chrono::DateTime::parse_from_rfc3339(&row.date)
-            .map(|d| d.timestamp_millis())
-            .unwrap_or(0);
-
-        for txn in &txns {
-            let txn_date_ms = chrono::DateTime::parse_from_rfc3339(&txn.date)
+    // Pre-calculate data for efficiency
+    let row_data: Vec<_> = rows
+        .iter()
+        .map(|row| {
+            let amount = row
+                .debit
+                .as_ref()
+                .or(row.credit.as_ref())
+                .and_then(|a| Decimal::from_str(a).ok())
+                .unwrap_or(Decimal::ZERO)
+                .abs();
+            let date_ms = chrono::DateTime::parse_from_rfc3339(&row.date)
                 .map(|d| d.timestamp_millis())
                 .unwrap_or(0);
+            let norm_desc = normalize_text(&row.description);
+            (row.id.clone(), amount, date_ms, norm_desc)
+        })
+        .collect();
 
-            let txn_desc = txn
+    let txn_data: Vec<_> = txns
+        .iter()
+        .map(|txn| {
+            let amount = Decimal::from_str(&txn.amount)
+                .unwrap_or(Decimal::ZERO)
+                .abs();
+            let date_ms = chrono::DateTime::parse_from_rfc3339(&txn.date)
+                .map(|d| d.timestamp_millis())
+                .unwrap_or(0);
+            let desc = txn
                 .purpose_tag
                 .as_deref()
                 .unwrap_or_else(|| txn.notes.as_deref().unwrap_or(""));
+            let norm_desc = normalize_text(desc);
+            (txn.id.clone(), amount, date_ms, norm_desc)
+        })
+        .collect();
 
-            let score = calculate_match_score_internal(
-                row_date_ms,
-                &row.description,
-                row_amount,
-                txn_date_ms,
-                txn_desc,
-                Decimal::from_str(&txn.amount)
-                    .unwrap_or(Decimal::ZERO)
-                    .abs(),
+    let mut results = Vec::new();
+
+    for (r_id, r_amount, r_date_ms, r_norm_desc) in &row_data {
+        let mut best_match: Option<BatchMatchResult> = None;
+
+        for (t_id, t_amount, t_date_ms, t_norm_desc) in &txn_data {
+            let score = calculate_match_score_optimized(
+                *r_date_ms,
+                r_norm_desc,
+                *r_amount,
+                *t_date_ms,
+                t_norm_desc,
+                *t_amount,
             );
 
             if score >= 50 {
                 if best_match.as_ref().map_or(true, |m| score > m.confidence) {
                     best_match = Some(BatchMatchResult {
-                        row_id: row.id.clone(),
-                        transaction_id: txn.id.clone(),
+                        row_id: r_id.clone(),
+                        transaction_id: t_id.clone(),
                         confidence: score,
                     });
                 }
@@ -113,22 +127,18 @@ pub fn calculate_match_score(
         .unwrap_or(Decimal::ZERO)
         .abs();
 
-    calculate_match_score_internal(
-        row_date_ms,
-        row_desc,
-        row_amt,
-        txn_date_ms,
-        txn_desc,
-        txn_amt,
-    )
+    let r_norm = normalize_text(row_desc);
+    let t_norm = normalize_text(txn_desc);
+
+    calculate_match_score_optimized(row_date_ms, &r_norm, row_amt, txn_date_ms, &t_norm, txn_amt)
 }
 
-pub fn calculate_match_score_internal(
+pub fn calculate_match_score_optimized(
     row_date_ms: i64,
-    row_desc: &str,
+    row_norm_desc: &str,
     row_amt: Decimal,
     txn_date_ms: i64,
-    txn_desc: &str,
+    txn_norm_desc: &str,
     txn_amt: Decimal,
 ) -> i32 {
     let mut score = 0;
@@ -154,8 +164,8 @@ pub fn calculate_match_score_internal(
         score += 15;
     }
 
-    // Description fuzzy match
-    let desc_score = fuzzy_score(&normalize_text(row_desc), &normalize_text(txn_desc));
+    // Description fuzzy match (using already normalized strings)
+    let desc_score = fuzzy_score(row_norm_desc, txn_norm_desc);
     score += (desc_score * 10.0) as i32;
 
     score.min(100)

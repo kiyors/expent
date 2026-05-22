@@ -1,6 +1,10 @@
 use regex::Regex;
 use std::str::FromStr;
+use std::sync::OnceLock;
 use wasm_bindgen::prelude::*;
+
+static SYMBOLS_RE: OnceLock<Regex> = OnceLock::new();
+static COMPACT_RE: OnceLock<Regex> = OnceLock::new();
 
 #[wasm_bindgen]
 pub fn parse_numeric_like(input: &str) -> Option<f64> {
@@ -20,11 +24,10 @@ pub fn parse_numeric_like(input: &str) -> Option<f64> {
     }
 
     // 3. Strip currency and percent symbols
-    let symbols = Regex::new(r"[%$€£¥₩₹₽₺₪₫฿₦₴₡₲₵₸]").unwrap();
+    let symbols = SYMBOLS_RE.get_or_init(|| Regex::new(r"[%$€£¥₩₹₽₺₪₫฿₦₴₡₲₵₸]").unwrap());
     s = symbols.replace_all(&s, "").to_string();
 
     // 4. Handle thousands and decimal separators
-    // We check for both dot and comma to determine which is which
     let last_comma = s.rfind(',');
     let last_dot = s.rfind('.');
 
@@ -39,7 +42,6 @@ pub fn parse_numeric_like(input: &str) -> Option<f64> {
             }
         }
         (Some(c), None) => {
-            // Only comma. Is it thousands or decimal?
             if has_grouped_thousands(&s, ',') {
                 s = s.replace(',', "");
             } else {
@@ -52,7 +54,6 @@ pub fn parse_numeric_like(input: &str) -> Option<f64> {
             }
         }
         (None, Some(_)) => {
-            // Only dot.
             if has_grouped_thousands(&s, '.') {
                 s = s.replace('.', "");
             } else if s.chars().filter(|&c| c == '.').count() > 1 {
@@ -63,13 +64,13 @@ pub fn parse_numeric_like(input: &str) -> Option<f64> {
     }
 
     // 5. Handle compact notation
-    let compact_re = Regex::new(r"(?i)^([+-]?\d+\.?\d*|\d*\.\d+)([KMBTPG]B?|B)$").unwrap();
+    let compact_re = COMPACT_RE
+        .get_or_init(|| Regex::new(r"(?i)^([+-]?\d+\.?\d*|\d*\.\d+)([KMBTPG]B?|B)$").unwrap());
     if let Some(caps) = compact_re.captures(&s) {
         let base_num = f64::from_str(&caps[1]).ok()?;
         let suffix = caps[2].to_uppercase();
 
         if suffix == "B" {
-            // Whole number < 1024 treat as bytes, else billions
             return if base_num.fract() == 0.0 && base_num < 1024.0 {
                 Some(base_num)
             } else {

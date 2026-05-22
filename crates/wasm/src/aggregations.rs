@@ -12,8 +12,10 @@ use wasm_bindgen::prelude::*;
 #[ts(export)]
 pub struct MonthlyTrend {
     pub month: String,
+    #[serde(with = "rust_decimal::serde::str")]
     #[ts(type = "string")]
     pub income: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     #[ts(type = "string")]
     pub expense: Decimal,
 }
@@ -23,6 +25,7 @@ pub struct MonthlyTrend {
 #[ts(export)]
 pub struct NamedAmount {
     pub name: String,
+    #[serde(with = "rust_decimal::serde::str")]
     #[ts(type = "string")]
     pub amount: Decimal,
 }
@@ -31,10 +34,13 @@ pub struct NamedAmount {
 #[derive(Debug, Serialize, Deserialize, Clone, TS)]
 #[ts(export)]
 pub struct DashboardSummary {
+    #[serde(with = "rust_decimal::serde::str")]
     #[ts(type = "string")]
     pub total_balance: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     #[ts(type = "string")]
     pub monthly_spend: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
     #[ts(type = "string")]
     pub monthly_income: Decimal,
     pub pending_p2p_count: u64,
