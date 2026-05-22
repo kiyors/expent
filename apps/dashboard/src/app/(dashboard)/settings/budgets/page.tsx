@@ -30,33 +30,33 @@ export default function SettingsBudgetsPage() {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="gap-y-6 w-full max-w-2xl">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">Budgets</h3>
           <p className="text-sm text-muted-foreground">Set spending limits for your categories.</p>
         </div>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
-          <PlusIcon className="mr-2 h-4 w-4" /> New Budget
+          <PlusIcon className="mr-2 size-4" /> New Budget
         </Button>
       </div>
       <Separator />
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="gap-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-24 animate-pulse rounded-lg bg-muted/50" />
           ))}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="gap-y-4">
           {!health || health.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-              <TargetIcon className="h-8 w-8 text-muted-foreground/40 mb-3" />
+              <TargetIcon className="size-8 text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No budgets set yet.</p>
               <p className="text-xs text-muted-foreground mt-1">Set a budget to keep your spending in check.</p>
               <Button size="sm" variant="outline" className="mt-4" onClick={() => setCreateOpen(true)}>
-                <PlusIcon className="mr-2 h-4 w-4" /> Create Budget
+                <PlusIcon className="mr-2 size-4" /> Create Budget
               </Button>
             </div>
           ) : (
@@ -80,14 +80,14 @@ export default function SettingsBudgetsPage() {
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                      className="size-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(b.budget_id)}
                       disabled={deleteMutation.isPending}
                     >
-                      <Trash2Icon className="h-4 w-4" />
+                      <Trash2Icon className="size-4" />
                     </Button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="gap-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">Spent: {formatCurrency(b.spent_amount)}</span>
                       <span className={cn("font-medium", isOver ? "text-destructive" : "text-muted-foreground")}>

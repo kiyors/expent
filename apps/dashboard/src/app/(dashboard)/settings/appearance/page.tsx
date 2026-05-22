@@ -19,7 +19,7 @@ export default function SettingsAppearancePage() {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="gap-y-6 w-full max-w-2xl">
       <div>
         <h3 className="text-lg font-medium">Appearance</h3>
         <p className="text-sm text-muted-foreground">
@@ -27,8 +27,8 @@ export default function SettingsAppearancePage() {
         </p>
       </div>
       <Separator />
-      <div className="space-y-8">
-        <div className="space-y-4">
+      <div className="gap-y-8">
+        <div className="gap-y-4">
           <Label>Theme</Label>
           <p className="text-[0.8rem] text-muted-foreground">Select the theme for the dashboard.</p>
           <div className="grid grid-cols-3 gap-4">
@@ -45,29 +45,29 @@ export default function SettingsAppearancePage() {
                   selectedTheme === value ? "border-primary bg-primary/5" : "border-muted"
                 }`}
               >
-                <Icon className={`h-6 w-6 ${selectedTheme === value ? "text-primary" : "text-muted-foreground"}`} />
+                <Icon className={`size-6 ${selectedTheme === value ? "text-primary" : "text-muted-foreground"}`} />
                 <span className={`text-sm font-medium ${selectedTheme === value ? "text-primary" : ""}`}>{label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="gap-y-4">
           <Label>Font Size</Label>
           <RadioGroup defaultValue="default" className="grid gap-3">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-x-3">
               <RadioGroupItem value="small" id="font-small" />
               <Label htmlFor="font-small" className="font-normal">
                 Small
               </Label>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-x-3">
               <RadioGroupItem value="default" id="font-default" />
               <Label htmlFor="font-default" className="font-normal">
                 Default
               </Label>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-x-3">
               <RadioGroupItem value="large" id="font-large" />
               <Label htmlFor="font-large" className="font-normal">
                 Large

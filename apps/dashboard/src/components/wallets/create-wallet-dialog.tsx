@@ -118,7 +118,7 @@ export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWall
             Cancel
           </Button>
           <Button onClick={handleCreate} disabled={!newName.trim() || createMutation.isPending}>
-            {createMutation.isPending ? "Creating…" : "Create Wallet"}
+            {createMutation.isPending ? "Creating..." : "Create Wallet"}
           </Button>
         </DialogFooter>
       </DialogContent>

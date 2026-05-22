@@ -44,8 +44,8 @@ function InviteDialog({ groupId, groupName }: { groupId: string; groupName: stri
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Invite member" />}>
-        <UserPlusIcon className="h-4 w-4" />
+      <DialogTrigger render={<Button size="sm" variant="ghost" className="size-8 p-0" aria-label="Invite member" />}>
+        <UserPlusIcon className="size-4" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -71,7 +71,7 @@ function InviteDialog({ groupId, groupName }: { groupId: string; groupName: stri
             Cancel
           </Button>
           <Button onClick={handleInvite} disabled={!email || inviteMutation.isPending}>
-            {inviteMutation.isPending ? "Sending…" : "Send Invite"}
+            {inviteMutation.isPending ? "Sending..." : "Send Invite"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -89,16 +89,16 @@ function MembersDialog({ groupId, groupName }: { groupId: string; groupName: str
   return (
     <Dialog>
       <DialogTrigger render={<Button variant="outline" size="sm" className="shadow-none" aria-label="View members" />}>
-        <UsersIcon className="mr-2 h-4 w-4" /> Members
+        <UsersIcon className="mr-2 size-4" /> Members
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle>Members of {groupName}</DialogTitle>
           <DialogDescription>Manage people who can view and share transactions.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="gap-y-4 py-4">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground animate-pulse">Loading members…</p>
+            <p className="text-sm text-muted-foreground animate-pulse">Loading members...</p>
           ) : (
             members?.map((m) => (
               <div
@@ -144,7 +144,7 @@ function MembersDialog({ groupId, groupName }: { groupId: string; groupName: str
                       <Button
                         variant="ghost"
                         size="icon-xs"
-                        className="text-destructive h-7 w-7"
+                        className="text-destructive size-7"
                         aria-label={`Remove ${m.name || m.email} from group`}
                         onClick={() => {
                           if (confirm(`Remove ${m.name || m.email} from group?`)) {
@@ -177,17 +177,15 @@ function GroupDetails({ group }: { group: Group }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="gap-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <ReceiptIcon className="h-4 w-4 text-primary" /> Recent Activity
+          <ReceiptIcon className="size-4 text-primary" /> Recent Activity
         </h3>
         <div className="flex gap-2">
           <Tooltip>
-            <TooltipTrigger
-              render={<Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Information" />}
-            >
-              <InfoIcon className="h-4 w-4 text-muted-foreground" />
+            <TooltipTrigger render={<Button variant="ghost" size="icon" className="size-8" aria-label="Information" />}>
+              <InfoIcon className="size-4 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Transactions shared directly with this group</p>
@@ -197,14 +195,14 @@ function GroupDetails({ group }: { group: Group }) {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="gap-y-3">
           <div className="h-12 w-full bg-muted animate-pulse rounded-md" />
           <div className="h-12 w-full bg-muted animate-pulse rounded-md" />
           <div className="h-12 w-full bg-muted animate-pulse rounded-md" />
         </div>
       ) : !transactions || transactions.length === 0 ? (
         <div className="text-center py-16 border rounded-xl border-dashed bg-muted/10">
-          <ReceiptIcon className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+          <ReceiptIcon className="size-10 text-muted-foreground/20 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">No shared transactions yet.</p>
           <p className="text-xs text-muted-foreground/60 mt-1">Upload a receipt and use 'Split' to see it here.</p>
         </div>
@@ -297,12 +295,12 @@ export default function SharedLedgersComponent() {
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Shared Ledgers</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Shared Ledgers</h2>
           <p className="text-muted-foreground text-sm">Track shared expenses with friends and family.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={<Button />}>
-            <PlusIcon className="mr-2 h-4 w-4" /> New Ledger
+            <PlusIcon className="mr-2 size-4" /> New Ledger
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -337,7 +335,7 @@ export default function SharedLedgersComponent() {
                 Cancel
               </Button>
               <Button onClick={handleCreate} disabled={!newGroupName || createMutation.isPending}>
-                {createMutation.isPending ? "Creating…" : "Create"}
+                {createMutation.isPending ? "Creating..." : "Create"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -345,16 +343,16 @@ export default function SharedLedgersComponent() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 gap-y-4">
           {isLoading ? (
-            <div className="space-y-3">
+            <div className="gap-y-3">
               <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
               <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
             </div>
           ) : !groups || groups.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-                <UsersIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                <UsersIcon className="size-8 text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">No ledgers yet.</p>
               </CardContent>
             </Card>
@@ -365,8 +363,8 @@ export default function SharedLedgersComponent() {
                 className={`hover:border-primary/50 transition-all cursor-pointer group ${selectedGroup?.id === group.id ? "border-primary ring-1 ring-primary/20 shadow-sm" : ""}`}
                 onClick={() => setSelectedGroup(group)}
               >
-                <CardHeader className="p-4 space-y-0">
-                  <div className="space-y-1">
+                <CardHeader className="p-4 gap-y-0">
+                  <div className="gap-y-1">
                     <CardTitle className="text-base">{group.name}</CardTitle>
                     <CardDescription className="text-xs line-clamp-1 italic">
                       {group.description || "Active Shared Ledger"}
@@ -379,11 +377,11 @@ export default function SharedLedgersComponent() {
                 <CardContent className="px-4 pb-4 pt-0">
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center text-[10px] text-muted-foreground font-medium">
-                      <UsersIcon className="mr-1 h-3 w-3" />
+                      <UsersIcon className="mr-1 size-3" />
                       Created {new Date(group.created_at).toLocaleDateString()}
                     </div>
                     <ChevronRightIcon
-                      className={`h-4 w-4 text-muted-foreground transition-transform ${selectedGroup?.id === group.id ? "translate-x-1 text-primary" : "group-hover:translate-x-1"}`}
+                      className={`size-4 text-muted-foreground transition-transform ${selectedGroup?.id === group.id ? "translate-x-1 text-primary" : "group-hover:translate-x-1"}`}
                       aria-label="View ledger details"
                     />
                   </div>
@@ -419,7 +417,7 @@ export default function SharedLedgersComponent() {
           ) : (
             <Card className="flex flex-col items-center justify-center min-h-[500px] border-dashed bg-muted/5">
               <div className="bg-muted p-4 rounded-full mb-4">
-                <UsersIcon className="h-10 w-10 text-muted-foreground/40" />
+                <UsersIcon className="size-10 text-muted-foreground/40" />
               </div>
               <h3 className="text-lg font-medium text-muted-foreground">Select a Ledger</h3>
               <p className="text-sm text-muted-foreground/60 max-w-xs text-center mt-2 px-6">

@@ -23,7 +23,7 @@ export const GithubIcon = (props: React.ComponentProps<"svg">) => (
 
 export function SocialLogins() {
   return (
-    <div className="space-y-2">
+    <div className="gap-y-2">
       <Button className="w-full">
         <GoogleIcon data-icon="inline-start" />
         Continue with Google

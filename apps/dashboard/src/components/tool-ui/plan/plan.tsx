@@ -318,7 +318,7 @@ function PlanRoot({
   }, [progress]);
 
   const todoList = (
-    <ul className={cn("min-w-0 space-y-1", compact ? "mt-0" : "mt-4")}>
+    <ul className={cn("min-w-0 gap-y-1", compact ? "mt-0" : "mt-4")}>
       <TodoList todos={visibleTodos} newTodoIds={newTodoIds} />
 
       {hiddenTodos.length > 0 && (
@@ -330,7 +330,7 @@ function PlanRoot({
                 <span>{hiddenTodos.length} more</span>
               </AccordionTrigger>
               <AccordionContent className="pt-2 pb-0">
-                <ul className="-mx-2 space-y-2 px-2">
+                <ul className="-mx-2 gap-y-2 px-2">
                   <TodoList todos={hiddenTodos} newTodoIds={newTodoIds} />
                 </ul>
               </AccordionContent>
@@ -349,7 +349,7 @@ function PlanRoot({
     >
       {!compact && (
         <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div className="space-y-1.5">
+          <div className="gap-y-1.5">
             <CardTitle className="leading-5 font-medium text-pretty">{title}</CardTitle>
             {description && <CardDescription>{description}</CardDescription>}
           </div>

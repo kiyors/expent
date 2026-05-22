@@ -98,7 +98,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!name.trim() || createMutation.isPending}>
-            {createMutation.isPending ? "Adding…" : "Add Contact"}
+            {createMutation.isPending ? "Adding..." : "Add Contact"}
           </Button>
         </DialogFooter>
       </DialogContent>

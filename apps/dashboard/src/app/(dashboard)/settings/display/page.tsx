@@ -9,7 +9,7 @@ import { Switch } from "@expent/ui/components/switch";
 
 export default function SettingsDisplayPage() {
   return (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="gap-y-6 w-full max-w-2xl">
       <div>
         <h3 className="text-lg font-medium">Display</h3>
         <p className="text-sm text-muted-foreground">
@@ -17,11 +17,11 @@ export default function SettingsDisplayPage() {
         </p>
       </div>
       <Separator />
-      <div className="space-y-8">
-        <div className="space-y-4">
+      <div className="gap-y-8">
+        <div className="gap-y-4">
           <Label>Sidebar Items</Label>
           <p className="text-[0.8rem] text-muted-foreground">Select the items you want to display in the sidebar.</p>
-          <div className="space-y-3">
+          <div className="gap-y-3">
             {[
               { label: "Transactions", defaultChecked: true },
               { label: "Contacts", defaultChecked: true },
@@ -38,16 +38,16 @@ export default function SettingsDisplayPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="gap-y-4">
           <Label>Date Format</Label>
           <RadioGroup defaultValue="relative" className="grid gap-3">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-x-3">
               <RadioGroupItem value="relative" id="date-relative" />
               <Label htmlFor="date-relative" className="font-normal">
                 Relative (e.g. &quot;2 days ago&quot;)
               </Label>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-x-3">
               <RadioGroupItem value="absolute" id="date-absolute" />
               <Label htmlFor="date-absolute" className="font-normal">
                 Absolute (e.g. &quot;Apr 5, 2026&quot;)

@@ -95,12 +95,12 @@ export default function WalletsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Wallets & Accounts</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Wallets & Accounts</h1>
           <p className="text-muted-foreground text-sm">Manage your payment methods and track balances.</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger render={<Button />}>
-            <PlusIcon className="mr-2 h-4 w-4" /> Add Wallet
+            <PlusIcon className="mr-2 size-4" /> Add Wallet
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -149,7 +149,7 @@ export default function WalletsPage() {
                 Cancel
               </Button>
               <Button onClick={handleCreate} disabled={!newName || createMutation.isPending}>
-                {createMutation.isPending ? "Creating…" : "Create Wallet"}
+                {createMutation.isPending ? "Creating..." : "Create Wallet"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -166,7 +166,7 @@ export default function WalletsPage() {
         <Card className="border-dashed py-20">
           <CardContent className="flex flex-col items-center text-center">
             <div className="bg-muted p-4 rounded-full mb-4">
-              <WalletIcon className="h-10 w-10 text-muted-foreground/40" />
+              <WalletIcon className="size-10 text-muted-foreground/40" />
             </div>
             <h3 className="text-lg font-medium">No wallets found</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs">
@@ -191,7 +191,7 @@ export default function WalletsPage() {
   );
 }
 
-import { motion } from "motion/react";
+import { m } from "motion/react";
 
 function WalletCard({
   wallet,
@@ -206,7 +206,7 @@ function WalletCard({
 }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editName, setEditName] = React.useState(wallet.name);
-  const [editBalance, setEditBalance] = React.useState(wallet.balance.toString());
+  const [editBalance, setEditBalance] = React.useState(() => wallet.balance.toString());
 
   const lastStats = React.useMemo(() => {
     const lastInTxn = walletTransactions.find((txn) => txn.destination_wallet_id === wallet.id);
@@ -239,20 +239,20 @@ function WalletCard({
   const typeIcon = () => {
     switch (wallet.type) {
       case "BANK":
-        return <Building2Icon className="h-5 w-5" />;
+        return <Building2Icon className="size-5" />;
       case "CREDIT_CARD":
-        return <CreditCardIcon className="h-5 w-5" />;
+        return <CreditCardIcon className="size-5" />;
       case "UPI_WALLET":
-        return <SmartphoneIcon className="h-5 w-5" />;
+        return <SmartphoneIcon className="size-5" />;
       default:
-        return <BanknoteIcon className="h-5 w-5" />;
+        return <BanknoteIcon className="size-5" />;
     }
   };
 
   return (
-    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
+    <m.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
       <Card className="overflow-hidden group hover:border-primary/50 transition-all shadow-sm h-full">
-        <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
+        <CardHeader className="p-4 flex flex-row items-center justify-between gap-y-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">{typeIcon()}</div>
             <div>
@@ -272,13 +272,13 @@ function WalletCard({
                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label="More options"
                   >
-                    <MoreVerticalIcon className="h-4 w-4" />
+                    <MoreVerticalIcon className="size-4" />
                   </Button>
                 }
               />
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                  <PencilIcon className="mr-2 h-4 w-4" /> Edit
+                  <PencilIcon className="mr-2 size-4" /> Edit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -289,7 +289,7 @@ function WalletCard({
                     }
                   }}
                 >
-                  <Trash2Icon className="mr-2 h-4 w-4" /> Delete
+                  <Trash2Icon className="mr-2 size-4" /> Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -373,6 +373,6 @@ function WalletCard({
           </DialogContent>
         </Dialog>
       </Card>
-    </motion.div>
+    </m.div>
   );
 }

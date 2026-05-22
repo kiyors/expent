@@ -40,7 +40,7 @@ import { useGlobalStore } from "@/lib/store";
 
 export function CommandCenter() {
   const [open, setOpen] = React.useState(false);
-  const router = useRouter();
+  const { push } = useRouter();
   const { theme, setTheme } = useTheme();
   const { setTransactionModalOpen, setOCRModalOpen, setCategoryModalOpen, setHotkeyHelpOpen } = useGlobalStore();
   const [_isTransitionPending, startTransition] = React.useTransition();
@@ -110,49 +110,49 @@ export function CommandCenter() {
   useHotkeySequence(["G", "D"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/");
+        push("/");
       });
     }
   });
   useHotkeySequence(["G", "T"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/transactions");
+        push("/transactions");
       });
     }
   });
   useHotkeySequence(["G", "W"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/wallets");
+        push("/wallets");
       });
     }
   });
   useHotkeySequence(["G", "C"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/contacts");
+        push("/contacts");
       });
     }
   });
   useHotkeySequence(["G", "S"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/settings");
+        push("/settings");
       });
     }
   });
   useHotkeySequence(["G", "R"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/reconciliation");
+        push("/reconciliation");
       });
     }
   });
   useHotkeySequence(["G", "L"], () => {
     if (!open) {
       startTransition(() => {
-        router.push("/p2p/ledger-tabs");
+        push("/p2p/ledger-tabs");
       });
     }
   });
@@ -162,7 +162,7 @@ export function CommandCenter() {
     e.preventDefault();
     if (!open) {
       startTransition(() => {
-        router.push("/settings");
+        push("/settings");
       });
     }
   });
@@ -236,7 +236,7 @@ export function CommandCenter() {
       <CommandList className="max-h-[480px] p-2 no-scrollbar scroll-smooth relative z-10 [&_[cmdk-list-sizer]]:flex [&_[cmdk-list-sizer]]:flex-wrap">
         <CommandEmpty className="py-12 text-center w-full">
           <div className="bg-muted/50 size-12 rounded-full flex items-center justify-center mx-auto mb-4">
-            <SearchIcon className="h-6 w-6 text-muted-foreground/40" />
+            <SearchIcon className="size-6 text-muted-foreground/40" />
           </div>
           <p className="text-muted-foreground font-medium">No results found.</p>
         </CommandEmpty>
@@ -245,10 +245,10 @@ export function CommandCenter() {
           <CommandItem
             value="add transaction manual entry new"
             onSelect={() => runCommand(() => setTransactionModalOpen(true))}
-            className="flex items-center gap-4 px-3 py-3 rounded-xl mb-1 data-selected:bg-primary/10 data-selected:text-primary transition-all group"
+            className="flex items-center gap-4 p-3 rounded-xl mb-1 data-selected:bg-primary/10 data-selected:text-primary transition-all group"
           >
             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center group-data-selected:scale-110 transition-transform">
-              <PlusIcon className="h-5 w-5 text-primary" />
+              <PlusIcon className="size-5 text-primary" />
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="font-semibold text-sm text-foreground">Manual Entry</span>
@@ -262,10 +262,10 @@ export function CommandCenter() {
           <CommandItem
             value="scan receipt ocr image upload"
             onSelect={() => runCommand(() => setOCRModalOpen(true))}
-            className="flex items-center gap-4 px-3 py-3 rounded-xl mb-1 data-selected:bg-emerald-500/10 data-selected:text-emerald-500 transition-all group"
+            className="flex items-center gap-4 p-3 rounded-xl mb-1 data-selected:bg-emerald-500/10 data-selected:text-emerald-500 transition-all group"
           >
             <div className="size-10 rounded-lg bg-emerald-500/10 flex items-center justify-center group-data-selected:scale-110 transition-transform">
-              <CameraIcon className="h-5 w-5 text-emerald-500" />
+              <CameraIcon className="size-5 text-emerald-500" />
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="font-semibold text-sm text-foreground">Scan Receipt</span>
@@ -279,10 +279,10 @@ export function CommandCenter() {
           <CommandItem
             value="create new category tag"
             onSelect={() => runCommand(() => setCategoryModalOpen(true))}
-            className="flex items-center gap-4 px-3 py-3 rounded-xl mb-1 data-selected:bg-purple-500/10 data-selected:text-purple-500 transition-all group"
+            className="flex items-center gap-4 p-3 rounded-xl mb-1 data-selected:bg-purple-500/10 data-selected:text-purple-500 transition-all group"
           >
             <div className="size-10 rounded-lg bg-purple-500/10 flex items-center justify-center group-data-selected:scale-110 transition-transform">
-              <TagIcon className="h-5 w-5 text-purple-500" />
+              <TagIcon className="size-5 text-purple-500" />
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="font-semibold text-sm text-foreground">New Category</span>
@@ -301,11 +301,11 @@ export function CommandCenter() {
             <CommandItem
               key={nav.href}
               value={nav.label}
-              onSelect={() => runCommand(() => startTransition(() => router.push(nav.href)))}
-              className="flex items-center gap-4 px-3 py-3 rounded-xl mb-1 transition-all group"
+              onSelect={() => runCommand(() => startTransition(() => push(nav.href)))}
+              className="flex items-center gap-4 p-3 rounded-xl mb-1 transition-all group"
             >
               <div className="size-10 rounded-lg bg-muted/50 flex items-center justify-center group-data-selected:bg-background transition-colors">
-                <nav.icon className={cn("h-5 w-5", nav.color)} />
+                <nav.icon className={cn("size-5", nav.color)} />
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="font-semibold text-sm text-foreground">{nav.label}</span>
@@ -325,11 +325,11 @@ export function CommandCenter() {
               <CommandItem
                 key={wallet.id}
                 value={wallet.name}
-                onSelect={() => runCommand(() => startTransition(() => router.push("/wallets")))}
+                onSelect={() => runCommand(() => startTransition(() => push("/wallets")))}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-all group"
               >
                 <div className="size-8 rounded-lg bg-muted/30 flex items-center justify-center group-data-selected:bg-background/50 transition-colors">
-                  <WalletIcon className="h-4 w-4 text-muted-foreground" />
+                  <WalletIcon className="size-4 text-muted-foreground" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-foreground truncate">{wallet.name}</span>
@@ -349,7 +349,7 @@ export function CommandCenter() {
               <CommandItem
                 key={contact.id}
                 value={contact.name}
-                onSelect={() => runCommand(() => startTransition(() => router.push(`/contacts/${contact.id}`)))}
+                onSelect={() => runCommand(() => startTransition(() => push(`/contacts/${contact.id}`)))}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-all group"
               >
                 <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center group-data-selected:bg-primary/20 transition-colors">
@@ -368,11 +368,11 @@ export function CommandCenter() {
             <CommandItem
               key={item.href}
               value={item.label}
-              onSelect={() => runCommand(() => startTransition(() => router.push(item.href)))}
+              onSelect={() => runCommand(() => startTransition(() => push(item.href)))}
               className="flex items-center gap-4 px-3 py-2 rounded-xl mb-1 transition-all group"
             >
               <div className="size-8 rounded-lg bg-muted/50 flex items-center justify-center group-data-selected:bg-background transition-colors">
-                <item.icon className="h-4 w-4 text-muted-foreground" />
+                <item.icon className="size-4 text-muted-foreground" />
               </div>
               <span className="font-medium text-sm text-foreground">{item.label}</span>
             </CommandItem>

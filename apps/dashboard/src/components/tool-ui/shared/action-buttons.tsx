@@ -59,7 +59,7 @@ export function ActionButtons({
             )}
             aria-label={action.shortcut ? `${label} (${action.shortcut})` : label}
           >
-            {action.isLoading && <Spinner className="mr-2 h-4 w-4" />}
+            {action.isLoading && <Spinner className="mr-2 size-4" />}
             {action.icon && !action.isLoading && <span className="mr-2">{action.icon}</span>}
             {label}
             {action.shortcut && !action.isLoading && (

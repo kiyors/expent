@@ -101,7 +101,7 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
                   Account / Wallet
                 </span>
                 <div className="flex items-center gap-2 text-sm">
-                  <WalletIcon className="h-4 w-4 text-primary" />
+                  <WalletIcon className="size-4 text-primary" />
                   <span>{item.source_wallet_name || item.destination_wallet_name}</span>
                 </div>
               </div>
@@ -113,7 +113,7 @@ export function TransactionViewer({ item, onUpdate, open, onOpenChange }: Transa
                   Person / Contact
                 </span>
                 <div className="flex items-center gap-2 text-sm">
-                  <UserIcon className="h-4 w-4 text-primary" />
+                  <UserIcon className="size-4 text-primary" />
                   <span>{item.contact_name}</span>
                 </div>
               </div>

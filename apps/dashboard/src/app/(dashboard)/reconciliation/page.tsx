@@ -22,14 +22,18 @@ import * as React from "react";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
 import { useOcrUpload } from "@/hooks/use-ocr";
 import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
+import { useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
+import { matchStatementBatchWasm } from "@/lib/wasm-utils";
 
 export default function ReconciliationPage() {
   const queryClient = useQueryClient();
   const [file, setFile] = React.useState<File | null>(null);
   const { unmatchedRows, isLoading: isRowsLoading, confirmMatchMutation } = useReconciliation();
+  const { transactions } = useTransactions({ limit: 1000 });
   const { isUploading, uploadSteps, processedOcr, uploadFile, setProcessedOcr } = useOcrUpload();
   const [isSavingOcr, setIsSavingOcr] = React.useState(false);
+  const [isAutoMatching, setIsAutoMatching] = React.useState(false);
 
   const handleUpload = async () => {
     if (!file) return;
@@ -52,18 +56,56 @@ export default function ReconciliationPage() {
     }
   };
 
+  const handleAutoMatch = async () => {
+    if (!unmatchedRows || !transactions) return;
+    setIsAutoMatching(true);
+    try {
+      const results = await matchStatementBatchWasm(unmatchedRows, transactions);
+      if (results.length === 0) {
+        toast.info("No high-confidence matches found.");
+        return;
+      }
+
+      let count = 0;
+      for (const res of results) {
+        await confirmMatchMutation.mutateAsync({
+          rowId: res.row_id,
+          transactionId: res.transaction_id,
+          confidence: res.confidence,
+        });
+        count++;
+      }
+      toast.success(`Successfully auto-matched ${count} transactions!`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Auto-match failed.");
+    } finally {
+      setIsAutoMatching(false);
+    }
+  };
+
   const _showResults = unmatchedRows && unmatchedRows.length > 0;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Bank Reconciliation</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Bank Reconciliation</h1>
           <p className="text-muted-foreground text-sm">Match your bank statements with recorded transactions.</p>
         </div>
-        <Button variant="outline" size="sm">
-          <HistoryIcon className="mr-2 h-4 w-4" /> View History
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAutoMatch}
+            disabled={isAutoMatching || !unmatchedRows?.length || !transactions?.length}
+          >
+            {isAutoMatching ? "Matching…" : "Run Auto-Match"}
+          </Button>
+          <Button variant="outline" size="sm">
+            <HistoryIcon className="mr-2 size-4" /> View History
+          </Button>
+        </div>
       </div>
 
       {processedOcr ? (
@@ -80,9 +122,9 @@ export default function ReconciliationPage() {
           <Card className="border-dashed bg-muted/5">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center gap-4">
               <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                <UploadIcon className="h-8 w-8" />
+                <UploadIcon className="size-8" />
               </div>
-              <div className="space-y-1">
+              <div className="gap-y-1">
                 <h3 className="text-lg font-semibold">Upload Bank Statement</h3>
                 <p className="text-sm text-muted-foreground max-w-sm">
                   Drop your CSV or PDF statement here. We'll automatically identify matches and highlight discrepancies.
@@ -104,7 +146,7 @@ export default function ReconciliationPage() {
                 </Label>
                 {file && (
                   <Button onClick={handleUpload} disabled={isUploading} className="w-full">
-                    {isUploading ? "Processing…" : "Start Scanning"}
+                    {isUploading ? "Processing..." : "Start Scanning"}
                   </Button>
                 )}
               </div>
@@ -112,14 +154,14 @@ export default function ReconciliationPage() {
                 <div className="w-full max-w-xs mt-4">
                   <Progress value={66} className="h-2" />
                   <p className="text-[10px] text-muted-foreground mt-2 italic px-1">
-                    {uploadSteps[uploadSteps.length - 1]?.label || "Processing…"}
+                    {uploadSteps[uploadSteps.length - 1]?.label || "Processing..."}
                   </p>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <div className="space-y-6">
+          <div className="gap-y-6">
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="bg-green-50/50 dark:bg-green-500/5 border-green-100 dark:border-green-500/20">
                 <CardHeader className="p-4 pb-2">
@@ -156,13 +198,13 @@ export default function ReconciliationPage() {
               </Card>
             </div>
 
-            <div className="space-y-4">
+            <div className="gap-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <AlertCircleIcon className="h-5 w-5 text-orange-500" /> Pending Matches
+                <AlertCircleIcon className="size-5 text-orange-500" /> Pending Matches
               </h2>
 
               {isRowsLoading ? (
-                <div className="py-20 text-center text-muted-foreground">Loading pending matches…</div>
+                <div className="py-20 text-center text-muted-foreground">Loading pending matches...</div>
               ) : unmatchedRows && unmatchedRows.length > 0 ? (
                 <div className="grid gap-4">
                   {unmatchedRows.map((row) => (
@@ -203,12 +245,12 @@ function RowMatchItem({ row, onConfirm }: { row: BankStatementRow; onConfirm: (t
   const rowAmount = row.debit ? parseFloat(row.debit) : row.credit ? parseFloat(row.credit) : 0;
 
   return (
-    <Card className="overflow-hidden border-l-4 border-l-muted">
+    <Card className="overflow-hidden border-l-2 border-l-primary/30">
       <div className="flex flex-col md:flex-row">
         {/* Bank Side */}
         <div className="flex-1 p-4 bg-muted/10">
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
-            <FileTextIcon className="h-3 w-3" /> Bank Statement
+            <FileTextIcon className="size-3" /> Bank Statement
           </div>
           <p className="text-sm font-medium truncate">{row.description}</p>
           <div className="flex justify-between items-end mt-2">
@@ -219,14 +261,14 @@ function RowMatchItem({ row, onConfirm }: { row: BankStatementRow; onConfirm: (t
 
         {/* Transition */}
         <div className="flex items-center justify-center px-4 bg-background">
-          <ArrowRightIcon className="h-5 w-5 text-muted-foreground/30 rotate-90 md:rotate-0" />
+          <ArrowRightIcon className="size-5 text-muted-foreground/30 rotate-90 md:rotate-0" />
         </div>
 
         {/* App Side */}
         <div className={`flex-1 p-4 ${matches.length === 0 ? "bg-rose-50/30 dark:bg-rose-500/5" : "bg-primary/5"}`}>
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-              <CheckCircle2Icon className="h-3 w-3" /> Potential Matches
+              <CheckCircle2Icon className="size-3" /> Potential Matches
             </div>
             {matches[0] && (
               <Badge variant="outline" className="h-4 text-[9px] bg-green-50 text-green-700 border-green-200">
@@ -243,7 +285,7 @@ function RowMatchItem({ row, onConfirm }: { row: BankStatementRow; onConfirm: (t
               </Button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="gap-y-3">
               {matches.slice(0, 2).map(([tx, confidence]) => (
                 <div key={tx.id} className="flex items-center justify-between gap-4 group">
                   <div className="flex-1 min-w-0">
@@ -258,7 +300,7 @@ function RowMatchItem({ row, onConfirm }: { row: BankStatementRow; onConfirm: (t
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-7 w-7 p-0 rounded-full bg-green-600/10 text-green-600 hover:bg-green-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                    className="size-7 p-0 rounded-full bg-green-600/10 text-green-600 hover:bg-green-600 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                     onClick={() => onConfirm(tx.id)}
                   >
                     <CheckIcon className="h-3.5 w-3.5" />

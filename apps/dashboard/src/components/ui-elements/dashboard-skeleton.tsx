@@ -4,9 +4,9 @@ import { Skeleton } from "@expent/ui/components/skeleton";
 export function StatsCardSkeleton() {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
         <Skeleton className="h-4 w-[100px]" />
-        <Skeleton className="h-4 w-4" />
+        <Skeleton className="size-4" />
       </CardHeader>
       <CardContent>
         <Skeleton className="h-8 w-[120px] mb-1" />
@@ -31,9 +31,9 @@ export function ChartSkeleton() {
 
 export function TransactionTableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="space-y-3">
+    <div className="gap-y-3">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center space-x-4 px-4 py-3 border-b last:border-0">
+        <div key={i} className="flex items-center gap-x-4 px-4 py-3 border-b last:border-0">
           <Skeleton className="h-4 w-[80px]" />
           <Skeleton className="h-4 flex-1" />
           <Skeleton className="h-4 w-[60px]" />
@@ -48,7 +48,7 @@ export function DashboardSkeleton() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="flex items-center justify-between mb-4">
-        <div className="space-y-2">
+        <div className="gap-y-2">
           <Skeleton className="h-8 w-[200px]" />
           <Skeleton className="h-4 w-[300px]" />
         </div>

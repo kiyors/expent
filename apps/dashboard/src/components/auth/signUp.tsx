@@ -61,14 +61,14 @@ export function SignUp() {
         Home
       </Button>
 
-      <div className="mx-auto space-y-4 sm:w-sm">
+      <div className="mx-auto gap-y-4 sm:w-sm">
         <Logo className="h-4.5 lg:hidden mx-auto" />
-        <div className="flex flex-col space-y-1 text-center">
-          <h1 className="font-bold text-2xl tracking-wide">Create your account</h1>
+        <div className="flex flex-col gap-y-1 text-center">
+          <h1 className="font-semibold text-2xl tracking-wide">Create your account</h1>
           <p className="text-sm text-muted-foreground">Enter your details below to create your account</p>
         </div>
 
-        <form className="space-y-2" onSubmit={handleSignUp}>
+        <form className="gap-y-2" onSubmit={handleSignUp}>
           <InputGroup>
             <InputGroupInput
               placeholder="Name"
@@ -131,7 +131,7 @@ export function SignUp() {
 
         <SocialLogins />
 
-        <div className="flex flex-col space-y-4 mt-8 text-center">
+        <div className="flex flex-col gap-y-4 mt-8 text-center">
           <p className="text-muted-foreground text-sm">
             By signing up, you agree to our{" "}
             <a className="underline underline-offset-4 hover:text-primary" href="#">

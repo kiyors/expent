@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InfoIcon, PlusIcon, TagIcon, WalletIcon } from "lucide-react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -142,10 +142,10 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
           <DialogDescription>Manually enter details for a new income or expense.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 pt-4 space-y-6">
-          <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 pt-4 gap-y-6">
+          <div className="gap-y-4">
             {/* Amount Section with tabular nums */}
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Amount
               </Label>
@@ -164,17 +164,17 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                 />
               </div>
               {errors.amount && (
-                <motion.p
+                <m.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="text-xs font-medium text-destructive"
                 >
                   {errors.amount.message}
-                </motion.p>
+                </m.p>
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label
                 htmlFor="description"
                 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
@@ -194,7 +194,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="gap-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Type</Label>
                 <Select
                   value={direction}
@@ -209,19 +209,19 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="gap-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</Label>
                 <Input id="date" type="date" {...register("date")} className="bg-muted/10 border-muted-foreground/10" />
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Wallet / Account
               </Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <WalletIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground/50" />
+                  <WalletIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground/50" />
                   <Select
                     value={walletId}
                     onValueChange={(val: string | null) => setValue("walletId", val || "none", { shouldDirty: true })}
@@ -253,13 +253,13 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                   className="shrink-0 border-muted-foreground/10"
                   onClick={() => setCreateWalletOpen(true)}
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <PlusIcon className="size-4" />
                 </Button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="gap-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact</Label>
                 <div className="flex gap-2">
                   <Select
@@ -282,7 +282,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                     variant="outline"
                     size="icon-xs"
                     type="button"
-                    className="shrink-0 border-muted-foreground/10 h-9 w-9"
+                    className="shrink-0 border-muted-foreground/10 size-9"
                     onClick={() => setCreateContactOpen(true)}
                   >
                     <PlusIcon className="h-3.5 w-3.5" />
@@ -290,7 +290,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="gap-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</Label>
                 <div className="flex gap-2">
                   <Select
@@ -333,7 +333,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                     variant="outline"
                     size="icon-xs"
                     type="button"
-                    className="shrink-0 border-muted-foreground/10 h-9 w-9"
+                    className="shrink-0 border-muted-foreground/10 size-9"
                     onClick={() => setCreateCategoryOpen(true)}
                   >
                     <PlusIcon className="h-3.5 w-3.5" />
@@ -360,7 +360,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
             <Button type="submit" disabled={isSubmitting || !isDirty} className="px-8 shadow-lg shadow-primary/20">
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
-                  <motion.div
+                  <m.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 1 }}
                     className="size-3 border-2 border-white/30 border-t-white rounded-full"

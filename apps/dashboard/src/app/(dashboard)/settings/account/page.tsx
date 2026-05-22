@@ -8,7 +8,7 @@ import { Separator } from "@expent/ui/components/separator";
 
 export default function SettingsAccountPage() {
   return (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="gap-y-6 w-full max-w-2xl">
       <div>
         <h3 className="text-lg font-medium">Account</h3>
         <p className="text-sm text-muted-foreground">
@@ -16,8 +16,8 @@ export default function SettingsAccountPage() {
         </p>
       </div>
       <Separator />
-      <div className="space-y-8">
-        <div className="space-y-2">
+      <div className="gap-y-8">
+        <div className="gap-y-2">
           <Label htmlFor="name">Name</Label>
           <Input id="name" placeholder="Your name" />
           <p className="text-[0.8rem] text-muted-foreground">
@@ -25,7 +25,7 @@ export default function SettingsAccountPage() {
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="gap-y-2">
           <Label htmlFor="currency">Default Currency</Label>
           <select
             id="currency"

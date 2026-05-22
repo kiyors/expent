@@ -46,7 +46,7 @@ export default function ContactDetailPage() {
   const { deleteMutation } = useContacts();
   const [_isPending, startTransition] = React.useTransition();
   if (isLoading) {
-    return <div className="p-8 text-center">Loading contact details…</div>;
+    return <div className="p-8 text-center">Loading contact details...</div>;
   }
 
   if (!contactData) {
@@ -79,14 +79,14 @@ export default function ContactDetailPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
-          <ArrowLeftIcon className="h-4 w-4" />
+          <ArrowLeftIcon className="size-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">{contact.name}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{contact.name}</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
             {contact.phone && (
               <span className="flex items-center gap-1">
-                <PhoneIcon className="h-3 w-3" /> {contact.phone}
+                <PhoneIcon className="size-3" /> {contact.phone}
               </span>
             )}
             {contact.phone && identifiers.length > 0 && <span>•</span>}
@@ -109,12 +109,12 @@ export default function ContactDetailPage() {
             }
           }}
         >
-          <Trash2Icon className="h-4 w-4 mr-2" /> Remove
+          <Trash2Icon className="size-4 mr-2" /> Remove
         </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-1 space-y-6">
+        <div className="md:col-span-1 gap-y-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center justify-between">
@@ -174,7 +174,7 @@ export default function ContactDetailPage() {
                 </Dialog>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="gap-y-3">
               {identifiers.length === 0 ? (
                 <p className="text-xs text-muted-foreground italic">No identifiers added yet.</p>
               ) : (
@@ -187,7 +187,7 @@ export default function ContactDetailPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">Insights</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="gap-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Total Transactions</span>
                 <span className="font-medium">{transactions.length}</span>
@@ -202,7 +202,7 @@ export default function ContactDetailPage() {
               <Separator />
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-primary/5 text-[10px]">
-                  <UserIcon className="h-3 w-3 mr-1" /> Contact Detail
+                  <UserIcon className="size-3 mr-1" /> Contact Detail
                 </Badge>
               </div>
             </CardContent>
@@ -213,7 +213,7 @@ export default function ContactDetailPage() {
           <Card className="h-full flex flex-col">
             <CardHeader className="border-b bg-muted/10">
               <CardTitle className="text-base flex items-center gap-2">
-                <ReceiptIcon className="h-4 w-4 text-primary" /> Transaction History
+                <ReceiptIcon className="size-4 text-primary" /> Transaction History
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 flex-1">
@@ -248,9 +248,9 @@ function IdentifierChip({ identifier }: { identifier: ContactIdentifier }) {
       <div className="flex items-center gap-2 min-w-0">
         <div className="size-6 rounded-md bg-background flex items-center justify-center border shadow-xs">
           {identifier.type === "UPI" ? (
-            <WalletIcon className="h-3 w-3 text-primary" />
+            <WalletIcon className="size-3 text-primary" />
           ) : (
-            <PhoneIcon className="h-3 w-3" />
+            <PhoneIcon className="size-3" />
           )}
         </div>
         <div className="min-w-0">
@@ -265,7 +265,7 @@ function IdentifierChip({ identifier }: { identifier: ContactIdentifier }) {
         className="opacity-0 group-hover:opacity-100"
         aria-label="Copy identifier"
       >
-        {copied ? <CheckIcon className="h-3 w-3 text-green-600" /> : <CopyIcon className="h-3 w-3" />}
+        {copied ? <CheckIcon className="size-3 text-green-600" /> : <CopyIcon className="size-3" />}
       </Button>
     </div>
   );

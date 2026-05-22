@@ -4,10 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expe
 import { BarChart3Icon, TrendingDownIcon, TrendingUpIcon, WalletIcon } from "lucide-react";
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useTransactionSummary } from "@/hooks/use-transactions";
+import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";
 
 export function Analytics() {
-  const { summary, isLoading } = useTransactionSummary();
+  const { summary: serverSummary, isLoading: isServerLoading } = useTransactionSummary();
+  const { summary: localSummary, isLoading: isLocalLoading } = useLocalSummary();
+
+  const summary = localSummary || serverSummary;
+  const isLoading = isLocalLoading && isServerLoading;
 
   // Weekly income + expense area chart (last 7 days)
   const weeklyData = React.useMemo(() => {
@@ -19,9 +23,9 @@ export function Analytics() {
     }));
   }, [summary]);
 
-  if (isLoading) {
+  if (isLoading && !summary) {
     return (
-      <div className="space-y-4 animate-pulse">
+      <div className="gap-y-4 animate-pulse">
         <div className="h-[400px] bg-muted rounded-xl" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -45,7 +49,7 @@ export function Analytics() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="gap-y-4">
       {/* Weekly Trend Area Chart */}
       <Card>
         <CardHeader>
@@ -93,9 +97,9 @@ export function Analytics() {
       {/* Summary Metric Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monthly Income</CardTitle>
-            <TrendingUpIcon className="h-4 w-4 text-emerald-500" />
+            <TrendingUpIcon className="size-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600">
@@ -108,9 +112,9 @@ export function Analytics() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monthly Expenses</CardTitle>
-            <TrendingDownIcon className="h-4 w-4 text-rose-500" />
+            <TrendingDownIcon className="size-4 text-rose-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-rose-600">
@@ -123,9 +127,9 @@ export function Analytics() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-            <BarChart3Icon className="h-4 w-4 text-muted-foreground" />
+            <BarChart3Icon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.txnCount}</div>
@@ -133,9 +137,9 @@ export function Analytics() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-            <WalletIcon className="h-4 w-4 text-muted-foreground" />
+            <WalletIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -204,7 +208,7 @@ function SimpleBarList({
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="gap-y-3">
       {items.map((i, index) => {
         const width = `${Math.round((i.value / max) * 100)}%`;
         return (

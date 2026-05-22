@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { useTransactionSummary } from "@/hooks/use-transactions";
+import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";
 
 const COLORS = [
   "#3b82f6",
@@ -18,7 +18,11 @@ const COLORS = [
 ];
 
 export function CategoryChart() {
-  const { summary, isLoading } = useTransactionSummary();
+  const { summary: serverSummary, isLoading: isServerLoading } = useTransactionSummary();
+  const { summary: localSummary, isLoading: isLocalLoading } = useLocalSummary();
+
+  const summary = localSummary || serverSummary;
+  const isLoading = isLocalLoading && isServerLoading;
 
   const data = React.useMemo(() => {
     if (!summary) return [];
@@ -28,7 +32,7 @@ export function CategoryChart() {
     }));
   }, [summary]);
 
-  if (isLoading) {
+  if (isLoading && !summary) {
     return <div className="h-[300px] w-full animate-pulse bg-muted rounded-xl" />;
   }
 

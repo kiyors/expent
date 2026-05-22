@@ -165,21 +165,26 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
     const totalDebit = selectedTransactions.reduce((acc, tx) => acc + parseFloat(tx.debit_amount || "0"), 0);
     const totalCredit = selectedTransactions.reduce((acc, tx) => acc + parseFloat(tx.credit_amount || "0"), 0);
 
-    const filteredTransactions = bankTransactions
-      .map((tx, i) => ({ ...tx, originalIndex: i }))
-      .filter(
-        (tx) =>
+    const filteredTransactions = bankTransactions.reduce<(BankTransaction & { originalIndex: number })[]>(
+      (acc, tx, i) => {
+        if (
           tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          tx.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+          tx.contact_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
+          acc.push({ ...tx, originalIndex: i });
+        }
+        return acc;
+      },
+      [],
+    );
 
     return (
       <Card className="w-full max-w-5xl mx-auto shadow-xl border-primary/20 overflow-hidden">
         <CardHeader className="bg-primary/5 border-b pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner">
-                <ReceiptIcon className="h-6 w-6" />
+              <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner">
+                <ReceiptIcon className="size-6" />
               </div>
               <div>
                 <CardTitle className="text-xl">Review Bank Statement</CardTitle>
@@ -351,7 +356,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               onClick={onCancel}
               className="text-muted-foreground hover:text-destructive"
             >
-              <Trash2Icon className="h-4 w-4 mr-2" /> Discard Batch
+              <Trash2Icon className="size-4 mr-2" /> Discard Batch
             </Button>
             <Button type="button" variant="outline" onClick={onCancel} size="sm">
               Cancel
@@ -381,11 +386,11 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <Loader2Icon className="h-4 w-4 animate-spin" /> Processing Batch...
+                  <Loader2Icon className="size-4 animate-spin" /> Processing Batch...
                 </span>
               ) : (
                 <>
-                  <CheckIcon className="h-4 w-4 mr-2" /> Confirm & Import Selected
+                  <CheckIcon className="size-4 mr-2" /> Confirm & Import Selected
                 </>
               )}
             </Button>
@@ -400,8 +405,8 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
     <Card className="w-full max-w-2xl mx-auto shadow-2xl border-primary/20 overflow-hidden">
       <CardHeader className="bg-primary/5 border-b">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner">
-            <ReceiptIcon className="h-6 w-6" />
+          <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner">
+            <ReceiptIcon className="size-6" />
           </div>
           <div>
             <CardTitle className="text-xl">Review Extracted Data</CardTitle>
@@ -414,7 +419,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
       <form onSubmit={handleSubmit}>
         <CardContent className="grid gap-6 p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="amount" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Amount (₹)
               </Label>
@@ -433,7 +438,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
                 />
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="date" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Date
               </Label>
@@ -449,12 +454,12 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="gap-y-2">
             <Label htmlFor="counterparty" className="text-xs uppercase font-bold text-muted-foreground ml-1">
               {processedOcr.doc_type === "GPAY" ? "Recipient / Sender" : "Vendor"}
             </Label>
             <div className="relative">
-              <UserIcon className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+              <UserIcon className="absolute left-3 top-3.5 size-5 text-muted-foreground" />
               <Input
                 id="counterparty"
                 name="counterparty"
@@ -469,12 +474,12 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
           </div>
 
           {processedOcr.doc_type === "GPAY" && (
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="upiId" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 UPI ID / Phone
               </Label>
               <div className="relative">
-                <WalletIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <WalletIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
                   id="upiId"
                   name="upiId"
@@ -488,7 +493,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="direction" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Type
               </Label>
@@ -502,7 +507,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="wallet" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Account
               </Label>
@@ -523,7 +528,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="category" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Category
               </Label>
@@ -542,7 +547,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="gap-y-2">
               <Label htmlFor="contact" className="text-xs uppercase font-bold text-muted-foreground ml-1">
                 Link Contact
               </Label>
@@ -562,7 +567,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="gap-y-2">
             <Label htmlFor="description" className="text-xs uppercase font-bold text-muted-foreground ml-1">
               Personal Note
             </Label>
@@ -584,7 +589,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
             onClick={onCancel}
             className="text-muted-foreground hover:text-destructive"
           >
-            <Trash2Icon className="h-4 w-4 mr-2" /> Discard
+            <Trash2Icon className="size-4 mr-2" /> Discard
           </Button>
           <div className="flex gap-4">
             <Button type="button" variant="outline" onClick={onCancel}>
@@ -593,11 +598,11 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
             <Button type="submit" disabled={isSubmitting} className="px-8 shadow-lg shadow-primary/20">
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <Loader2Icon className="h-4 w-4 animate-spin" /> Saving...
+                  <Loader2Icon className="size-4 animate-spin" /> Saving...
                 </span>
               ) : (
                 <>
-                  <CheckIcon className="h-4 w-4 mr-2" /> Confirm & Save
+                  <CheckIcon className="size-4 mr-2" /> Confirm & Save
                 </>
               )}
             </Button>

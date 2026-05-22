@@ -2,10 +2,14 @@
 
 import * as React from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useTransactionSummary } from "@/hooks/use-transactions";
+import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";
 
 export function Overview() {
-  const { summary, isLoading } = useTransactionSummary();
+  const { summary: serverSummary, isLoading: isServerLoading } = useTransactionSummary();
+  const { summary: localSummary, isLoading: isLocalLoading } = useLocalSummary();
+
+  const summary = localSummary || serverSummary;
+  const isLoading = isLocalLoading && isServerLoading;
 
   const chartData = React.useMemo(() => {
     if (!summary) return [];
@@ -15,7 +19,7 @@ export function Overview() {
     }));
   }, [summary]);
 
-  if (isLoading) {
+  if (isLoading && !summary) {
     return <div className="h-[350px] w-full animate-pulse bg-muted rounded-xl" />;
   }
 

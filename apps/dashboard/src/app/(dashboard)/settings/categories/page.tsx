@@ -37,36 +37,36 @@ export default function SettingsCategoriesPage() {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="gap-y-6 w-full max-w-2xl">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">Categories</h3>
           <p className="text-sm text-muted-foreground">Manage the categories used to tag your transactions.</p>
         </div>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
-          <PlusIcon className="mr-2 h-4 w-4" /> New Category
+          <PlusIcon className="mr-2 size-4" /> New Category
         </Button>
       </div>
       <Separator />
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="gap-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-16 animate-pulse rounded-lg bg-muted/50" />
           ))}
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="gap-y-6">
           {/* System Categories */}
           {systemCategories.length > 0 && (
-            <div className="space-y-3">
+            <div className="gap-y-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <LockIcon className="h-3 w-3" /> System Categories
+                <LockIcon className="size-3" /> System Categories
               </h4>
               <p className="text-xs text-muted-foreground">
                 These are built-in categories used for core features. They cannot be modified or deleted.
               </p>
-              <div className="space-y-2">
+              <div className="gap-y-2">
                 {systemCategories.map((cat) => {
                   const Icon = getIcon(cat.icon);
                   const color = getColor(cat.color);
@@ -84,7 +84,7 @@ export default function SettingsCategoriesPage() {
                           <p className="text-xs text-muted-foreground">System · Cannot be deleted</p>
                         </div>
                       </div>
-                      <LockIcon className="h-4 w-4 text-muted-foreground/40" />
+                      <LockIcon className="size-4 text-muted-foreground/40" />
                     </div>
                   );
                 })}
@@ -93,21 +93,21 @@ export default function SettingsCategoriesPage() {
           )}
 
           {/* User Categories */}
-          <div className="space-y-3">
+          <div className="gap-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your Categories</h4>
             {userCategories.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-                <TagIcon className="h-8 w-8 text-muted-foreground/40 mb-3" />
+                <TagIcon className="size-8 text-muted-foreground/40 mb-3" />
                 <p className="text-sm text-muted-foreground">No custom categories yet.</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Create your first category to start organizing transactions your way.
                 </p>
                 <Button size="sm" variant="outline" className="mt-4" onClick={() => setCreateOpen(true)}>
-                  <PlusIcon className="mr-2 h-4 w-4" /> Create Category
+                  <PlusIcon className="mr-2 size-4" /> Create Category
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="gap-y-2">
                 {userCategories.map((cat) => {
                   const Icon = getIcon(cat.icon);
                   const color = getColor(cat.color);
@@ -136,12 +136,12 @@ export default function SettingsCategoriesPage() {
                       <Button
                         variant="ghost"
                         size="icon-xs"
-                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                        className="size-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                         onClick={() => handleDelete(cat)}
                         disabled={deleteMutation.isPending}
                         aria-label={`Delete ${cat.name}`}
                       >
-                        <Trash2Icon className="h-4 w-4" />
+                        <Trash2Icon className="size-4" />
                       </Button>
                     </div>
                   );

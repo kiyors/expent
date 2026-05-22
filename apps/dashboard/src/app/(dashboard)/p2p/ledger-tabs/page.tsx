@@ -67,12 +67,12 @@ export default function LedgerTabsPage() {
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ledger Tabs</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Ledger Tabs</h1>
           <p className="text-muted-foreground text-sm">Track money lent to or borrowed from others over time.</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger render={<Button />}>
-            <PlusIcon className="mr-2 h-4 w-4" /> New Tab
+            <PlusIcon className="mr-2 size-4" /> New Tab
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -152,7 +152,7 @@ export default function LedgerTabsPage() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="gap-y-4">
           {[1, 2].map((i) => (
             <Card key={i} className="h-32 animate-pulse bg-muted/50" />
           ))}
@@ -161,7 +161,7 @@ export default function LedgerTabsPage() {
         <Card className="border-dashed py-20">
           <CardContent className="flex flex-col items-center text-center">
             <div className="bg-muted p-4 rounded-full mb-4">
-              <NotebookTabsIcon className="h-10 w-10 text-muted-foreground/40" />
+              <NotebookTabsIcon className="size-10 text-muted-foreground/40" />
             </div>
             <h3 className="text-lg font-medium">No ledger tabs yet</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs">
@@ -189,13 +189,13 @@ function LedgerTabCard({ tab }: { tab: LedgerTab }) {
       case "SETTLED":
         return (
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            <CheckCircle2Icon className="h-3 w-3 mr-1" /> Settled
+            <CheckCircle2Icon className="size-3 mr-1" /> Settled
           </Badge>
         );
       case "PARTIALLY_PAID":
         return (
           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            <ClockIcon className="h-3 w-3 mr-1" /> Partial
+            <ClockIcon className="size-3 mr-1" /> Partial
           </Badge>
         );
       default:
@@ -209,8 +209,8 @@ function LedgerTabCard({ tab }: { tab: LedgerTab }) {
 
   return (
     <Card className="hover:border-primary/30 transition-colors shadow-sm overflow-hidden">
-      <CardHeader className="p-4 flex flex-row items-start justify-between space-y-0 pb-2">
-        <div className="space-y-1">
+      <CardHeader className="p-4 flex flex-row items-start justify-between gap-y-0 pb-2">
+        <div className="gap-y-1">
           <div className="flex items-center gap-2">
             <CardTitle className="text-base">{tab.title}</CardTitle>
             {statusBadge()}
@@ -218,7 +218,7 @@ function LedgerTabCard({ tab }: { tab: LedgerTab }) {
           <CardDescription className="text-xs">{tab.description || "No description"}</CardDescription>
         </div>
         <div className={`p-2 rounded-lg ${isLent ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"}`}>
-          {isLent ? <ArrowUpRightIcon className="h-4 w-4" /> : <ArrowDownLeftIcon className="h-4 w-4" />}
+          {isLent ? <ArrowUpRightIcon className="size-4" /> : <ArrowDownLeftIcon className="size-4" />}
         </div>
       </CardHeader>
       <CardContent className="px-4 py-2">
@@ -236,7 +236,7 @@ function LedgerTabCard({ tab }: { tab: LedgerTab }) {
       </CardContent>
       <CardFooter className="px-4 py-3 bg-muted/20 border-t flex justify-between gap-2">
         <Button variant="ghost" size="sm" className="h-8 text-xs">
-          <HistoryIcon className="h-3 w-3 mr-1" /> View History
+          <HistoryIcon className="size-3 mr-1" /> View History
         </Button>
         <RepaymentDialog tab={tab} open={isRepaymentOpen} onOpenChange={setIsRepaymentOpen} />
       </CardFooter>
@@ -253,7 +253,7 @@ function RepaymentDialog({
   open: boolean;
   onOpenChange: (o: boolean) => void;
 }) {
-  const [amount, setAmount] = React.useState(tab.target_amount.toString());
+  const [amount, setAmount] = React.useState(() => tab.target_amount.toString());
   const [walletId, setWalletId] = React.useState("none");
 
   const { wallets } = useWallets();
@@ -292,7 +292,7 @@ function RepaymentDialog({
           <div className="grid gap-2">
             <Label htmlFor="repay-wallet">Source Wallet</Label>
             <div className="relative">
-              <WalletIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <WalletIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Select value={walletId} onValueChange={(val) => setWalletId(val || "none")}>
                 <SelectTrigger className="pl-9">
                   <SelectValue placeholder="Select wallet" />

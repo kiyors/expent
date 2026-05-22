@@ -42,8 +42,8 @@ export function CategoriesPanel() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <TagIcon className="h-5 w-5" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <TagIcon className="size-5" />
           </div>
           <div>
             <CardTitle>Categories</CardTitle>
@@ -51,7 +51,7 @@ export function CategoriesPanel() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="gap-y-4">
         <div className="flex gap-2">
           <Input
             placeholder="New category name..."
@@ -60,7 +60,7 @@ export function CategoriesPanel() {
             onKeyDown={(e) => e.key === "Enter" && createMutation.mutate(newName)}
           />
           <Button onClick={() => createMutation.mutate(newName)} disabled={!newName || createMutation.isPending}>
-            <PlusIcon className="h-4 w-4 mr-2" /> Add
+            <PlusIcon className="size-4 mr-2" /> Add
           </Button>
         </div>
 
@@ -84,7 +84,7 @@ export function CategoriesPanel() {
                   }}
                   className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
                 >
-                  <Trash2Icon className="h-3 w-3" />
+                  <Trash2Icon className="size-3" />
                 </button>
               </div>
             ))

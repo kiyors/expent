@@ -49,13 +49,13 @@ export function SecurityPanel() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="gap-y-6">
       {/* Passkeys */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <FingerprintIcon className="h-5 w-5" />
+            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <FingerprintIcon className="size-5" />
             </div>
             <div>
               <CardTitle>Passkeys</CardTitle>
@@ -63,7 +63,7 @@ export function SecurityPanel() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="gap-y-4">
           {!passkeys || passkeys.length === 0 ? (
             <div className="text-center py-6 border rounded-lg bg-muted/10 border-dashed">
               <p className="text-sm text-muted-foreground">No passkeys registered.</p>
@@ -72,11 +72,11 @@ export function SecurityPanel() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="gap-y-3">
               {passkeys.map((pk) => (
                 <div key={pk.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                   <div className="flex items-center gap-3">
-                    <KeyIcon className="h-4 w-4 text-primary" />
+                    <KeyIcon className="size-4 text-primary" />
                     <div>
                       <p className="text-sm font-medium">{pk.name || "Unnamed Passkey"}</p>
                       <p className="text-[10px] text-muted-foreground uppercase">
@@ -90,7 +90,7 @@ export function SecurityPanel() {
                 </div>
               ))}
               <Button variant="outline" size="sm" className="w-full" onClick={() => addPasskeyMutation.mutate()}>
-                <PlusIcon className="h-3 w-3 mr-2" /> Register New Passkey
+                <PlusIcon className="size-3 mr-2" /> Register New Passkey
               </Button>
             </div>
           )}
@@ -101,8 +101,8 @@ export function SecurityPanel() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <LaptopIcon className="h-5 w-5" />
+            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <LaptopIcon className="size-5" />
             </div>
             <div>
               <CardTitle>Active Sessions</CardTitle>
@@ -110,8 +110,8 @@ export function SecurityPanel() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
+        <CardContent className="gap-y-4">
+          <div className="gap-y-3">
             {!activeSessions ? (
               <p className="text-sm text-muted-foreground italic">Loading sessions...</p>
             ) : (
@@ -119,9 +119,9 @@ export function SecurityPanel() {
                 <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
                   <div className="flex items-center gap-3">
                     {s.userAgent?.includes("Mobile") ? (
-                      <SmartphoneIcon className="h-5 w-5 text-muted-foreground" />
+                      <SmartphoneIcon className="size-5 text-muted-foreground" />
                     ) : (
-                      <LaptopIcon className="h-5 w-5 text-muted-foreground" />
+                      <LaptopIcon className="size-5 text-muted-foreground" />
                     )}
                     <div>
                       <div className="flex items-center gap-2">

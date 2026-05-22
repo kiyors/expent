@@ -369,7 +369,7 @@ const DataTableHead = React.memo(({ column, columnIndex = 0, totalColumns = 1 }:
   const direction = isSorted ? sortDirection : undefined;
   const isDisabled = !isSortable;
 
-  const handleClick = () => {
+  const handleSort = () => {
     if (!isDisabled && toggleSort) {
       toggleSort(column.key);
     }
@@ -398,12 +398,12 @@ const DataTableHead = React.memo(({ column, columnIndex = 0, totalColumns = 1 }:
       <Button
         type="button"
         size="sm"
-        onClick={handleClick}
+        onClick={handleSort}
         onKeyDown={(e) => {
           if (isDisabled) return;
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            handleClick();
+            handleSort();
           }
         }}
         disabled={isDisabled}

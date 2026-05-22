@@ -27,14 +27,14 @@ import {
   SearchIcon,
   UserIcon,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
 import { useFuzzySearch } from "@/hooks/use-wasm-search";
 
 export default function ContactsPage() {
-  const router = useRouter();
+  const { push } = useRouter();
   const [_isPending, startTransition] = React.useTransition();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
@@ -46,7 +46,7 @@ export default function ContactsPage() {
 
   const handleContactClick = (id: string) => {
     startTransition(() => {
-      router.push(`/contacts/${id}`);
+      push(`/contacts/${id}`);
     });
   };
 
@@ -63,7 +63,15 @@ export default function ContactsPage() {
     );
   };
 
-  const filteredContacts = useFuzzySearch(contacts, searchQuery, (c) => c.name, 0.4);
+  const filteredContacts = useFuzzySearch(
+    contacts,
+    searchQuery,
+    (c) => [
+      { value: c.name, weight: 1.0 },
+      { value: c.phone || "", weight: 0.8 },
+    ],
+    0.4,
+  );
 
   const pinnedContacts = React.useMemo(() => filteredContacts.filter((c) => c.is_pinned), [filteredContacts]);
   const otherContacts = React.useMemo(() => filteredContacts.filter((c) => !c.is_pinned), [filteredContacts]);
@@ -72,12 +80,12 @@ export default function ContactsPage() {
     <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-wrap items-end justify-between gap-2 mb-2">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Contact List</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Contact List</h2>
           <p className="text-muted-foreground">Manage your frequent counterparties, friends, and vendors.</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger render={<Button />}>
-            <PlusIcon className="mr-2 h-4 w-4" /> Add Contact
+            <PlusIcon className="mr-2 size-4" /> Add Contact
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -101,7 +109,7 @@ export default function ContactsPage() {
                   name="phone"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="+91…"
+                  placeholder="+91..."
                   autoComplete="tel"
                 />
               </div>
@@ -111,7 +119,7 @@ export default function ContactsPage() {
                 Cancel
               </Button>
               <Button onClick={handleCreate} disabled={!newName || createMutation.isPending}>
-                {createMutation.isPending ? "Adding…" : "Add Contact"}
+                {createMutation.isPending ? "Adding..." : "Add Contact"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -119,9 +127,9 @@ export default function ContactsPage() {
       </div>
 
       <div className="relative">
-        <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <SearchIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
         <Input
-          placeholder="Search contacts by name…"
+          placeholder="Search contacts by name..."
           className="pl-10 h-11 bg-card shadow-xs"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -142,9 +150,9 @@ export default function ContactsPage() {
         <Card className="border-dashed py-20">
           <CardContent className="flex flex-col items-center text-center">
             <div className="bg-muted p-4 rounded-full mb-4">
-              <UserIcon className="h-10 w-10 text-muted-foreground/40" />
+              <UserIcon className="size-10 text-muted-foreground/40" />
             </div>
-            <h3 className="text-lg font-medium">No contacts found</h3>
+            <h3 className="text-lg font-semibold">No contacts found</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs">
               {searchQuery
                 ? `No results for "${searchQuery}"`
@@ -153,11 +161,11 @@ export default function ContactsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-8">
+        <div className="gap-y-8">
           {pinnedContacts.length > 0 && (
-            <section className="space-y-4">
+            <section className="gap-y-4">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <PinIcon className="h-3 w-3 rotate-45" /> Pinned
+                <PinIcon className="size-3 rotate-45" /> Pinned
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pinnedContacts.map((contact) => (
@@ -177,7 +185,7 @@ export default function ContactsPage() {
             </section>
           )}
 
-          <section className="space-y-4">
+          <section className="gap-y-4">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {pinnedContacts.length > 0 ? "All Contacts" : "All Contacts"}
             </h2>
@@ -205,12 +213,12 @@ export default function ContactsPage() {
 
 function ContactCard({ contact, onPin, onClick }: { contact: Contact; onPin: () => void; onClick: () => void }) {
   return (
-    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
+    <m.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="h-full">
       <Card
         className="group hover:border-primary/50 transition-all cursor-pointer relative overflow-hidden h-full"
         onClick={onClick}
       >
-        <CardHeader className="p-4 flex flex-row items-center gap-4 space-y-0">
+        <CardHeader className="p-4 flex flex-row items-center gap-4 gap-y-0">
           <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
             {contact.name.charAt(0).toUpperCase()}
           </div>
@@ -219,7 +227,7 @@ function ContactCard({ contact, onPin, onClick }: { contact: Contact; onPin: () 
             <div className="flex items-center text-xs text-muted-foreground gap-2 mt-0.5">
               {contact.phone && (
                 <span className="flex items-center gap-1">
-                  <PhoneIcon className="h-3 w-3" /> {contact.phone}
+                  <PhoneIcon className="size-3" /> {contact.phone}
                 </span>
               )}
             </div>
@@ -228,7 +236,7 @@ function ContactCard({ contact, onPin, onClick }: { contact: Contact; onPin: () 
             <Button
               variant="ghost"
               size="icon-xs"
-              className={`h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${contact.is_pinned ? "opacity-100 text-primary" : ""}`}
+              className={`size-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${contact.is_pinned ? "opacity-100 text-primary" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onPin();
@@ -237,11 +245,11 @@ function ContactCard({ contact, onPin, onClick }: { contact: Contact; onPin: () 
             >
               <PinIcon className={`h-3.5 w-3.5 ${contact.is_pinned ? "fill-current rotate-45" : ""}`} />
             </Button>
-            <ChevronRightIcon className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+            <ChevronRightIcon className="size-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
           </div>
         </CardHeader>
       </Card>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -285,7 +293,7 @@ function MergeSuggestionsBanner({
 
   return (
     <Alert className="bg-primary/5 border-primary/20">
-      <AlertCircleIcon className="h-4 w-4 text-primary" />
+      <AlertCircleIcon className="size-4 text-primary" />
       <AlertTitle className="text-primary font-medium">Merge Contacts ({suggestions.length})</AlertTitle>
       <AlertDescription className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <span className="text-sm">
@@ -300,7 +308,7 @@ function MergeSuggestionsBanner({
               onClick={() => handleOpenMerge(s)}
               className="gap-2 bg-background"
             >
-              <GitMergeIcon className="h-3 w-3" />
+              <GitMergeIcon className="size-3" />
               Merge "{s.contacts[0].name}"
             </Button>
           ))}

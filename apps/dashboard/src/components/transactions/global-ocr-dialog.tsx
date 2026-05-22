@@ -52,7 +52,7 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
       <DialogContent className={processedOcr ? "sm:max-w-3xl" : "sm:max-w-md"}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <SparklesIcon className="h-5 w-5 text-primary animate-pulse" />
+            <SparklesIcon className="size-5 text-primary animate-pulse" />
             Scan Receipt
           </DialogTitle>
           <DialogDescription>
@@ -72,7 +72,7 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
               }}
             />
             <div className="bg-primary/5 size-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <CameraIcon className="h-8 w-8 text-primary" />
+              <CameraIcon className="size-8 text-primary" />
             </div>
             <p className="font-semibold text-foreground">Click or Drag to Upload</p>
             <p className="text-sm text-muted-foreground mt-1 text-center">Supports JPG, PNG and PDF receipts</p>
@@ -80,9 +80,9 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
         )}
 
         {isUploading && (
-          <div className="py-8 space-y-6">
+          <div className="py-8 gap-y-6">
             <div className="flex flex-col items-center justify-center text-center">
-              <Loader2Icon className="h-10 w-10 text-primary animate-spin mb-4" />
+              <Loader2Icon className="size-10 text-primary animate-spin mb-4" />
               <p className="font-medium">Magically extracting data...</p>
             </div>
             <ProgressTracker id="global-ocr-progress" steps={uploadSteps} />

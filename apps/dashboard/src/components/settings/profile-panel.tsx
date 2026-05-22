@@ -68,8 +68,8 @@ export function ProfilePanel({ user }: { user: User }) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <UserIcon className="h-5 w-5" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <UserIcon className="size-5" />
           </div>
           <div>
             <CardTitle>Profile</CardTitle>
@@ -77,7 +77,7 @@ export function ProfilePanel({ user }: { user: User }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="gap-y-6">
         <div className="flex flex-col sm:flex-row items-center gap-6 pb-2">
           <div className="relative group">
             <Avatar className="size-24 border-2 border-muted">
@@ -87,7 +87,7 @@ export function ProfilePanel({ user }: { user: User }) {
               </AvatarFallback>
             </Avatar>
             <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-              <UploadIcon className="text-white h-6 w-6" />
+              <UploadIcon className="text-white size-6" />
               <input
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer"
@@ -98,17 +98,17 @@ export function ProfilePanel({ user }: { user: User }) {
             </div>
             {isUploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
-                <Loader2Icon className="animate-spin text-white h-6 w-6" />
+                <Loader2Icon className="animate-spin text-white size-6" />
               </div>
             )}
           </div>
-          <div className="flex-1 space-y-1 text-center sm:text-left">
-            <h3 className="font-bold text-lg">{user?.name || "Member"}</h3>
+          <div className="flex-1 gap-y-1 text-center sm:text-left">
+            <h3 className="font-semibold text-lg">{user?.name || "Member"}</h3>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
             <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
               {user?.email_verified ? (
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 px-2">
-                  <CheckIcon className="h-3 w-3" /> Verified
+                  <CheckIcon className="size-3" /> Verified
                 </Badge>
               ) : (
                 <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
@@ -120,11 +120,11 @@ export function ProfilePanel({ user }: { user: User }) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="gap-y-2">
             <Label htmlFor="full-name">Full Name</Label>
             <Input id="full-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </div>
-          <div className="space-y-2">
+          <div className="gap-y-2">
             <Label htmlFor="username">Username</Label>
             <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="@handle" />
           </div>
@@ -135,7 +135,7 @@ export function ProfilePanel({ user }: { user: User }) {
             onClick={() => updateMutation.mutate({ name, username })}
             disabled={!isDirty || updateMutation.isPending}
           >
-            {updateMutation.isPending ? "Saving…" : "Save Changes"}
+            {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </CardContent>

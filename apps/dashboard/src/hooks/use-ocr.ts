@@ -70,9 +70,9 @@ export function useOcrUpload() {
       setProcessedOcr(null);
 
       const steps: UploadStep[] = [
-        { id: "1", label: "Uploading file…", status: "in-progress" },
-        { id: "2", label: "Queuing document…", status: "pending" },
-        { id: "3", label: "Extracting transaction data…", status: "pending" },
+        { id: "1", label: "Uploading file...", status: "in-progress" },
+        { id: "2", label: "Queuing document...", status: "pending" },
+        { id: "3", label: "Extracting transaction data...", status: "pending" },
       ];
       setUploadSteps(steps);
 

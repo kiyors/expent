@@ -23,7 +23,7 @@ export function AuthPage({
         <Logo className="mr-auto h-4.5" />
 
         <div className="z-10 mt-auto">
-          <blockquote className="space-y-2">
+          <blockquote className="gap-y-2">
             <p className="text-xl">&ldquo;{quote}&rdquo;</p>
             <footer className="font-mono font-semibold text-sm">~ {author}</footer>
           </blockquote>

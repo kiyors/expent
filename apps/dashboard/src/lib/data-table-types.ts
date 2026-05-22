@@ -88,8 +88,7 @@ export interface Column<T extends object = DataTableRowData, K extends ColumnKey
  * ```tsx
  * const serializableProps: DataTableSerializableProps = {
  *   columns: [...],
- *   data: [...],
- *   rowIdKey: "id",
+ *   data: [...], *   rowIdKey: "id",
  *   defaultSort: { by: "price", direction: "desc" }
  * }
  * ```

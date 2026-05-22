@@ -84,11 +84,11 @@ export default function SubscriptionsComponent() {
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Subscriptions</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Subscriptions</h1>
           <p className="text-muted-foreground text-sm">Manage and track your recurring payments.</p>
         </div>
         <Button onClick={() => detect()} variant="outline" size="sm">
-          <SparklesIcon className="mr-2 h-4 w-4" /> Scan for Patterns
+          <SparklesIcon className="mr-2 size-4" /> Scan for Patterns
         </Button>
       </div>
 
@@ -117,7 +117,7 @@ export default function SubscriptionsComponent() {
           {!confirmedSubs || confirmedSubs.length === 0 ? (
             <Card className="border-dashed py-20">
               <CardContent className="flex flex-col items-center text-center">
-                <CalendarIcon className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                <CalendarIcon className="size-12 text-muted-foreground/40 mb-4" />
                 <h3 className="text-lg font-semibold">No tracked subscriptions</h3>
                 <p className="text-muted-foreground max-w-xs mt-1">
                   Go to the 'Detected' tab to confirm subscriptions we've found in your transactions.
@@ -140,11 +140,11 @@ export default function SubscriptionsComponent() {
 
         <TabsContent value="detected" className="mt-6">
           {isDetecting ? (
-            <div className="text-center py-20 text-muted-foreground">Scanning transactions for patterns…</div>
+            <div className="text-center py-20 text-muted-foreground">Scanning transactions for patterns...</div>
           ) : !potentialSubs || potentialSubs.length === 0 ? (
             <Card className="border-dashed py-20">
               <CardContent className="flex flex-col items-center text-center">
-                <SparklesIcon className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                <SparklesIcon className="size-12 text-muted-foreground/40 mb-4" />
                 <h3 className="text-lg font-semibold">All caught up</h3>
                 <p className="text-muted-foreground max-w-xs mt-1">
                   We haven't detected any new recurring patterns recently.
@@ -162,11 +162,11 @@ export default function SubscriptionsComponent() {
 
         <TabsContent value="local" className="mt-6">
           {isLocalDetecting ? (
-            <div className="text-center py-20 text-muted-foreground">WASM is scanning your local history…</div>
+            <div className="text-center py-20 text-muted-foreground">WASM is scanning your local history...</div>
           ) : !detectedSubscriptions || detectedSubscriptions.length === 0 ? (
             <Card className="border-dashed py-20">
               <CardContent className="flex flex-col items-center text-center">
-                <SparklesIcon className="h-12 w-12 text-muted-foreground/20 mb-4" />
+                <SparklesIcon className="size-12 text-muted-foreground/20 mb-4" />
                 <h3 className="text-lg font-semibold">No local patterns found</h3>
                 <p className="text-muted-foreground max-w-xs mt-1">
                   Try adding more transaction history to help WASM identify recurring payments.
@@ -241,7 +241,7 @@ function SubscriptionCard({
           <span className="text-xs font-normal text-muted-foreground ml-1">/ {isMonthly ? "mo" : "cycle"}</span>
         </div>
 
-        <div className="mt-4 space-y-2 text-[11px]">
+        <div className="mt-4 gap-y-2 text-[11px]">
           <div className="flex items-center text-muted-foreground">
             <CalendarIcon className="mr-2 h-3.5 w-3.5" />
             Next billing:{" "}
@@ -338,12 +338,12 @@ function AlertConfigDialog({
               <SelectContent>
                 <SelectItem value="EMAIL">
                   <div className="flex items-center gap-2">
-                    <MailIcon className="h-3 w-3" /> Email
+                    <MailIcon className="size-3" /> Email
                   </div>
                 </SelectItem>
                 <SelectItem value="PUSH">
                   <div className="flex items-center gap-2">
-                    <SmartphoneIcon className="h-3 w-3" /> Push Notification
+                    <SmartphoneIcon className="size-3" /> Push Notification
                   </div>
                 </SelectItem>
               </SelectContent>

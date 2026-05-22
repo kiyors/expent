@@ -1,5 +1,5 @@
 "use client";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 
 export function FloatingPaths({ position }: { position: number }) {
   const paths = Array.from({ length: 36 }, (_, i) => ({
@@ -20,7 +20,7 @@ export function FloatingPaths({ position }: { position: number }) {
       <svg className="h-full w-full text-primary" fill="none" viewBox="0 0 696 316">
         <title>Background Paths</title>
         {paths.map((path) => (
-          <motion.path
+          <m.path
             animate={{
               pathLength: 1,
               opacity: [0.3, 0.6, 0.3],

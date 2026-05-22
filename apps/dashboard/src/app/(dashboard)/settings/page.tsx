@@ -1,7 +1,7 @@
 "use client";
 
 import { BellIcon, ChevronRightIcon, MonitorIcon, PaletteIcon, TagIcon, UserCogIcon, WrenchIcon } from "lucide-react";
-import { motion, type Variants } from "motion/react";
+import { m, type Variants } from "motion/react";
 import Link from "next/link";
 
 const sidebarNavItems = [
@@ -9,7 +9,7 @@ const sidebarNavItems = [
     title: "Profile",
     description: "Manage your public profile, username, and avatar.",
     href: "/settings/profile",
-    icon: <UserCogIcon className="w-5 h-5" />,
+    icon: <UserCogIcon className="size-5" />,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
   },
@@ -17,7 +17,7 @@ const sidebarNavItems = [
     title: "Account",
     description: "Update your email, password, and core security settings.",
     href: "/settings/account",
-    icon: <WrenchIcon className="w-5 h-5" />,
+    icon: <WrenchIcon className="size-5" />,
     color: "text-indigo-500",
     bg: "bg-indigo-500/10",
   },
@@ -25,7 +25,7 @@ const sidebarNavItems = [
     title: "Categories",
     description: "Manage custom categories for tagging your transactions.",
     href: "/settings/categories",
-    icon: <TagIcon className="w-5 h-5" />,
+    icon: <TagIcon className="size-5" />,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
   },
@@ -33,7 +33,7 @@ const sidebarNavItems = [
     title: "Appearance",
     description: "Customize the theme, layout, and colors of the dashboard.",
     href: "/settings/appearance",
-    icon: <PaletteIcon className="w-5 h-5" />,
+    icon: <PaletteIcon className="size-5" />,
     color: "text-pink-500",
     bg: "bg-pink-500/10",
   },
@@ -41,7 +41,7 @@ const sidebarNavItems = [
     title: "Notifications",
     description: "Configure how and when you receive alerts and updates.",
     href: "/settings/notifications",
-    icon: <BellIcon className="w-5 h-5" />,
+    icon: <BellIcon className="size-5" />,
     color: "text-amber-500",
     bg: "bg-amber-500/10",
   },
@@ -49,7 +49,7 @@ const sidebarNavItems = [
     title: "Display",
     description: "Change data formatting, currency formatting, and date styles.",
     href: "/settings/display",
-    icon: <MonitorIcon className="w-5 h-5" />,
+    icon: <MonitorIcon className="size-5" />,
     color: "text-cyan-500",
     bg: "bg-cyan-500/10",
   },
@@ -82,19 +82,19 @@ const itemVariants: Variants = {
 export default function SettingsIndexPage() {
   return (
     <div className="w-full max-w-4xl pb-10 mx-auto">
-      <div className="mb-8 space-y-2 text-center">
+      <div className="mb-8 gap-y-2 text-center">
         <h2 className="text-3xl font-semibold tracking-tight">Overview</h2>
         <p className="text-muted-foreground text-base">Select a category to view and manage your workspace settings.</p>
       </div>
 
-      <motion.div
+      <m.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
         className="grid gap-4 sm:grid-cols-2 md:gap-6"
       >
         {sidebarNavItems.map((item) => (
-          <motion.div
+          <m.div
             key={item.href}
             variants={itemVariants}
             whileHover={{ y: -4 }}
@@ -116,8 +116,8 @@ export default function SettingsIndexPage() {
                   >
                     {item.icon}
                   </div>
-                  <div className="h-8 w-8 rounded-full bg-muted/40 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground text-muted-foreground transition-colors duration-300">
-                    <ChevronRightIcon className="w-4 h-4" />
+                  <div className="size-8 rounded-full bg-muted/40 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground text-muted-foreground transition-colors duration-300">
+                    <ChevronRightIcon className="size-4" />
                   </div>
                 </div>
 
@@ -127,9 +127,9 @@ export default function SettingsIndexPage() {
                 <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
               </div>
             </Link>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

@@ -17,7 +17,7 @@ interface VelocityDisplay {
 
 export function BudgetHealthWidget() {
   const { health, isLoading } = useBudgets();
-  const router = useRouter();
+  const { push } = useRouter();
   const [_isPending, startTransition] = useTransition();
   const [velocities, setVelocities] = useState<Record<string, VelocityDisplay>>({});
 
@@ -26,20 +26,27 @@ export function BudgetHealthWidget() {
 
     async function computeProjections() {
       if (!health) return;
-      const newVelocities: Record<string, VelocityDisplay> = {};
 
-      for (const b of health) {
+      const velocityPromises = health.map(async (b) => {
         try {
           const vel = await calculateSpendingVelocityWasm(b.spent_amount, b.limit_amount, b.period);
-          if (vel) {
-            newVelocities[b.budget_id] = {
-              budget_id: b.budget_id,
-              projected_total: vel.projected_total,
-              is_overpacing: vel.is_overpacing,
-            };
-          }
+          return { id: b.budget_id, vel };
         } catch (e) {
-          console.error("Velocity computation failed", e);
+          console.error(`Velocity computation failed for ${b.budget_id}`, e);
+          return { id: b.budget_id, vel: null };
+        }
+      });
+
+      const results = await Promise.all(velocityPromises);
+      const newVelocities: Record<string, VelocityDisplay> = {};
+
+      for (const { id, vel } of results) {
+        if (vel) {
+          newVelocities[id] = {
+            budget_id: id,
+            projected_total: vel.projected_total,
+            is_overpacing: vel.is_overpacing,
+          };
         }
       }
       setVelocities(newVelocities);
@@ -50,9 +57,9 @@ export function BudgetHealthWidget() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 animate-pulse">
+      <div className="gap-y-4 animate-pulse">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-2">
+          <div key={i} className="gap-y-2">
             <div className="flex justify-between">
               <div className="h-3 w-20 bg-muted rounded" />
               <div className="h-3 w-8 bg-muted rounded" />
@@ -67,9 +74,9 @@ export function BudgetHealthWidget() {
   if (!health || health.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <TargetIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
+        <TargetIcon className="size-8 text-muted-foreground/30 mb-2" />
         <p className="text-sm text-muted-foreground mb-4">No budgets set</p>
-        <Button size="sm" variant="outline" onClick={() => startTransition(() => router.push("/settings/budgets"))}>
+        <Button size="sm" variant="outline" onClick={() => startTransition(() => push("/settings/budgets"))}>
           Setup Budgets
         </Button>
       </div>
@@ -77,8 +84,8 @@ export function BudgetHealthWidget() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
+    <div className="gap-y-6">
+      <div className="gap-y-4">
         {health.slice(0, 4).map((b) => {
           const percentage = Number(b.percentage_consumed);
           const velocity = velocities[b.budget_id];
@@ -87,7 +94,7 @@ export function BudgetHealthWidget() {
           const isWarning = percentage > 85;
 
           return (
-            <div key={b.budget_id} className="space-y-1.5">
+            <div key={b.budget_id} className="gap-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium truncate max-w-[150px]">{b.category_name}</span>
@@ -100,7 +107,7 @@ export function BudgetHealthWidget() {
                 <div className="flex flex-col items-end gap-0.5">
                   <span
                     className={cn(
-                      "font-bold",
+                      "font-semibold",
                       isOver
                         ? "text-destructive"
                         : isOverpacing
@@ -143,9 +150,9 @@ export function BudgetHealthWidget() {
           variant="link"
           size="sm"
           className="w-full text-xs text-muted-foreground"
-          onClick={() => startTransition(() => router.push("/settings/budgets"))}
+          onClick={() => startTransition(() => push("/settings/budgets"))}
         >
-          View all budgets &rarr;
+          View all budgets &hellip;
         </Button>
       )}
     </div>

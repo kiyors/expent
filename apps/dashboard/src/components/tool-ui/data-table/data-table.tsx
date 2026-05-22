@@ -358,7 +358,7 @@ function DataTableHead({ column, columnIndex = 0, totalColumns = 1 }: DataTableH
   const direction = isSorted ? sortDirection : undefined;
   const isDisabled = !isSortable;
 
-  const handleClick = () => {
+  const handleSort = () => {
     if (!isDisabled && toggleSort) {
       toggleSort(column.key);
     }
@@ -387,12 +387,12 @@ function DataTableHead({ column, columnIndex = 0, totalColumns = 1 }: DataTableH
       <Button
         type="button"
         size="sm"
-        onClick={handleClick}
+        onClick={handleSort}
         onKeyDown={(e) => {
           if (isDisabled) return;
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            handleClick();
+            handleSort();
           }
         }}
         disabled={isDisabled}

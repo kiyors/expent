@@ -39,7 +39,7 @@ export default function PendingPage() {
       {!p2pRequests || p2pRequests.length === 0 ? (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-xs min-h-[400px]">
           <div className="flex flex-col items-center gap-1 text-center">
-            <h3 className="font-bold text-2xl tracking-tight">No Pending Requests</h3>
+            <h3 className="font-semibold text-2xl tracking-tight">No Pending Requests</h3>
             <p className="text-sm text-muted-foreground">You don't have any pending requests to approve right now.</p>
           </div>
         </div>

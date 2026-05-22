@@ -22,13 +22,13 @@ function formatQuantity(quantity: number): string {
 function ItemImage({ src, alt }: { src?: string; alt: string }) {
   if (!src) {
     return (
-      <div className="bg-muted flex h-12 w-12 shrink-0 items-center justify-center rounded-md">
-        <Package aria-hidden="true" focusable="false" className="text-muted-foreground h-5 w-5" />
+      <div className="bg-muted flex size-12 shrink-0 items-center justify-center rounded-md">
+        <Package aria-hidden="true" focusable="false" className="text-muted-foreground size-5" />
       </div>
     );
   }
 
-  return <Image src={src} alt={alt} width={48} height={48} className="h-12 w-12 shrink-0 rounded-md object-cover" />;
+  return <Image src={src} alt={alt} width={48} height={48} className="size-12 shrink-0 rounded-md object-cover" />;
 }
 
 function OrderItemRow({ item, currency }: { item: OrderItem; currency: string }) {
@@ -162,14 +162,14 @@ function OrderSummaryRoot({
       className={cn("flex max-w-md min-w-80 flex-col gap-3", className)}
     >
       <div className={cn("text-card-foreground rounded-lg border shadow-sm", isReceipt ? "bg-card/60" : "bg-card")}>
-        <div className={cn("space-y-4 p-4", isReceipt && "opacity-95")}>
+        <div className={cn("gap-y-4 p-4", isReceipt && "opacity-95")}>
           <div>
             <h2 id={titleId} className="flex items-center gap-2 text-base font-semibold">
               {isReceipt && (
                 <CheckCircle
                   aria-hidden="true"
                   focusable="false"
-                  className="h-5 w-5 text-green-600 dark:text-green-500"
+                  className="size-5 text-green-600 dark:text-green-500"
                 />
               )}
               {title}
@@ -177,7 +177,7 @@ function OrderSummaryRoot({
             {isReceipt && choice && <ReceiptBadge orderId={choice.orderId} confirmedAt={choice.confirmedAt} />}
           </div>
 
-          <div className="space-y-3">
+          <div className="gap-y-3">
             {items.map((item) => (
               <OrderItemRow key={item.id} item={item} currency={pricing.currency ?? "USD"} />
             ))}

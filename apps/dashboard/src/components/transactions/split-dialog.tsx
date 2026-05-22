@@ -45,8 +45,8 @@ export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: 
     },
   });
 
-  const addSplit = () => setSplits([...splits, { receiver_email: "", amount: "" }]);
-  const removeSplit = (index: number) => setSplits(splits.filter((_, i) => i !== index));
+  const addSplit = () => setSplits((prev) => [...prev, { receiver_email: "", amount: "" }]);
+  const removeSplit = (index: number) => setSplits((prev) => prev.filter((_, i) => i !== index));
   const updateSplit = (index: number, field: "receiver_email" | "amount", value: string) => {
     setSplits((prev) => {
       const next = [...prev];
@@ -91,12 +91,12 @@ export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: 
                 disabled={splits.length === 1}
                 aria-label="Remove person"
               >
-                <Trash2Icon className="h-4 w-4" />
+                <Trash2Icon className="size-4" />
               </Button>
             </div>
           ))}
           <Button variant="outline" size="sm" onClick={addSplit} className="w-full">
-            <PlusIcon className="h-4 w-4 mr-2" /> Add Person
+            <PlusIcon className="size-4 mr-2" /> Add Person
           </Button>
         </div>
         <DialogFooter>
@@ -107,7 +107,7 @@ export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: 
             onClick={() => splitMutation.mutate()}
             disabled={splitMutation.isPending || splits.some((s) => !s.receiver_email || !s.amount)}
           >
-            {splitMutation.isPending ? "Splitting…" : "Send Split Requests"}
+            {splitMutation.isPending ? "Splitting..." : "Send Split Requests"}
           </Button>
         </DialogFooter>
       </DialogContent>

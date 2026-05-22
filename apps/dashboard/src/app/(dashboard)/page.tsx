@@ -71,7 +71,7 @@ import type { Column } from "@/lib/data-table-types";
 import { useGlobalStore } from "@/lib/store";
 
 function DashboardContent() {
-  const router = useRouter();
+  const { replace, push } = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [_isPending, startTransition] = useTransition();
@@ -89,15 +89,16 @@ function DashboardContent() {
           params.set("tab", tab);
         }
         const qs = params.toString();
-        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+        replace(qs ? `/?${qs}` : "/", { scroll: false });
       });
     },
-    [router, searchParams],
+    [replace, searchParams],
   );
 
   const { transactions, isLoading: isTxnsLoading, updateMutation, deleteMutation } = useTransactions({ limit: 5 });
-  const { summary, isLoading: isSummaryLoading } = useTransactionSummary();
+  const { summary: serverSummary, isLoading: isSummaryLoading } = useTransactionSummary();
   const { summary: localSummary } = useLocalSummary();
+  const summary = localSummary || serverSummary;
   const { p2pRequests, acceptMutation } = useP2P();
   const { setTransactionModalOpen } = useGlobalStore();
   const { isUploading, uploadSteps, processedOcr, uploadFile, setProcessedOcr } = useOcrUpload();
@@ -164,14 +165,14 @@ function DashboardContent() {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Open transaction menu">
-                <MoreVerticalIcon className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="size-8" aria-label="Open transaction menu">
+                <MoreVerticalIcon className="size-4" />
               </Button>
             }
           />
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem onClick={() => triggerSplit(row.id, row.amount)}>
-              <Share2Icon className="mr-2 h-4 w-4" /> Split
+              <Share2Icon className="mr-2 size-4" /> Split
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -182,7 +183,7 @@ function DashboardContent() {
                 }
               }}
             >
-              <Trash2Icon className="mr-2 h-4 w-4" /> Delete
+              <Trash2Icon className="mr-2 size-4" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -228,7 +229,7 @@ function DashboardContent() {
         <div className="flex items-center justify-between mb-2">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
               {localSummary && (
                 <Badge variant="outline" className="bg-primary/5 text-[10px] h-4 px-1.5 border-primary/20">
                   WASM Sync Active
@@ -237,15 +238,15 @@ function DashboardContent() {
             </div>
             <p className="text-muted-foreground text-sm">Welcome back! Here is your financial summary.</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-x-2">
             <Button onClick={() => setTransactionModalOpen(true)}>
-              <PlusIcon className="h-4 w-4 mr-2" />
+              <PlusIcon className="size-4 mr-2" />
               Add Transaction
             </Button>
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="gap-y-4">
           <div className="w-full overflow-x-auto pb-2">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -253,18 +254,18 @@ function DashboardContent() {
             </TabsList>
           </div>
 
-          <TabsContent value="overview" className="space-y-4">
+          <TabsContent value="overview" className="gap-y-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatsCard
                 title="Total Balance"
                 value={totalBalance}
-                icon={<WalletIcon className="h-4 w-4" />}
+                icon={<WalletIcon className="size-4" />}
                 description="Across all accounts"
               />
               <StatsCard
                 title="Monthly Spend"
                 value={monthlySpend}
-                icon={<CreditCardIcon className="h-4 w-4" />}
+                icon={<CreditCardIcon className="size-4" />}
                 trend={
                   summary?.monthly_spend && summary?.monthly_income
                     ? {
@@ -281,23 +282,23 @@ function DashboardContent() {
                 title="Pending Approvals"
                 value={p2pRequests?.length || 0}
                 isCurrency={false}
-                icon={<ActivityIcon className="h-4 w-4" />}
+                icon={<ActivityIcon className="size-4" />}
                 action={
                   <Button
                     variant="link"
                     size="sm"
                     className="px-0 h-auto text-xs"
-                    onClick={() => startTransition(() => router.push("/p2p/pending"))}
+                    onClick={() => startTransition(() => push("/p2p/pending"))}
                   >
                     View Requests &rarr;
                   </Button>
                 }
               />
               <Card className="hover:shadow-md transition-shadow duration-300">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">Quick Receive/Upload</CardTitle>
                   <div className="p-2 bg-muted/50 rounded-lg text-muted-foreground">
-                    <FileTextIcon className="h-4 w-4" />
+                    <FileTextIcon className="size-4" />
                   </div>
                 </CardHeader>
                 <CardContent className="mt-2">
@@ -341,7 +342,7 @@ function DashboardContent() {
             {p2pRequests && p2pRequests.length > 0 && !processedOcr && (
               <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
                 <h2 className="text-base font-semibold flex items-center gap-2 px-1">
-                  <Share2Icon className="h-4 w-4 text-primary" /> Pending Approvals
+                  <Share2Icon className="size-4 text-primary" /> Pending Approvals
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {(p2pRequests as P2pRequestWithSender[]).map((req) => (
@@ -389,13 +390,13 @@ function DashboardContent() {
               <Card className="col-span-1 lg:col-span-3 flex flex-col max-h-[500px] overflow-hidden">
                 <CardHeader className="px-6 py-4 flex flex-row items-center justify-between shrink-0">
                   <CardTitle>Recent Transactions</CardTitle>
-                  <Button variant="link" size="sm" onClick={() => startTransition(() => router.push("/transactions"))}>
+                  <Button variant="link" size="sm" onClick={() => startTransition(() => push("/transactions"))}>
                     View All
                   </Button>
                 </CardHeader>
                 <CardContent className="p-0 overflow-auto flex-1">
                   {isTxnsLoading ? (
-                    <div className="text-center py-10 text-muted-foreground">Loading transactions…</div>
+                    <div className="text-center py-10 text-muted-foreground">Loading transactions...</div>
                   ) : (
                     <DataTable<TransactionWithDetail>
                       id="dashboard-recent-transactions"
@@ -415,9 +416,9 @@ function DashboardContent() {
             {/* Additional Overview Charts */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-7 mt-4">
               <Card className="col-span-1 lg:col-span-3">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
                   <CardTitle className="text-base font-semibold">Budget Health</CardTitle>
-                  <TargetIcon className="h-4 w-4 text-muted-foreground" />
+                  <TargetIcon className="size-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <BudgetHealthWidget />
@@ -444,7 +445,7 @@ function DashboardContent() {
               </Card>
             </div>
           </TabsContent>
-          <TabsContent value="analytics" className="space-y-4">
+          <TabsContent value="analytics" className="gap-y-4">
             <Analytics />
           </TabsContent>
         </Tabs>
@@ -481,7 +482,7 @@ function StatsCard({
 }) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-300">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className="p-2 bg-muted/50 rounded-lg text-muted-foreground">{icon}</div>
       </CardHeader>

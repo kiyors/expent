@@ -2,10 +2,14 @@
 
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useTransactionSummary } from "@/hooks/use-transactions";
+import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";
 
 export function IncomeExpenseChart() {
-  const { summary, isLoading } = useTransactionSummary();
+  const { summary: serverSummary, isLoading: isServerLoading } = useTransactionSummary();
+  const { summary: localSummary, isLoading: isLocalLoading } = useLocalSummary();
+
+  const summary = localSummary || serverSummary;
+  const isLoading = isLocalLoading && isServerLoading;
 
   const chartData = React.useMemo(() => {
     if (!summary) return [];
@@ -16,7 +20,7 @@ export function IncomeExpenseChart() {
     }));
   }, [summary]);
 
-  if (isLoading) {
+  if (isLoading && !summary) {
     return <div className="h-[300px] w-full animate-pulse bg-muted rounded-xl" />;
   }
 
