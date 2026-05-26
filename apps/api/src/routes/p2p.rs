@@ -69,10 +69,16 @@ pub async fn accept_p2p_handler(
     session: AuthSession,
     Json(payload): Json<AcceptP2PRequest>,
 ) -> Result<Json<db::entities::p2p_requests::Model>, ApiError> {
+    let email = session
+        .user
+        .email
+        .clone()
+        .ok_or_else(|| ApiError::BadRequest("Email missing".to_string()))?;
+
     let result = state
         .core
         .groups
-        .accept_p2p_request(&session.user.id, &payload.request_id)
+        .accept_p2p_request(&session.user.id, &email, &payload.request_id)
         .await?;
 
     Ok(Json(result))
@@ -83,10 +89,16 @@ pub async fn reject_p2p_handler(
     session: AuthSession,
     Path(id): Path<String>,
 ) -> Result<StatusCode, ApiError> {
+    let email = session
+        .user
+        .email
+        .clone()
+        .ok_or_else(|| ApiError::BadRequest("Email missing".to_string()))?;
+
     state
         .core
         .groups
-        .reject_p2p_request(&session.user.id, &id)
+        .reject_p2p_request(&session.user.id, &email, &id)
         .await?;
     Ok(StatusCode::NO_CONTENT)
 }
