@@ -21,6 +21,7 @@ aws-sdk-s3.workspace   = true
 better-auth.workspace  = true
 sea-orm.workspace      = true
 tokio.workspace        = true
+tokio-util.workspace   = true
 tracing.workspace      = true
 transactions.workspace = true
 upload.workspace       = true

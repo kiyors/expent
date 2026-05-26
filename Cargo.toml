@@ -35,6 +35,7 @@ db         = { path = "crates/db", version = "0.2.0" }
 expent_core    = { path = "crates/expent_core", version = "0.2.0" }
 groups         = { path = "crates/groups", version = "0.2.0" }
 jobs           = { path = "crates/jobs", version = "0.2.0" }
+migration      = { path = "crates/migration", version = "0.2.0" }
 ocr            = { path = "crates/ocr", version = "0.2.0" }
 reconciliation = { path = "crates/reconciliation", version = "0.2.0" }
 subscriptions  = { path = "crates/subscriptions", version = "0.2.0" }
@@ -81,9 +82,11 @@ sea-orm-migration = { features = [
 ], version = "1.1.20" }
 serde = { features = [ "derive" ], version = "1.0" }
 serde_json = "1.0"
+sqlx = { features = [ "postgres", "runtime-tokio-native-tls" ], version = "0.8.6" }
 strum = { features = [ "derive" ], version = "0.28" }
 thiserror = "2.0"
 tokio = { features = [ "full" ], version = "1.52" }
+tokio-util = { features = [ "rt" ], version = "0.7.13" }
 tower-http = { features = [ "cors", "fs", "trace" ], version = "0.6" }
 tower_governor = "0.8.0"
 tracing = "0.1"

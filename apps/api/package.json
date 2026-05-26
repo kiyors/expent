@@ -6,6 +6,7 @@
     "dev": "bacon dev",
     "check": "bacon check",
     "test": "bacon test",
+    "clean": "rm -rf .turbo",
     "build": "cargo build --release"
   }
 }

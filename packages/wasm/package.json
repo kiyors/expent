@@ -12,6 +12,7 @@
     "react": "^18.0.0 || ^19.0.0"
   },
   "scripts": {
-    "build": "wasm-pack build ../../crates/wasm --target web --out-dir ../../packages/wasm/pkg && rm -f ../../packages/wasm/pkg/.gitignore"
+    "build": "wasm-pack build ../../crates/wasm --target web --out-dir ../../packages/wasm/pkg && rm -f ../../packages/wasm/pkg/.gitignore",
+    "clean": "rm -rf node_modules"
   }
 }
