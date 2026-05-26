@@ -46,6 +46,18 @@ pub async fn invite_to_group(
     receiver_email: &str,
     group_id: &str,
 ) -> Result<entities::p2p_requests::Model, AppError> {
+    // Verify sender is a member of the group to prevent IDOR
+    let is_member =
+        entities::user_groups::Entity::find_by_id((sender_id.to_string(), group_id.to_string()))
+            .one(db)
+            .await?;
+
+    if is_member.is_none() {
+        return Err(AppError::unauthorized(
+            "Only members can invite others to this group",
+        ));
+    }
+
     let group = entities::groups::Entity::find_by_id(group_id.to_string())
         .one(db)
         .await?
