@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Timelike, Utc};
 use db::entities::background_jobs;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, QueryFilter,
@@ -12,6 +12,8 @@ use std::fmt;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
+use tokio_util::sync::CancellationToken;
+use tokio_util::task::TaskTracker;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -143,6 +145,7 @@ async fn enqueue_job_internal(
         max_attempts: Set(max_attempts),
         run_at: Set(run_at.naive_utc()),
         created_at: Set(now.naive_utc()),
+        updated_at: Set(now.naive_utc()),
         user_id: Set(user_id),
         ..Default::default()
     };
@@ -179,6 +182,8 @@ pub struct WorkerPool<Ctx> {
     context: Ctx,
     handlers: HashMap<String, Arc<dyn ErasedHandler<Ctx>>>,
     semaphore: Arc<Semaphore>,
+    cancellation_token: CancellationToken,
+    task_tracker: TaskTracker,
 }
 
 impl<Ctx> WorkerPool<Ctx>
@@ -191,7 +196,14 @@ where
             context,
             handlers: HashMap::new(),
             semaphore: Arc::new(Semaphore::new(concurrency)),
+            cancellation_token: CancellationToken::new(),
+            task_tracker: TaskTracker::new(),
         }
+    }
+
+    pub fn with_cancellation_token(mut self, token: CancellationToken) -> Self {
+        self.cancellation_token = token;
+        self
     }
 
     pub fn register_handler<J, H>(&mut self, handler: H)
@@ -209,13 +221,108 @@ where
     }
 
     pub async fn run(&self) {
-        let mut interval = tokio::time::interval(Duration::from_secs(5));
+        // Initial recovery on startup
+        if let Err(e) = self.recover_stuck_jobs().await {
+            tracing::error!("❌ Failed to recover stuck jobs on startup: {}", e);
+        }
+
+        // Setup Postgres LISTEN if possible
+        let mut listener = if let Ok(url) = std::env::var("DATABASE_URL") {
+            if url.starts_with("postgres") {
+                match sqlx::postgres::PgListener::connect(&url).await {
+                    Ok(mut l) => {
+                        if let Err(e) = l.listen("background_jobs_channel").await {
+                            tracing::warn!("⚠️ Failed to listen on background_jobs_channel: {}", e);
+                            None
+                        } else {
+                            tracing::info!(
+                                "📡 Listening for job notifications on background_jobs_channel"
+                            );
+                            Some(l)
+                        }
+                    }
+                    Err(e) => {
+                        tracing::warn!("⚠️ Failed to connect PgListener: {}", e);
+                        None
+                    }
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let mut interval = tokio::time::interval(Duration::from_secs(30)); // Poll less frequently when LISTEN is active
         loop {
-            interval.tick().await;
-            if let Err(e) = self.process_queued_jobs().await {
-                tracing::error!("❌ Background worker pool failed: {}", e);
+            tokio::select! {
+                _ = interval.tick() => {
+                    if let Err(e) = self.process_queued_jobs().await {
+                        tracing::error!("❌ Background worker pool failed: {}", e);
+                    }
+
+                    // Periodic recovery check
+                    if Utc::now().second() % 60 == 0 {
+                        if let Err(e) = self.recover_stuck_jobs().await {
+                            tracing::error!("❌ Background recovery failed: {}", e);
+                        }
+                    }
+                }
+                notification = async {
+                    if let Some(l) = listener.as_mut() {
+                        l.recv().await.ok()
+                    } else {
+                        std::future::pending::<Option<sqlx::postgres::PgNotification>>().await
+                    }
+                } => {
+                    if notification.is_some() {
+                        if let Err(e) = self.process_queued_jobs().await {
+                            tracing::error!("❌ Background worker pool failed (notify): {}", e);
+                        }
+                    }
+                }
+                _ = self.cancellation_token.cancelled() => {
+                    tracing::info!("🛑 Worker pool received shutdown signal, waiting for jobs to finish...");
+                    break;
+                }
             }
         }
+
+        self.task_tracker.close();
+        self.task_tracker.wait().await;
+        tracing::info!("✅ Worker pool shutdown complete.");
+    }
+
+    async fn recover_stuck_jobs(&self) -> Result<()> {
+        let ten_minutes_ago = (Utc::now() - Duration::from_secs(600)).naive_utc();
+
+        // Reset RUNNING jobs that haven't been updated for 10 minutes
+        let result = background_jobs::Entity::update_many()
+            .col_expr(
+                background_jobs::Column::Status,
+                sea_orm::sea_query::Expr::value(JobStatus::Queued.to_string()),
+            )
+            .col_expr(
+                background_jobs::Column::StartedAt,
+                sea_orm::sea_query::Expr::value(Option::<chrono::NaiveDateTime>::None),
+            )
+            .col_expr(
+                background_jobs::Column::UpdatedAt,
+                sea_orm::sea_query::Expr::value(Utc::now().naive_utc()),
+            )
+            .filter(background_jobs::Column::Status.eq(JobStatus::Running.to_string()))
+            .filter(background_jobs::Column::UpdatedAt.lt(ten_minutes_ago))
+            .exec(self.db.as_ref())
+            .await?;
+
+        if result.rows_affected > 0 {
+            tracing::warn!(
+                "🔄 Re-queued {} stale background jobs",
+                result.rows_affected
+            );
+        }
+
+        Ok(())
     }
 
     async fn process_queued_jobs(&self) -> Result<()> {
@@ -248,7 +355,7 @@ where
             let job_id = job.id.clone();
             let payload = job.payload.clone();
 
-            tokio::spawn(async move {
+            self.task_tracker.spawn(async move {
                 let _permit = permit;
 
                 // Panic recovery
@@ -301,6 +408,8 @@ async fn execute_job<Ctx>(
 
     let mut active_model: background_jobs::ActiveModel = job.into();
     active_model.status = Set(JobStatus::Running.to_string());
+    active_model.started_at = Set(Some(Utc::now().naive_utc()));
+    active_model.updated_at = Set(Utc::now().naive_utc());
     active_model.update(&txn).await?;
     txn.commit().await?;
 
@@ -311,6 +420,7 @@ async fn execute_job<Ctx>(
                 id: Set(job_id),
                 status: Set(JobStatus::Completed.to_string()),
                 completed_at: Set(Some(Utc::now().naive_utc())),
+                updated_at: Set(Utc::now().naive_utc()),
                 ..Default::default()
             };
             active_model.update(db.as_ref()).await?;
@@ -349,6 +459,7 @@ async fn handle_job_error(
         attempts: Set(next_attempts),
         run_at: Set(run_at),
         error: Set(Some(error.to_string())),
+        updated_at: Set(Utc::now().naive_utc()),
         ..Default::default()
     };
     active_model.update(db.as_ref()).await?;
@@ -360,6 +471,7 @@ async fn mark_failed(db: Arc<DatabaseConnection>, job_id: String, error: String)
         id: Set(job_id),
         status: Set(JobStatus::Failed.to_string()),
         error: Set(Some(error)),
+        updated_at: Set(Utc::now().naive_utc()),
         ..Default::default()
     };
     active_model.update(db.as_ref()).await?;

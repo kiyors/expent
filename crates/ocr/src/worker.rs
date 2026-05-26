@@ -5,14 +5,20 @@ use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
+use tokio_util::sync::CancellationToken;
+use tokio_util::task::TaskTracker;
 use upload::UploadClient;
 
-pub async fn start_recovery_worker(db: Arc<DatabaseConnection>) {
+pub async fn start_recovery_worker(db: Arc<DatabaseConnection>, token: CancellationToken) {
     let mut interval = tokio::time::interval(Duration::from_secs(300)); // Every 5 minutes
     loop {
-        interval.tick().await;
-        if let Err(e) = recover_stale_jobs(&*db).await {
-            tracing::error!("❌ Recovery worker failed: {}", e);
+        tokio::select! {
+            _ = interval.tick() => {
+                if let Err(e) = recover_stale_jobs(&*db).await {
+                    tracing::error!("❌ Recovery worker failed: {}", e);
+                }
+            }
+            _ = token.cancelled() => break,
         }
     }
 }
@@ -24,24 +30,85 @@ pub async fn start_processor_worker(
     ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
     processor: Arc<dyn crate::OcrProcessor>,
     semaphore: Arc<Semaphore>,
+    token: CancellationToken,
+    tracker: TaskTracker,
 ) {
-    let mut interval = tokio::time::interval(Duration::from_secs(10)); // Poll every 10 seconds
+    // Setup Postgres LISTEN if possible
+    let mut listener = if let Ok(url) = std::env::var("DATABASE_URL") {
+        if url.starts_with("postgres") {
+            match sqlx::postgres::PgListener::connect(&url).await {
+                Ok(mut l) => {
+                    if let Err(e) = l.listen("ocr_jobs_channel").await {
+                        tracing::warn!("⚠️ Failed to listen on ocr_jobs_channel: {}", e);
+                        None
+                    } else {
+                        tracing::info!("📡 Listening for job notifications on ocr_jobs_channel");
+                        Some(l)
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!("⚠️ Failed to connect PgListener (OCR): {}", e);
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    let mut interval = tokio::time::interval(Duration::from_secs(30)); // Poll every 30 seconds
 
     loop {
-        interval.tick().await;
-        if let Err(e) = process_queued_jobs(
-            db.clone(),
-            ocr_service.clone(),
-            &upload_client,
-            ocr_tx.clone(),
-            processor.clone(),
-            semaphore.clone(),
-        )
-        .await
-        {
-            tracing::error!("❌ Processor worker failed: {}", e);
+        tokio::select! {
+            _ = interval.tick() => {
+                if let Err(e) = process_queued_jobs(
+                    db.clone(),
+                    ocr_service.clone(),
+                    &upload_client,
+                    ocr_tx.clone(),
+                    processor.clone(),
+                    semaphore.clone(),
+                    &tracker,
+                )
+                .await
+                {
+                    tracing::error!("❌ Processor worker failed: {}", e);
+                }
+            }
+            notification = async {
+                if let Some(l) = listener.as_mut() {
+                    l.recv().await.ok()
+                } else {
+                    std::future::pending::<Option<sqlx::postgres::PgNotification>>().await
+                }
+            } => {
+                if notification.is_some() {
+                    if let Err(e) = process_queued_jobs(
+                        db.clone(),
+                        ocr_service.clone(),
+                        &upload_client,
+                        ocr_tx.clone(),
+                        processor.clone(),
+                        semaphore.clone(),
+                        &tracker,
+                    )
+                    .await
+                    {
+                        tracing::error!("❌ Processor worker failed (notify): {}", e);
+                    }
+                }
+            }
+            _ = token.cancelled() => {
+                tracing::info!("🛑 OCR processor worker received shutdown signal...");
+                break;
+            }
         }
     }
+
+    tracker.close();
+    tracker.wait().await;
 }
 
 async fn process_queued_jobs(
@@ -51,6 +118,7 @@ async fn process_queued_jobs(
     ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
     processor: Arc<dyn crate::OcrProcessor>,
     semaphore: Arc<Semaphore>,
+    tracker: &TaskTracker,
 ) -> Result<(), anyhow::Error> {
     let now = Utc::now();
 
@@ -80,7 +148,7 @@ async fn process_queued_jobs(
             let ocr_tx_clone = ocr_tx.clone();
             let processor_clone = processor.clone();
 
-            tokio::spawn(async move {
+            tracker.spawn(async move {
                 // The permit is held until this task finishes
                 let _permit = permit;
 

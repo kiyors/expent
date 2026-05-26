@@ -162,6 +162,8 @@ pub struct OcrManager {
     pub upload: upload::UploadClient,
     pub ocr_tx: tokio::sync::broadcast::Sender<OcrUpdate>,
     pub semaphore: Arc<tokio::sync::Semaphore>,
+    pub cancellation_token: tokio_util::sync::CancellationToken,
+    pub task_tracker: tokio_util::task::TaskTracker,
 }
 
 pub use ops::lifecycle::OcrJobCreateParams;
@@ -179,7 +181,14 @@ impl OcrManager {
             upload,
             ocr_tx,
             semaphore: Arc::new(tokio::sync::Semaphore::new(10)),
+            cancellation_token: tokio_util::sync::CancellationToken::new(),
+            task_tracker: tokio_util::task::TaskTracker::new(),
         }
+    }
+
+    pub fn with_cancellation_token(mut self, token: tokio_util::sync::CancellationToken) -> Self {
+        self.cancellation_token = token;
+        self
     }
 
     pub async fn start_job(
@@ -222,7 +231,10 @@ impl OcrManager {
     }
 
     pub fn spawn_workers(&self, processor: Arc<dyn OcrProcessor>) {
-        tokio::spawn(worker::start_recovery_worker(Arc::clone(&self.db)));
+        tokio::spawn(worker::start_recovery_worker(
+            Arc::clone(&self.db),
+            self.cancellation_token.clone(),
+        ));
         tokio::spawn(worker::start_processor_worker(
             Arc::clone(&self.db),
             Arc::clone(&self.service),
@@ -230,6 +242,8 @@ impl OcrManager {
             self.ocr_tx.clone(),
             processor,
             self.semaphore.clone(),
+            self.cancellation_token.clone(),
+            self.task_tracker.clone(),
         ));
     }
 

@@ -71,6 +71,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let (ocr_tx, _) = tokio::sync::broadcast::channel(100);
 
+    let shutdown_token = tokio_util::sync::CancellationToken::new();
+    let shutdown_token_clone = shutdown_token.clone();
+
+    tokio::spawn(async move {
+        use tokio::signal;
+        let ctrl_c = async {
+            signal::ctrl_c()
+                .await
+                .expect("failed to install Ctrl+C handler");
+        };
+
+        #[cfg(unix)]
+        let terminate = async {
+            signal::unix::signal(signal::unix::SignalKind::terminate())
+                .expect("failed to install signal handler")
+                .recv()
+                .await;
+        };
+
+        #[cfg(not(unix))]
+        let terminate = std::future::pending::<()>();
+
+        tokio::select! {
+            _ = ctrl_c => {},
+            _ = terminate => {},
+        }
+
+        tracing::info!("📥 Shutdown signal received, starting graceful shutdown...");
+        shutdown_token_clone.cancel();
+    });
+
     let core_config = CoreConfig {
         database_url: std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
         s3_endpoint: std::env::var("S3_ENDPOINT").expect("S3_ENDPOINT must be set"),
@@ -85,15 +116,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         better_auth_base_url: std::env::var("BETTER_AUTH_BASE_URL")
             .or_else(|_| std::env::var("BASE_URL"))
             .unwrap_or_else(|_| "http://localhost:7878".into()),
+        shutdown_token: Some(shutdown_token.clone()),
     };
 
     let core = Core::init(core_config, ocr_tx).await?;
+
+    // 🚀 Run automatic database migrations
+    tracing::info!("🔄 Running automatic database migrations...");
+    use migration::MigratorTrait;
+    migration::Migrator::up(&*core.db, None)
+        .await
+        .map_err(|e| {
+            tracing::error!("❌ Migration failed: {}", e);
+            e
+        })?;
+    tracing::info!("✅ Database migrations complete.");
 
     // Start background workers from OCR manager
     core.ocr_manager.spawn_workers(Arc::new(core.clone()));
 
     // Initialize and start Generic Background Worker Pool
-    let mut worker_pool = ::jobs::WorkerPool::new(core.db.clone(), Arc::new(core.clone()), 10);
+    let mut worker_pool = ::jobs::WorkerPool::new(core.db.clone(), Arc::new(core.clone()), 10)
+        .with_cancellation_token(shutdown_token.clone());
     worker_pool.register_handler(background_tasks::BulkConfirmOcrJobHandler);
     let worker_pool = Arc::new(worker_pool);
     let worker_pool_clone = worker_pool.clone();
@@ -172,6 +216,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),
     )
+    .with_graceful_shutdown(async move {
+        shutdown_token.cancelled().await;
+        tracing::info!("👋 Axum server shutting down...");
+    })
     .await?;
 
     Ok(())
