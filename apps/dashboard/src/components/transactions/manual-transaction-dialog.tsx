@@ -252,6 +252,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                   type="button"
                   className="shrink-0 border-muted-foreground/10"
                   onClick={() => setCreateWalletOpen(true)}
+                  aria-label="Create wallet"
                 >
                   <PlusIcon className="size-4" />
                 </Button>
@@ -284,6 +285,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                     type="button"
                     className="shrink-0 border-muted-foreground/10 size-9"
                     onClick={() => setCreateContactOpen(true)}
+                    aria-label="Create contact"
                   >
                     <PlusIcon className="h-3.5 w-3.5" />
                   </Button>
@@ -335,6 +337,7 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
                     type="button"
                     className="shrink-0 border-muted-foreground/10 size-9"
                     onClick={() => setCreateCategoryOpen(true)}
+                    aria-label="Create category"
                   >
                     <PlusIcon className="h-3.5 w-3.5" />
                   </Button>

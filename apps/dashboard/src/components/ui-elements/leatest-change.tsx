@@ -44,6 +44,7 @@ export function LatestChange() {
         onClick={() => setIsOpen(false)}
         size="icon-sm"
         variant="ghost"
+        aria-label="Close"
       >
         <XIcon className="size-3.5 text-muted-foreground" />{" "}
       </Button>

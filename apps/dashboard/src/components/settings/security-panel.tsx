@@ -84,7 +84,7 @@ export function SecurityPanel() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon-xs" className="text-destructive">
+                  <Button variant="ghost" size="icon-xs" className="text-destructive" aria-label="Delete passkey">
                     <Trash2Icon className="h-3.5 w-3.5" />
                   </Button>
                 </div>
