@@ -22,8 +22,9 @@ impl MigrationTrait for Migration {
             CREATE TRIGGER trigger_notify_background_job
             AFTER INSERT ON background_jobs
             FOR EACH ROW EXECUTE FUNCTION notify_background_job();
-            "#
-        ).await?;
+            "#,
+        )
+        .await?;
 
         // 2. Function and Trigger for ocr_jobs
         db.execute_unprepared(
@@ -39,8 +40,9 @@ impl MigrationTrait for Migration {
             CREATE TRIGGER trigger_notify_ocr_job
             AFTER INSERT ON ocr_jobs
             FOR EACH ROW EXECUTE FUNCTION notify_ocr_job();
-            "#
-        ).await?;
+            "#,
+        )
+        .await?;
 
         Ok(())
     }
@@ -55,8 +57,9 @@ impl MigrationTrait for Migration {
             
             DROP TRIGGER IF EXISTS trigger_notify_ocr_job ON ocr_jobs;
             DROP FUNCTION IF EXISTS notify_ocr_job();
-            "#
-        ).await?;
+            "#,
+        )
+        .await?;
 
         Ok(())
     }

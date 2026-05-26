@@ -23,84 +23,135 @@ pub async fn get_dashboard_summary(
         .await?
         .ok_or_else(|| AppError::not_found("User not found"))?;
 
-    // 1. Total Balance (sum of all wallet balances)
+    #[derive(FromQueryResult)]
+    struct SumResult {
+        total: Option<Decimal>,
+    }
+
     #[derive(FromQueryResult)]
     struct TotalResult {
         total: Option<Decimal>,
     }
 
-    let balance_res: Option<TotalResult> = entities::wallets::Entity::find()
-        .filter(entities::wallets::Column::UserId.eq(user_id))
-        .select_only()
-        .column_as(entities::wallets::Column::Balance.sum(), "total")
-        .into_model::<TotalResult>()
-        .one(db)
-        .await?;
-
-    let total_balance = balance_res.and_then(|r| r.total).unwrap_or(Decimal::ZERO);
-
-    // 2. Monthly Spend & Income
     let now = Utc::now();
     let start_of_month = Utc
         .with_ymd_and_hms(now.year(), now.month(), 1, 0, 0, 0)
         .latest()
         .expect("Valid start of month");
 
-    #[derive(FromQueryResult)]
-    struct SumResult {
-        total: Option<Decimal>,
-    }
+    // Parallelize independent queries
+    let (
+        balance_res,
+        monthly_spend_res,
+        monthly_income_res,
+        pending_p2p_count,
+        total_transactions,
+        monthly_trends,
+        weekly_trends,
+        category_distribution,
+        top_expenses,
+        top_income,
+    ) = tokio::try_join!(
+        // 1. Total Balance
+        async move {
+            entities::wallets::Entity::find()
+                .filter(entities::wallets::Column::UserId.eq(user_id))
+                .select_only()
+                .column_as(entities::wallets::Column::Balance.sum(), "total")
+                .into_model::<TotalResult>()
+                .one(db)
+                .await
+                .map_err(AppError::from)
+        },
+        // 2a. Monthly Spend
+        async move {
+            entities::transactions::Entity::find()
+                .filter(entities::transactions::Column::UserId.eq(user_id))
+                .filter(entities::transactions::Column::Direction.eq("OUT"))
+                .filter(entities::transactions::Column::Date.gte(start_of_month))
+                .filter(entities::transactions::Column::DeletedAt.is_null())
+                .select_only()
+                .column_as(entities::transactions::Column::Amount.sum(), "total")
+                .into_model::<SumResult>()
+                .one(db)
+                .await
+                .map_err(AppError::from)
+        },
+        // 2b. Monthly Income
+        async move {
+            entities::transactions::Entity::find()
+                .filter(entities::transactions::Column::UserId.eq(user_id))
+                .filter(entities::transactions::Column::Direction.eq("IN"))
+                .filter(entities::transactions::Column::Date.gte(start_of_month))
+                .filter(entities::transactions::Column::DeletedAt.is_null())
+                .select_only()
+                .column_as(entities::transactions::Column::Amount.sum(), "total")
+                .into_model::<SumResult>()
+                .one(db)
+                .await
+                .map_err(AppError::from)
+        },
+        // 3. Pending P2P count
+        async move {
+            entities::p2p_requests::Entity::find()
+                .filter(entities::p2p_requests::Column::ReceiverEmail.eq(user.email))
+                .filter(entities::p2p_requests::Column::Status.is_in(["PENDING", "GROUP_INVITE"]))
+                .count(db)
+                .await
+                .map_err(AppError::from)
+        },
+        // 3b. Total Transactions
+        async move {
+            entities::transactions::Entity::find()
+                .filter(entities::transactions::Column::UserId.eq(user_id))
+                .filter(entities::transactions::Column::DeletedAt.is_null())
+                .count(db)
+                .await
+                .map_err(AppError::from)
+        },
+        // 4. Trends
+        get_monthly_trends(db, user_id),
+        get_weekly_trends(db, user_id),
+        // 5. Category Distribution
+        get_category_distribution(db, user_id),
+        // 6. Top Sources
+        get_top_sources(db, user_id, "OUT"),
+        get_top_sources(db, user_id, "IN"),
+    )?;
 
-    let monthly_spend: Option<Decimal> = entities::transactions::Entity::find()
-        .filter(entities::transactions::Column::UserId.eq(user_id))
-        .filter(entities::transactions::Column::Direction.eq("OUT"))
-        .filter(entities::transactions::Column::Date.gte(start_of_month))
-        .filter(entities::transactions::Column::DeletedAt.is_null())
-        .select_only()
-        .column_as(entities::transactions::Column::Amount.sum(), "total")
-        .into_model::<SumResult>()
-        .one(db)
-        .await?
-        .and_then(|r| r.total);
+    let total_balance = balance_res.and_then(|r| r.total).unwrap_or(Decimal::ZERO);
+    let monthly_spend = monthly_spend_res
+        .and_then(|r| r.total)
+        .unwrap_or(Decimal::ZERO);
+    let monthly_income = monthly_income_res
+        .and_then(|r| r.total)
+        .unwrap_or(Decimal::ZERO);
 
-    let monthly_income: Option<Decimal> = entities::transactions::Entity::find()
-        .filter(entities::transactions::Column::UserId.eq(user_id))
-        .filter(entities::transactions::Column::Direction.eq("IN"))
-        .filter(entities::transactions::Column::Date.gte(start_of_month))
-        .filter(entities::transactions::Column::DeletedAt.is_null())
-        .select_only()
-        .column_as(entities::transactions::Column::Amount.sum(), "total")
-        .into_model::<SumResult>()
-        .one(db)
-        .await?
-        .and_then(|r| r.total);
+    Ok(DashboardSummary {
+        total_balance,
+        monthly_spend,
+        monthly_income,
+        pending_p2p_count,
+        total_transactions,
+        monthly_trends,
+        weekly_trends,
+        category_distribution,
+        top_expenses,
+        top_income,
+    })
+}
 
-    // 3. Pending P2P count
-    let pending_p2p_count = entities::p2p_requests::Entity::find()
-        .filter(entities::p2p_requests::Column::ReceiverEmail.eq(user.email))
-        .filter(entities::p2p_requests::Column::Status.is_in(["PENDING", "GROUP_INVITE"]))
-        .count(db)
-        .await?;
-
-    // 3b. Total Transactions
-    let total_transactions = entities::transactions::Entity::find()
-        .filter(entities::transactions::Column::UserId.eq(user_id))
-        .filter(entities::transactions::Column::DeletedAt.is_null())
-        .count(db)
-        .await?;
-
-    // 4. Trends (Optimized Group-By queries)
-    let monthly_trends = get_monthly_trends(db, user_id).await?;
-    let weekly_trends = get_weekly_trends(db, user_id).await?;
-
-    // 5. Category Distribution
+async fn get_category_distribution(
+    db: &DatabaseConnection,
+    user_id: &str,
+) -> Result<Vec<NamedAmount>, AppError> {
     #[derive(FromQueryResult)]
     struct CatDist {
         category_name: String,
         amount: Decimal,
     }
 
-    let category_distribution = entities::transactions::Entity::find()
+    let results = entities::transactions::Entity::find()
         .filter(entities::transactions::Column::UserId.eq(user_id))
         .filter(entities::transactions::Column::Direction.eq("OUT"))
         .filter(entities::transactions::Column::DeletedAt.is_null())
@@ -115,86 +166,59 @@ pub async fn get_dashboard_summary(
         .group_by(entities::categories::Column::Name)
         .into_model::<CatDist>()
         .all(db)
-        .await?
+        .await?;
+
+    Ok(results
         .into_iter()
         .map(|c| NamedAmount {
             name: c.category_name,
             amount: c.amount,
         })
-        .collect();
+        .collect())
+}
 
-    // 6. Top Sources (by contact)
+async fn get_top_sources(
+    db: &DatabaseConnection,
+    user_id: &str,
+    direction: &str,
+) -> Result<Vec<NamedAmount>, AppError> {
     #[derive(FromQueryResult)]
-    struct TopSource {
-        contact_id: String,
+    struct TopSourceWithContact {
+        contact_name: String,
         amount: Decimal,
     }
 
-    async fn get_top_sources(
-        db: &DatabaseConnection,
-        user_id: &str,
-        direction: &str,
-    ) -> Result<Vec<NamedAmount>, AppError> {
-        let results: Vec<TopSource> = entities::transactions::Entity::find()
-            .filter(entities::transactions::Column::UserId.eq(user_id))
-            .filter(entities::transactions::Column::Direction.eq(direction))
-            .filter(entities::transactions::Column::DeletedAt.is_null())
-            .join(
-                sea_orm::JoinType::InnerJoin,
-                entities::transactions::Relation::TxnParties.def(),
-            )
-            .filter(entities::txn_parties::Column::Role.eq("COUNTERPARTY"))
-            .filter(entities::txn_parties::Column::ContactId.is_not_null())
-            .select_only()
-            .column(entities::txn_parties::Column::ContactId)
-            .column_as(entities::transactions::Column::Amount.sum(), "amount")
-            .group_by(entities::txn_parties::Column::ContactId)
-            .order_by_desc(entities::transactions::Column::Amount.sum())
-            .limit(5)
-            .into_model::<TopSource>()
-            .all(db)
-            .await?;
+    let results = entities::transactions::Entity::find()
+        .filter(entities::transactions::Column::UserId.eq(user_id))
+        .filter(entities::transactions::Column::Direction.eq(direction))
+        .filter(entities::transactions::Column::DeletedAt.is_null())
+        .join(
+            sea_orm::JoinType::InnerJoin,
+            entities::transactions::Relation::TxnParties.def(),
+        )
+        .filter(entities::txn_parties::Column::Role.eq("COUNTERPARTY"))
+        .filter(entities::txn_parties::Column::ContactId.is_not_null())
+        .join(
+            sea_orm::JoinType::InnerJoin,
+            entities::txn_parties::Relation::Contacts.def(),
+        )
+        .select_only()
+        .column_as(entities::contacts::Column::Name, "contact_name")
+        .column_as(entities::transactions::Column::Amount.sum(), "amount")
+        .group_by(entities::contacts::Column::Name)
+        .order_by_desc(entities::transactions::Column::Amount.sum())
+        .limit(5)
+        .into_model::<TopSourceWithContact>()
+        .all(db)
+        .await?;
 
-        if results.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        let contact_ids: Vec<String> = results.iter().map(|r| r.contact_id.clone()).collect();
-        let contacts = entities::contacts::Entity::find()
-            .filter(entities::contacts::Column::Id.is_in(contact_ids))
-            .all(db)
-            .await?;
-
-        let contact_map: std::collections::HashMap<String, String> =
-            contacts.into_iter().map(|c| (c.id, c.name)).collect();
-
-        Ok(results
-            .into_iter()
-            .map(|r| NamedAmount {
-                name: contact_map
-                    .get(&r.contact_id)
-                    .cloned()
-                    .unwrap_or_else(|| "Unknown".to_string()),
-                amount: r.amount,
-            })
-            .collect())
-    }
-
-    let top_expenses = get_top_sources(db, user_id, "OUT").await?;
-    let top_income = get_top_sources(db, user_id, "IN").await?;
-
-    Ok(DashboardSummary {
-        total_balance,
-        monthly_spend: monthly_spend.unwrap_or(Decimal::ZERO),
-        monthly_income: monthly_income.unwrap_or(Decimal::ZERO),
-        pending_p2p_count: pending_p2p_count,
-        total_transactions: total_transactions,
-        monthly_trends,
-        weekly_trends,
-        category_distribution,
-        top_expenses,
-        top_income,
-    })
+    Ok(results
+        .into_iter()
+        .map(|r| NamedAmount {
+            name: r.contact_name,
+            amount: r.amount,
+        })
+        .collect())
 }
 
 async fn get_monthly_trends(

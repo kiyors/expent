@@ -88,9 +88,8 @@ pub async fn list_transactions(
         .filter(entities::transactions::Column::UserId.eq(user_id))
         .filter(entities::transactions::Column::DeletedAt.is_null());
 
-    let total_count = base_query.clone().count(db).await?;
-
-    let mut query = base_query
+    let mut results_query = base_query
+        .clone()
         .order_by_desc(entities::transactions::Column::Date)
         .column_as(entities::categories::Column::Name, "category_name")
         .join_rev(
@@ -102,13 +101,17 @@ pub async fn list_transactions(
         );
 
     if let Some(l) = limit {
-        query = query.limit(l);
+        results_query = results_query.limit(l);
     }
     if let Some(o) = offset {
-        query = query.offset(o);
+        results_query = results_query.offset(o);
     }
 
-    let results = query.all(db).await?;
+    // 1. Parallelize Count and Main Query
+    let (total_count, results) = tokio::try_join!(
+        async move { base_query.count(db).await.map_err(AppError::from) },
+        async move { results_query.all(db).await.map_err(AppError::from) },
+    )?;
 
     if results.is_empty() {
         return Ok(PaginatedTransactions {
@@ -117,42 +120,31 @@ pub async fn list_transactions(
         });
     }
 
-    // Load related categories
-    let categories = results
-        .load_one(entities::categories::Entity, db)
-        .await?
+    // 2. Prepare for parallel loading of relations
+    let categories_fut = results.load_one(entities::categories::Entity, db);
+    let parties_fut = results.load_many(
+        entities::txn_parties::Entity::find()
+            .filter(entities::txn_parties::Column::Role.eq("COUNTERPARTY")),
+        db,
+    );
+
+    let (categories, parties) = tokio::try_join!(
+        async move { categories_fut.await.map_err(AppError::from) },
+        async move { parties_fut.await.map_err(AppError::from) },
+    )?;
+
+    let categories_map = categories
         .into_iter()
         .flatten()
         .map(|c| (c.id.clone(), c.name))
         .collect::<std::collections::HashMap<String, String>>();
 
-    // Load related parties (Counterparties)
-    let parties = results
-        .load_many(
-            entities::txn_parties::Entity::find()
-                .filter(entities::txn_parties::Column::Role.eq("COUNTERPARTY")),
-            db,
-        )
-        .await?;
-
-    // Collect all contact IDs from parties to load their names
+    // Now we have parties, we can fetch contacts
     let contact_ids: std::collections::HashSet<String> = parties
         .iter()
         .flatten()
         .filter_map(|p| p.contact_id.clone())
         .collect();
-
-    let contacts_map: std::collections::HashMap<String, String> = if contact_ids.is_empty() {
-        std::collections::HashMap::new()
-    } else {
-        entities::contacts::Entity::find()
-            .filter(entities::contacts::Column::Id.is_in(contact_ids))
-            .all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.id, c.name))
-            .collect()
-    };
 
     // Load wallets (source and destination)
     let wallet_ids: std::collections::HashSet<String> = results
@@ -161,17 +153,36 @@ pub async fn list_transactions(
         .flatten()
         .collect();
 
-    let wallets_map: std::collections::HashMap<String, String> = if wallet_ids.is_empty() {
-        std::collections::HashMap::new()
-    } else {
-        entities::wallets::Entity::find()
-            .filter(entities::wallets::Column::Id.is_in(wallet_ids))
-            .all(db)
-            .await?
-            .into_iter()
-            .map(|w| (w.id, w.name))
-            .collect()
-    };
+    let (contacts_res, wallets_res) = tokio::try_join!(
+        async move {
+            if contact_ids.is_empty() {
+                Ok(Vec::new())
+            } else {
+                entities::contacts::Entity::find()
+                    .filter(entities::contacts::Column::Id.is_in(contact_ids))
+                    .all(db)
+                    .await
+                    .map_err(AppError::from)
+            }
+        },
+        async move {
+            if wallet_ids.is_empty() {
+                Ok(Vec::new())
+            } else {
+                entities::wallets::Entity::find()
+                    .filter(entities::wallets::Column::Id.is_in(wallet_ids))
+                    .all(db)
+                    .await
+                    .map_err(AppError::from)
+            }
+        }
+    )?;
+
+    let contacts_map: std::collections::HashMap<String, String> =
+        contacts_res.into_iter().map(|c| (c.id, c.name)).collect();
+
+    let wallets_map: std::collections::HashMap<String, String> =
+        wallets_res.into_iter().map(|w| (w.id, w.name)).collect();
 
     let mut final_results = Vec::new();
 
@@ -189,7 +200,7 @@ pub async fn list_transactions(
         let category_name = txn
             .category_id
             .as_ref()
-            .and_then(|id| categories.get(id))
+            .and_then(|id| categories_map.get(id))
             .cloned();
 
         let contact = parties[i].first();

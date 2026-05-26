@@ -42,7 +42,8 @@ export const db = {
           .then((wallets) => {
             params.begin();
             for (const wallet of wallets) {
-              params.write({ type: "insert", value: wallet });
+              const type = params.collection.has(wallet.id) ? "update" : "insert";
+              params.write({ type, value: wallet });
             }
             params.commit();
           })
@@ -60,7 +61,8 @@ export const db = {
           .then((res) => {
             params.begin();
             for (const txn of res.items) {
-              params.write({ type: "insert", value: txn });
+              const type = params.collection.has(txn.id) ? "update" : "insert";
+              params.write({ type, value: txn });
             }
             params.commit();
           })
@@ -78,7 +80,8 @@ export const db = {
           .then((budgets) => {
             params.begin();
             for (const budget of budgets) {
-              params.write({ type: "insert", value: budget });
+              const type = params.collection.has(budget.id) ? "update" : "insert";
+              params.write({ type, value: budget });
             }
             params.commit();
           })
@@ -96,7 +99,8 @@ export const db = {
           .then((categories) => {
             params.begin();
             for (const cat of categories) {
-              params.write({ type: "insert", value: cat });
+              const type = params.collection.has(cat.id) ? "update" : "insert";
+              params.write({ type, value: cat });
             }
             params.commit();
           })
@@ -114,7 +118,8 @@ export const db = {
           .then((contacts) => {
             params.begin();
             for (const contact of contacts) {
-              params.write({ type: "insert", value: contact });
+              const type = params.collection.has(contact.id) ? "update" : "insert";
+              params.write({ type, value: contact });
             }
             params.commit();
           })

@@ -138,6 +138,7 @@ pub struct CoreConfig {
     pub google_api_key: Option<String>,
     pub better_auth_secret: String,
     pub better_auth_base_url: String,
+    pub shutdown_token: Option<tokio_util::sync::CancellationToken>,
 }
 
 impl Core {
@@ -145,6 +146,9 @@ impl Core {
         config: CoreConfig,
         ocr_tx: tokio::sync::broadcast::Sender<::ocr::OcrUpdate>,
     ) -> Result<Self, anyhow::Error> {
+        let shutdown_token = config
+            .shutdown_token
+            .unwrap_or_else(tokio_util::sync::CancellationToken::new);
         // 1. Resilient Database Connection
         let mut opt = ConnectOptions::new(config.database_url);
         opt.max_connections(100)
@@ -221,12 +225,10 @@ impl Core {
         let s3_client = aws_sdk_s3::Client::from_conf(s3_client_config);
         let upload_client = UploadClient::new(s3_client, config.s3_bucket_name);
 
-        let ocr_manager = Arc::new(OcrManager::new(
-            ocr_service,
-            Arc::clone(&db),
-            upload_client.clone(),
-            ocr_tx,
-        ));
+        let ocr_manager = Arc::new(
+            OcrManager::new(ocr_service, Arc::clone(&db), upload_client.clone(), ocr_tx)
+                .with_cancellation_token(shutdown_token.clone()),
+        );
 
         let wallets = Arc::new(WalletsManager::new(Arc::clone(&db)));
         let transactions = Arc::new(TransactionsManager::new(Arc::clone(&db), wallets.clone()));
