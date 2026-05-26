@@ -339,14 +339,13 @@ pub fn detect_subscription_patterns_internal(
     // Sort by date
     txns.sort_by_key(|t| t.date.clone());
 
-    let mut patterns = HashMap::new();
+    let mut patterns: HashMap<(String, String), Vec<&TxnPattern>> = HashMap::new();
 
     // Group by normalized purpose + amount
     for tx in &txns {
-        let key = format!(
-            "{}:{}",
+        let key = (
             normalize_text(tx.purpose_tag.as_deref().unwrap_or("unknown")),
-            tx.amount
+            tx.amount.clone(),
         );
         patterns.entry(key).or_insert_with(Vec::new).push(tx);
     }
@@ -377,9 +376,10 @@ pub fn detect_subscription_patterns_internal(
         let is_weekly = intervals.iter().all(|&d| (6..=8).contains(&d));
 
         if is_monthly || is_weekly {
+            let (name, amount) = key;
             suspected.push(DetectedSubscription {
-                name: group[0].purpose_tag.clone().unwrap_or_else(|| key.clone()),
-                amount: group[0].amount.clone(),
+                name: group[0].purpose_tag.clone().unwrap_or(name),
+                amount,
                 cycle: (if is_monthly { "MONTHLY" } else { "WEEKLY" }).to_string(),
                 last_date: group.last().unwrap().date.clone(),
                 count: group.len(),
