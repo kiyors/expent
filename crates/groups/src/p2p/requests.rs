@@ -82,6 +82,15 @@ pub async fn accept_p2p_request(
                 .await?
                 .ok_or_else(|| AppError::not_found("Request not found"))?;
 
+            let user = entities::users::Entity::find_by_id(receiver_id.clone())
+                .one(txn_db)
+                .await?
+                .ok_or_else(|| AppError::not_found("User not found"))?;
+
+            if user.email != request.receiver_email {
+                return Err(AppError::unauthorized("Not authorized to accept this request"));
+            }
+
             if request.status != P2pRequestStatus::Pending
                 && request.status != P2pRequestStatus::GroupInvite
             {
@@ -161,16 +170,24 @@ pub async fn accept_p2p_request(
 
 pub async fn reject_p2p_request(
     db: &DatabaseConnection,
-    _user_id: &str,
+    user_id: &str,
     request_id: &str,
 ) -> Result<(), AppError> {
-    let mut request: entities::p2p_requests::ActiveModel =
-        entities::p2p_requests::Entity::find_by_id(request_id.to_string())
-            .one(db)
-            .await?
-            .ok_or_else(|| AppError::not_found("Request not found"))?
-            .into();
+    let request_model = entities::p2p_requests::Entity::find_by_id(request_id.to_string())
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("Request not found"))?;
 
+    let user = entities::users::Entity::find_by_id(user_id.to_string())
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("User not found"))?;
+
+    if request_model.receiver_email != user.email && request_model.sender_user_id != user_id {
+        return Err(AppError::unauthorized("Not authorized to reject this request"));
+    }
+
+    let mut request: entities::p2p_requests::ActiveModel = request_model.into();
     request.status = Set(P2pRequestStatus::Rejected);
     request.update(db).await?;
     Ok(())

@@ -31,6 +31,10 @@ pub async fn register_repayment(
                 .await?
                 .ok_or_else(|| AppError::not_found("Ledger tab not found"))?;
 
+            if tab.creator_id != user_id && tab.counterparty_id.as_deref() != Some(&user_id) {
+                return Err(AppError::unauthorized("Not authorized to register repayment for this tab"));
+            }
+
             let txn = entities::transactions::ActiveModel {
                 id: Set(uuid::Uuid::now_v7().to_string()),
                 user_id: Set(user_id.clone()),
