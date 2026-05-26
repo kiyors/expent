@@ -143,17 +143,26 @@ impl GroupsManager {
     pub async fn accept_p2p_request(
         &self,
         receiver_id: &str,
+        receiver_email: &str,
         request_id: &str,
     ) -> Result<entities::p2p_requests::Model, AppError> {
-        p2p::accept_p2p_request(&*self.db, &self.transactions, receiver_id, request_id).await
+        p2p::accept_p2p_request(
+            &*self.db,
+            &self.transactions,
+            receiver_id,
+            receiver_email,
+            request_id,
+        )
+        .await
     }
 
     pub async fn reject_p2p_request(
         &self,
         user_id: &str,
+        user_email: &str,
         request_id: &str,
     ) -> Result<(), AppError> {
-        p2p::reject_p2p_request(&*self.db, user_id, request_id).await
+        p2p::reject_p2p_request(&*self.db, user_id, user_email, request_id).await
     }
 
     pub async fn register_repayment(
