@@ -67,20 +67,29 @@ pub async fn accept_p2p_request(
     db: &DatabaseConnection,
     transactions: &TransactionsManager,
     receiver_id: &str,
+    receiver_email: &str,
     request_id: &str,
 ) -> Result<entities::p2p_requests::Model, AppError> {
     let receiver_id = receiver_id.to_string();
+    let receiver_email = receiver_email.to_string();
     let request_id = request_id.to_string();
 
     db.transaction::<_, entities::p2p_requests::Model, AppError>(|txn_db| {
         let transactions = transactions.clone();
         let receiver_id = receiver_id.clone();
+        let receiver_email = receiver_email.clone();
         let request_id = request_id.clone();
         Box::pin(async move {
             let request = entities::p2p_requests::Entity::find_by_id(request_id)
                 .one(txn_db)
                 .await?
                 .ok_or_else(|| AppError::not_found("Request not found"))?;
+
+            if receiver_email != request.receiver_email {
+                return Err(AppError::unauthorized(
+                    "Not authorized to accept this request",
+                ));
+            }
 
             if request.status != P2pRequestStatus::Pending
                 && request.status != P2pRequestStatus::GroupInvite
@@ -161,16 +170,22 @@ pub async fn accept_p2p_request(
 
 pub async fn reject_p2p_request(
     db: &DatabaseConnection,
-    _user_id: &str,
+    user_id: &str,
+    user_email: &str,
     request_id: &str,
 ) -> Result<(), AppError> {
-    let mut request: entities::p2p_requests::ActiveModel =
-        entities::p2p_requests::Entity::find_by_id(request_id.to_string())
-            .one(db)
-            .await?
-            .ok_or_else(|| AppError::not_found("Request not found"))?
-            .into();
+    let request_model = entities::p2p_requests::Entity::find_by_id(request_id.to_string())
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("Request not found"))?;
 
+    if request_model.receiver_email != user_email && request_model.sender_user_id != user_id {
+        return Err(AppError::unauthorized(
+            "Not authorized to reject this request",
+        ));
+    }
+
+    let mut request: entities::p2p_requests::ActiveModel = request_model.into();
     request.status = Set(P2pRequestStatus::Rejected);
     request.update(db).await?;
     Ok(())
