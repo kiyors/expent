@@ -107,14 +107,14 @@ pub fn generate_dashboard_summary(
     let mut monthly_trends_map = BTreeMap::new();
     for i in (0..6).rev() {
         let date = now - Duration::days(i64::from(i) * 30);
-        let key = format!("{}-{:02}", date.year(), date.month());
+        let key = (date.year(), date.month());
         monthly_trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
     let mut weekly_trends_map = BTreeMap::new();
     for i in (0..7).rev() {
         let date = now - Duration::days(i64::from(i));
-        let key = format!("{}-{:02}-{:02}", date.year(), date.month(), date.day());
+        let key = (date.year(), date.month(), date.day());
         weekly_trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
@@ -141,7 +141,7 @@ pub fn generate_dashboard_summary(
         }
 
         // Monthly trends
-        let m_key = format!("{}-{:02}", tx_date.year(), tx_date.month());
+        let m_key = (tx_date.year(), tx_date.month());
         if let Some(entry) = monthly_trends_map.get_mut(&m_key) {
             if tx.direction == "IN" {
                 entry.0 += amt;
@@ -151,12 +151,7 @@ pub fn generate_dashboard_summary(
         }
 
         // Weekly trends (last 7 days)
-        let w_key = format!(
-            "{}-{:02}-{:02}",
-            tx_date.year(),
-            tx_date.month(),
-            tx_date.day()
-        );
+        let w_key = (tx_date.year(), tx_date.month(), tx_date.day());
         if let Some(entry) = weekly_trends_map.get_mut(&w_key) {
             if tx.direction == "IN" {
                 entry.0 += amt;
@@ -187,11 +182,7 @@ pub fn generate_dashboard_summary(
     let monthly_trends = monthly_trends_map
         .into_iter()
         .map(|(key, (inc, exp))| {
-            let month_num = key
-                .split('-')
-                .nth(1)
-                .and_then(|s| s.parse::<u32>().ok())
-                .unwrap_or(0);
+            let (_, month_num) = key;
             let month_name = match month_num {
                 1 => "Jan",
                 2 => "Feb",
@@ -218,19 +209,7 @@ pub fn generate_dashboard_summary(
     let weekly_trends = weekly_trends_map
         .into_iter()
         .map(|(key, (inc, exp))| {
-            let parts: Vec<&str> = key.split('-').collect();
-            let y = parts
-                .get(0)
-                .and_then(|s| s.parse::<i32>().ok())
-                .unwrap_or(0);
-            let m = parts
-                .get(1)
-                .and_then(|s| s.parse::<u32>().ok())
-                .unwrap_or(0);
-            let d = parts
-                .get(2)
-                .and_then(|s| s.parse::<u32>().ok())
-                .unwrap_or(0);
+            let (y, m, d) = key;
             let date = Utc
                 .with_ymd_and_hms(y, m, d, 0, 0, 0)
                 .single()
