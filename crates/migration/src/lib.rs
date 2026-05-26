@@ -26,6 +26,9 @@ pub mod m20260511_114743_update_wallet_type_enum_values;
 pub mod m20260512_000001_add_bank_details_to_wallets;
 pub mod m20260516_000001_create_background_jobs_table;
 pub mod m20260522_000001_add_ocr_jobs_batch_and_idempotency;
+pub mod m20260526_000001_enhance_background_jobs_table;
+pub mod m20260526_000002_add_job_notifications;
+pub mod m20260526_000003_add_performance_indexes;
 
 pub struct Migrator;
 
@@ -59,6 +62,9 @@ impl MigratorTrait for Migrator {
             Box::new(m20260512_000001_add_bank_details_to_wallets::Migration),
             Box::new(m20260516_000001_create_background_jobs_table::Migration),
             Box::new(m20260522_000001_add_ocr_jobs_batch_and_idempotency::Migration),
+            Box::new(m20260526_000001_enhance_background_jobs_table::Migration),
+            Box::new(m20260526_000002_add_job_notifications::Migration),
+            Box::new(m20260526_000003_add_performance_indexes::Migration),
         ]
     }
 }

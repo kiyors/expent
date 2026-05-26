@@ -15,7 +15,9 @@ pub struct Model {
     pub max_attempts: i32,
     pub run_at: DateTime,
     pub created_at: DateTime,
+    pub updated_at: DateTime,
     pub completed_at: Option<DateTime>,
+    pub started_at: Option<DateTime>,
     pub error: Option<String>,
     pub user_id: Option<String>,
 }

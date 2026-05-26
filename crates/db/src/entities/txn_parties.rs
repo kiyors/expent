@@ -50,6 +50,7 @@ impl PrimaryKeyTrait for PrimaryKey {
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {
     Transactions,
+    Contacts,
 }
 
 impl ColumnTrait for Column {
@@ -71,6 +72,10 @@ impl RelationTrait for Relation {
                 .from(Column::TransactionId)
                 .to(super::transactions::Column::Id)
                 .into(),
+            Self::Contacts => Entity::belongs_to(super::contacts::Entity)
+                .from(Column::ContactId)
+                .to(super::contacts::Column::Id)
+                .into(),
         }
     }
 }
@@ -78,6 +83,12 @@ impl RelationTrait for Relation {
 impl Related<super::transactions::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Transactions.def()
+    }
+}
+
+impl Related<super::contacts::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Contacts.def()
     }
 }
 
