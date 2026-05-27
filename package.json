@@ -17,7 +17,7 @@
     "test:dashboard": "pnpm --filter @expent/dashboard test",
     "test:ocr": "cd apps/ocr && uv run pytest",
     "test:all": "pnpm test:core && pnpm test:dashboard && pnpm test:ocr",
-    "fmt-all": "cargo fmt && uv format && pnpm fmt",
+    "fmt-all": "cargo fmt && pnpm fmt",
     "bacon:dev": "bacon dev",
     "bacon:lint": "bacon clippy-all",
     "bacon:check": "bacon check-all",

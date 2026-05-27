@@ -116,8 +116,8 @@ export interface InitOutput {
     readonly validate_contact_wasm: (a: number, b: number) => number;
     readonly validate_transaction_wasm: (a: number, b: number, c: number, d: number) => number;
     readonly validate_wallet_wasm: (a: number, b: number, c: number, d: number) => number;
-    readonly __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;
     readonly __wbg_set_spendingvelocity_daily_burn_rate: (a: number, b: number) => void;
+    readonly __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;
     readonly __wbg_savingsprojection_free: (a: number, b: number) => void;
     readonly __wbindgen_export: (a: number, b: number) => number;
     readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;

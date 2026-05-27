@@ -1,5 +1,5 @@
 {
-  description = "A Nix-flake-based Rust, Python (uv), and Node.js development environment";
+  description = "A Nix-flake-based Rust and Node.js development environment";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -56,12 +56,6 @@
 
       devShells = forEachSupportedSystem (
         { pkgs }:
-        let
-          # Select Python Version
-          python = pkgs.python313;
-          # python = pkgs.python313FreeThreading;
-
-        in
         {
           default = pkgs.mkShell {
             packages =
@@ -79,12 +73,6 @@
                 pnpm
                 biome
 
-                # Python
-                uv
-                python
-                ruff
-                black
-
                 # Utilities
                 just
                 taplo
@@ -96,12 +84,6 @@
             env = {
               # Required by rust-analyzer
               RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
-
-              # Tell uv to use the specific Python version provided by Nix
-              UV_PYTHON = "${python}/bin/python";
-
-              # Tell pip (if used inside uv) not to check for updates
-              PIP_DISABLE_PIP_VERSION_CHECK = "1";
             };
 
             # Automatically creates/activates the uv venv
@@ -111,20 +93,9 @@
               # Node Setup
               export PATH="$PWD/node_modules/.bin:$PATH"
 
-              # uv Setup
-              if [ ! -d ".venv" ]; then
-                echo "Creating uv virtual environment..."
-                uv venv
-              fi
-
-              # Activate venv
-              source .venv/bin/activate
-
               # Display versions
               echo "Versions:"
               echo "  rust:   $(cargo --version)"
-              echo "  python: $(python --version)"
-              echo "  uv:     $(uv --version)"
               echo "  node:   $(node --version)"
               echo "  pnpm:   $(pnpm --version)"
 
