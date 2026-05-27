@@ -54,8 +54,8 @@ Before allowing _any_ bytes into storage, the `UploadProcessor` executes a stric
 Integrated into the **`expent_core`** upload workflow:
 
 - **Avatars**: Standardized to WebP (512x512).
-- **Receipts**: Normalized to ensure compatibility with the downstream OCR microservice.
-- This prevents the external Python worker from encountering unsupported byte formats.
+- **Receipts**: Normalized to ensure compatibility with the downstream native OCR worker.
+- This prevents the background Rust processor from encountering unsupported byte formats.
 
 ---
 

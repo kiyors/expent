@@ -7,7 +7,6 @@ This document provides technical instructions for setting up the Expent monorepo
 Ensure you have the following installed:
 - **Node.js**: v24+ ([pnpm](https://pnpm.io/) is required)
 - **Rust**: Latest stable (via [rustup](https://rustup.rs/))
-- **Python**: v3.13+ ([uv](https://docs.astral.sh/uv/) for dependency management)
 - **PostgreSQL**: Local or cloud instance.
 - **S3 / Cloudflare R2**: Access keys and a bucket for file uploads.
 
@@ -22,10 +21,6 @@ pnpm install
 
 # Rust workspace
 cargo build
-
-# Python OCR worker
-cd apps/ocr
-uv sync
 ```
 
 ### Step 2: Configuration
@@ -45,7 +40,7 @@ cargo run -p migration -- up
 The project uses [Turborepo](https://turbo.build/) to manage parallel execution.
 
 ```bash
-# Run all services (API, Dashboard, OCR)
+# Run all services (API, Dashboard)
 pnpm dev
 
 # Run a specific application
@@ -54,7 +49,7 @@ pnpm dev:app
 ```
 
 ### Formatting & Linting
-Expent enforces strict styling via Biome (JS/TS), Cargo Fmt (Rust), and Ruff (Python).
+Expent enforces strict styling via Biome (JS/TS) and Cargo Fmt (Rust).
 
 ```bash
 # Format everything

@@ -3,7 +3,7 @@
 ## Tech Stack & Structure
 
 - **Frontend**: `apps/dashboard` (Next.js), `apps/app` (Expo)
-- **Backend**: `apps/api` (Rust Axum), `apps/ocr` (Python FastAPI)
+- **Backend**: `apps/api` (Rust Axum)
 - **Central Hub**: `crates/expent_core` (Orchestrates DB, Auth, Upload, OCR)
 - **Shared**: `packages/types` (Shared TS/Rust types), `packages/ui` (Shared UI)
 - **Testing**: `rstest` (Rust Backend & API), `vitest` (Next.js Headless Logic). No UI E2E.
@@ -12,7 +12,6 @@
 
 - **JS/TS**: **pnpm**: `pnpm install`, `pnpm dev`, `pnpm add <package name> --filter`, `pnpm dlx shadcn@latest add button -c apps/dashboard`, `pnpm fmt`
 - **Rust**: **cargo**: `cargo check`, `cargo run -p api`
-- **Python**: **uv**: `uv sync`, `uv run uvicorn main:app`
 
 ## File-Scoped Commands
 
@@ -25,8 +24,6 @@
 | Format (Rust)   | `cargo fmt`                               |
 | Test (Rust)     | `cargo test -p expent_core --lib`         |
 | Test (JS/TS)    | `pnpm vitest run path/to/file.test.ts`    |
-| Test (Python)   | `uv run pytest apps/ocr/<file>`           |
-| Format (Python) | `uv format`                               |
 | Format (All)    | `pnpm fmt-all`                            |
 
 ## Documentation
@@ -57,8 +54,6 @@ skills:
   load: "vercel-labs/agent-skills"
 - task: "Frontend UI, UX polish, and building web components"
   load: "anthropics/skills"
-- task: "Working with Python, FastAPI, OCR, and the uv package manager"
-  load: "wshobson/agents"
 - task: "Rust API best practices and architecture"
   load: "apollographql/skills"
 
@@ -95,7 +90,7 @@ When generating code or reviewing PRs, you must actively apply the loaded skills
 
 - **Rust Core:** TDD Red-Green-Refactor is mandatory. Use `#[rstest]` fixtures (`rust-best-practices`).
 - **Transactions:** Atomic operations MUST use `db.transaction`. Always adjust wallet balances.
-- **Python OCR:** Manage packages with `uv` (`uv-package-manager`) and utilize `image-ocr` best practices.
+- **Rust OCR:** Background job processing natively integrated in `crates/ocr` using Postgres LISTEN/NOTIFY and graceful shutdown tokens.
 - **Database:** Pure entities go in `crates/db/src/entities/`. No business logic here. Design via `database-schema-designer`.
 
 ### 6. Repository Architecture (Monorepo Boundaries)

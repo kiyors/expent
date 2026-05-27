@@ -39,6 +39,7 @@ erDiagram
     %% Transactions
     USERS ||--o{ TRANSACTIONS : "creates"
     TRANSACTIONS ||--o{ TXN_PARTIES : "involves (Sender/Receiver)"
+    TXN_PARTIES |o--o| CONTACTS : "links counterparty"
     TRANSACTIONS ||--o| TRANSACTION_METADATA : "has additional info"
     TRANSACTIONS ||--o{ TRANSACTION_SOURCES : "generated from (OCR, Manual, PDF)"
     GROUPS |o--o{ TRANSACTIONS : "includes group expense"
@@ -69,6 +70,9 @@ erDiagram
     %% Budgets
     USERS ||--o{ BUDGETS : "sets"
     CATEGORIES ||--o{ BUDGETS : "limited by"
+
+    %% Background Jobs
+    USERS |o--o{ BACKGROUND_JOBS : "owns (optional)"
 ```
 
 ---
@@ -174,3 +178,13 @@ These tables handle deep item-level logging when the user uploads a shopping rec
 ### `p2p_requests`, `p2p_transfers`, `ledger_tabs`
 
 - **Settlement Orchestration**: P2P request flows, including mirroring transactions upon acceptance, are governed by the `expent_core::services::p2p` module.
+
+---
+
+## 10. Background Jobs & Workers
+
+### `background_jobs`
+
+- **Purpose**: Persists state for asynchronous operations (e.g., OCR processing, generic tasks) managed natively by Rust background workers.
+- **Workflow Engine**: Tracks `job_type`, JSON `payload`, retry `attempts` (`max_attempts`), and timestamps (`run_at`, `created_at`, `updated_at`, `started_at`, `completed_at`).
+- **Real-Time Integration**: Updates to this table frequently trigger Postgres `LISTEN/NOTIFY` channels (e.g., `ocr_jobs_channel`) for immediate worker ingestion without heavy polling.

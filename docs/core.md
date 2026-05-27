@@ -27,7 +27,7 @@ This single call:
 1.  Establishes the SeaORM connection pool.
 2.  Initializes the `BetterAuth` engine.
 3.  Configures the AWS S3 SDK for Cloudflare R2.
-4.  Connects to the Python OCR FastAPI worker.
+4.  Initializes the native Rust OCR background processor.
 5.  Ensures system-level data (like default categories) is present in the database.
 
 ---
@@ -74,10 +74,10 @@ Located in `services/subscriptions/detection.rs`, the core implements a heuristi
 
 ### OCR Orchestration
 
-The core doesn't just "read text"; it orchestrates a pipeline:
+The core doesn't just "read text"; it orchestrates a pipeline natively in Rust (`crates/ocr`):
 
 1.  Retrieves the file from R2.
-2.  Passes it to the Python worker.
+2.  Processes it via the background worker using Postgres LISTEN/NOTIFY.
 3.  **Auto-Contact Creation**: If the OCR identifies a new UPI ID, the core automatically creates a new `Contact` and links it to the user's address book before saving the transaction.
 
 ### P2P Mirroring & State Machine
