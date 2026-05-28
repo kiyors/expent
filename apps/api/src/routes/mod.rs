@@ -2,6 +2,7 @@ pub mod budgets;
 pub mod categories;
 pub mod contacts;
 pub mod groups;
+pub mod health;
 pub mod ocr;
 pub mod p2p;
 pub mod reconciliation;

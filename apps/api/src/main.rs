@@ -145,9 +145,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         worker_pool_clone.run().await;
     });
 
+    // OCR rate limit knobs — defaults match what was previously hard-coded.
+    // Override at deploy-time via env when traffic patterns demand it.
+    let ocr_rpm: u32 = std::env::var("OCR_RATE_LIMIT_RPM")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(10);
+    let ocr_burst: u32 = std::env::var("OCR_RATE_LIMIT_BURST")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(20);
+
     let state = AppState {
         core: core.clone(),
-        ocr_limiter: UserRateLimiter::new(10, 20),
+        ocr_limiter: UserRateLimiter::new(ocr_rpm, ocr_burst),
     };
     // Drop idle per-user rate limiter entries periodically so the map tracks
     // active users instead of growing monotonically for the life of the process.
@@ -165,7 +176,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     );
 
     let api_router = Router::new()
+        // /health (legacy shallow probe) and /health/live + /health/ready
+        // (proper liveness + dependency-aware readiness).
         .route("/health", get(|| async { "OK" }))
+        .nest("/health", routes::health::router())
         .nest("/transactions", routes::transactions::router())
         .nest("/budgets", routes::budgets::router())
         .nest("/p2p", routes::p2p::router())

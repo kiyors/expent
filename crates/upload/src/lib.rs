@@ -108,6 +108,23 @@ impl UploadClient {
         }
     }
 
+    /// Cheap readiness probe — does a `HeadBucket` against the configured S3 bucket.
+    /// Used by the `/health/ready` endpoint so the load balancer can drop us out of
+    /// rotation if R2/S3 becomes unreachable.
+    ///
+    /// # Errors
+    /// Returns `UploadError::S3Error` if the bucket is missing, unreachable, or
+    /// credentials are invalid.
+    pub async fn health_check(&self) -> Result<(), UploadError> {
+        self.s3_client
+            .head_bucket()
+            .bucket(&self.bucket_name)
+            .send()
+            .await
+            .map_err(|e| UploadError::S3Error(e.to_string()))?;
+        Ok(())
+    }
+
     /// Generates a presigned URL for direct upload.
     ///
     /// # Errors
