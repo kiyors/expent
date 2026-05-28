@@ -14,11 +14,19 @@ pub struct GeminiOcrClient {
 impl GeminiOcrClient {
     pub fn new(api_key: String) -> Self {
         let model_name =
-            std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.0-flash-exp".to_string());
+            std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".to_string());
+        // Bound connect/request time so a hung Gemini call cannot hold a worker
+        // semaphore permit indefinitely. Falls back to a default client if the
+        // builder ever fails (it effectively never does for these options).
+        let client = Client::builder()
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .timeout(std::time::Duration::from_secs(120))
+            .build()
+            .unwrap_or_else(|_| Client::new());
         Self {
             api_key,
             model_name,
-            client: Client::new(),
+            client,
         }
     }
 
@@ -144,38 +152,43 @@ STEP 3: FORMAT OUTPUT
             }
         });
 
+        // Pass the API key via header rather than the URL query string so it does
+        // not leak into request logs or referrers.
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
-            self.model_name, self.api_key
+            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",
+            self.model_name
         );
 
-        let res = self.client.post(&url).json(&payload).send().await?;
+        let res = self
+            .client
+            .post(&url)
+            .header("x-goog-api-key", &self.api_key)
+            .json(&payload)
+            .send()
+            .await?;
+
+        // Surface real API failures (quota, auth, safety blocks, 5xx) instead of
+        // letting them fall through to an opaque "failed to parse" error below.
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            return Err(anyhow::anyhow!("Gemini API error {}: {}", status, body));
+        }
+
         let json_res: serde_json::Value = res.json().await?;
 
         let text_result = json_res["candidates"][0]["content"]["parts"][0]["text"]
             .as_str()
             .ok_or_else(|| anyhow::anyhow!("Failed to parse Gemini response: {:?}", json_res))?;
 
-        // Handle potential markdown formatting in Gemini response
-        let cleaned_json = if text_result.trim().starts_with("```json") {
-            text_result
-                .trim()
-                .strip_prefix("```json")
-                .unwrap()
-                .strip_suffix("```")
-                .unwrap()
-                .trim()
-        } else if text_result.trim().starts_with("```") {
-            text_result
-                .trim()
-                .strip_prefix("```")
-                .unwrap()
-                .strip_suffix("```")
-                .unwrap()
-                .trim()
-        } else {
-            text_result.trim()
-        };
+        // Strip optional markdown code fences without panicking on malformed
+        // (e.g. unterminated) responses from the model.
+        let trimmed = text_result.trim();
+        let cleaned_json = trimmed
+            .strip_prefix("```json")
+            .or_else(|| trimmed.strip_prefix("```"))
+            .map(|inner| inner.strip_suffix("```").unwrap_or(inner).trim())
+            .unwrap_or(trimmed);
 
         let extracted: UnifiedExtraction = serde_json::from_str(cleaned_json)?;
         Ok(extracted)

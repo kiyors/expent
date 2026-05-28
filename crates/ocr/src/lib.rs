@@ -196,7 +196,7 @@ impl OcrManager {
         params: OcrJobCreateParams,
     ) -> Result<db::entities::ocr_jobs::Model, db::AppError> {
         ops::lifecycle::create_ocr_job(
-            &*self.db,
+            &self.db,
             ops::lifecycle::OcrJobCreateParams {
                 user_id: params.user_id,
                 trace_id: params.trace_id,
@@ -223,7 +223,7 @@ impl OcrManager {
         tokio::spawn(async move {
             let _permit = semaphore.acquire().await.ok();
             if let Err(e) =
-                ops::process::process_job(&*db, service, &upload, ocr_tx, processor, job_id).await
+                ops::process::process_job(&db, service, &upload, ocr_tx, processor, job_id).await
             {
                 tracing::error!("❌ Immediate OCR processing failed: {}", e);
             }
@@ -258,7 +258,7 @@ impl OcrManager {
             serde_json::to_value(d)
                 .map_err(|e| db::AppError::Ocr(format!("Serialization failed: {}", e)))?
         } else {
-            let job = ops::lifecycle::get_ocr_job(&*self.db, job_id)
+            let job = ops::lifecycle::get_ocr_job(&self.db, job_id)
                 .await?
                 .ok_or_else(|| db::AppError::not_found("OCR Job not found"))?;
             job.processed_data
@@ -266,7 +266,7 @@ impl OcrManager {
         };
 
         ops::confirm::confirm_ocr_job(
-            &*self.db,
+            &self.db,
             self.ocr_tx.clone(),
             processor,
             user_id,
@@ -284,7 +284,7 @@ impl OcrManager {
         contact_id: &str,
     ) -> Result<db::OcrTransactionResponse, db::AppError> {
         ops::confirm::resolve_contact_collision(
-            &*self.db,
+            &self.db,
             self.ocr_tx.clone(),
             processor,
             user_id,

@@ -38,17 +38,17 @@ pub fn merge_ocr_results(results: Vec<OcrResult>) -> OcrResult {
         }
 
         // 3. Max amount
-        if let Some(amt) = res.amount {
-            if max_amount.is_none() || Some(amt) > max_amount {
-                max_amount = Some(amt);
-            }
+        if let Some(amt) = res.amount
+            && (max_amount.is_none() || Some(amt) > max_amount)
+        {
+            max_amount = Some(amt);
         }
 
         // 4. Earliest date
-        if let Some(d) = res.date {
-            if earliest_date.is_none() || Some(d) < earliest_date {
-                earliest_date = Some(d);
-            }
+        if let Some(d) = res.date
+            && (earliest_date.is_none() || Some(d) < earliest_date)
+        {
+            earliest_date = Some(d);
         }
 
         // 5. Collect items

@@ -19,7 +19,7 @@ pub fn split_pdf(data: &[u8]) -> Result<Vec<Vec<u8>>, anyhow::Error> {
 }
 
 pub fn get_media_type(filename: &str) -> &'static str {
-    let ext = filename.split('.').last().unwrap_or("").to_lowercase();
+    let ext = filename.split('.').next_back().unwrap_or("").to_lowercase();
     match ext.as_str() {
         "pdf" => "application/pdf",
         "csv" => "text/csv",

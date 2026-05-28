@@ -4,6 +4,11 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Qu
 
 pub const CURRENT_SCHEMA_VERSION: i32 = 1;
 
+/// Maximum number of processing attempts before a job is moved to DEAD_LETTER.
+/// Shared by the failure-retry path and the stale-job recovery worker so both
+/// honour the same retry budget.
+pub const MAX_OCR_RETRIES: i32 = 5;
+
 pub struct OcrJobUpdateParams {
     pub status: String,
     pub processed_data: Option<serde_json::Value>,
@@ -14,6 +19,8 @@ pub struct OcrJobUpdateParams {
     pub last_error: Option<String>,
     pub scheduled_at: Option<chrono::DateTime<chrono::Utc>>,
     pub resolution_candidates: Option<serde_json::Value>,
+    /// When `Some`, escalates/de-escalates the job's high-res processing mode.
+    pub is_high_res: Option<bool>,
 }
 
 pub struct OcrJobCreateParams {
@@ -103,11 +110,18 @@ pub async fn update_ocr_job(
     job.error = Set(params.error_message);
     job.transaction_id = Set(params.transaction_id);
     job.started_at = Set(params.started_at.map(|dt| dt.naive_utc()));
-    job.retry_count = Set(params.retry_count.unwrap_or(0));
+    // Only touch retry_count when explicitly provided; otherwise preserve the
+    // existing value so intermediate updates don't clobber the retry budget.
+    if let Some(retry_count) = params.retry_count {
+        job.retry_count = Set(retry_count);
+    }
     job.last_error = Set(params.last_error);
     job.scheduled_at = Set(params.scheduled_at.map(|dt| dt.naive_utc()));
     if let Some(candidates) = params.resolution_candidates {
         job.resolution_candidates = Set(Some(candidates));
+    }
+    if let Some(is_high_res) = params.is_high_res {
+        job.is_high_res = Set(is_high_res);
     }
 
     Ok(job.update(db).await?)

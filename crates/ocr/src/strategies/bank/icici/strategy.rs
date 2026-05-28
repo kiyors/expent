@@ -38,28 +38,41 @@ impl OcrExtractionStrategy for BankStatementStrategy {
             )
             .await?;
 
+        // Build the resolve batch up-front and run a single bulk lookup. Calling
+        // `resolve` per-transaction was O(N) full contact scans (N+1 queries) and
+        // dominated enrichment time for large statements; `resolve_bulk` pre-fetches
+        // contacts/identifiers once and matches in memory. Mirrors the pattern in
+        // `extract_and_save` below.
+        let resolve_batch: Vec<::contacts::ops::ResolveParams> = bank_result
+            .bank_data
+            .transactions
+            .iter()
+            .map(|bt| ::contacts::ops::ResolveParams {
+                name: bt.contact_name.clone(),
+                phone: None,
+                email: None,
+                upi_id: bt.upi_id.clone(),
+            })
+            .collect();
+
+        let bulk_resolutions = contacts_manager
+            .resolve_bulk(db, user_id, resolve_batch)
+            .await?;
+        let mut bulk_iter = bulk_resolutions.into_iter();
+
         for bt in &mut bank_result.bank_data.transactions {
             if bt.wallet_id.is_none() {
                 bt.wallet_id = Some(wallet.id.clone());
             }
 
-            if let Some(contact_name) = &bt.contact_name {
-                let resolution = contacts_manager
-                    .resolve(
-                        db,
-                        user_id,
-                        ::contacts::ops::ResolveParams {
-                            name: Some(contact_name.clone()),
-                            phone: None,
-                            email: None,
-                            upi_id: bt.upi_id.clone(),
-                        },
-                    )
-                    .await?;
+            let resolution = bulk_iter.next().ok_or_else(|| {
+                AppError::Ocr("Contact resolution count did not match transactions".to_string())
+            })?;
 
-                if let Some(c_id) = resolution.contact_id {
-                    bt.contact_id = Some(c_id);
-                }
+            if bt.contact_name.is_some()
+                && let Some(c_id) = resolution.contact_id
+            {
+                bt.contact_id = Some(c_id);
             }
         }
 
@@ -114,7 +127,9 @@ impl OcrExtractionStrategy for BankStatementStrategy {
 
         for bt in bank_result.bank_data.transactions {
             let mut current_contact_id = None;
-            let resolution = bulk_iter.next().expect("bulk_iter size mismatch");
+            let resolution = bulk_iter.next().ok_or_else(|| {
+                AppError::Ocr("Contact resolution count did not match transactions".to_string())
+            })?;
 
             if let Some(contact_name) = &bt.contact_name {
                 if let Some(c_id) = local_contact_cache.get(contact_name) {
@@ -187,17 +202,17 @@ impl OcrExtractionStrategy for BankStatementStrategy {
                 party.insert(txn_db).await?;
             }
 
-            if total_processed == 0 {
-                if let Some(r2_key) = processed.r2_key.clone() {
-                    let source = db::entities::transaction_sources::ActiveModel {
-                        id: Set(uuid::Uuid::now_v7().to_string()),
-                        transaction_id: Set(result.id.clone()),
-                        source_type: Set("OCR".to_string()),
-                        r2_file_url: Set(Some(r2_key)),
-                        raw_metadata: Set(Some(processed.data.0.clone())),
-                    };
-                    source.insert(txn_db).await?;
-                }
+            if total_processed == 0
+                && let Some(r2_key) = processed.r2_key.clone()
+            {
+                let source = db::entities::transaction_sources::ActiveModel {
+                    id: Set(uuid::Uuid::now_v7().to_string()),
+                    transaction_id: Set(result.id.clone()),
+                    source_type: Set("OCR".to_string()),
+                    r2_file_url: Set(Some(r2_key)),
+                    raw_metadata: Set(Some(processed.data.0.clone())),
+                };
+                source.insert(txn_db).await?;
             }
 
             last_txn = Some(result);

@@ -1,7 +1,7 @@
 use crate::{OcrService, OcrUpdate};
 use chrono::Utc;
 use db::entities;
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
@@ -14,7 +14,7 @@ pub async fn start_recovery_worker(db: Arc<DatabaseConnection>, token: Cancellat
     loop {
         tokio::select! {
             _ = interval.tick() => {
-                if let Err(e) = recover_stale_jobs(&*db).await {
+                if let Err(e) = recover_stale_jobs(&db).await {
                     tracing::error!("❌ Recovery worker failed: {}", e);
                 }
             }
@@ -23,6 +23,11 @@ pub async fn start_recovery_worker(db: Arc<DatabaseConnection>, token: Cancellat
     }
 }
 
+// Worker bootstrap intentionally wires together all collaborators required for
+// the OCR pipeline (DB, service, uploader, broadcast tx, processor, semaphore,
+// shutdown token, task tracker). A struct wrapper would just move the arity
+// without improving the call site.
+#[allow(clippy::too_many_arguments)]
 pub async fn start_processor_worker(
     db: Arc<DatabaseConnection>,
     ocr_service: Arc<OcrService>,
@@ -84,8 +89,8 @@ pub async fn start_processor_worker(
                     std::future::pending::<Option<sqlx::postgres::PgNotification>>().await
                 }
             } => {
-                if notification.is_some() {
-                    if let Err(e) = process_queued_jobs(
+                if notification.is_some()
+                    && let Err(e) = process_queued_jobs(
                         db.clone(),
                         ocr_service.clone(),
                         &upload_client,
@@ -98,7 +103,6 @@ pub async fn start_processor_worker(
                     {
                         tracing::error!("❌ Processor worker failed (notify): {}", e);
                     }
-                }
             }
             _ = token.cancelled() => {
                 tracing::info!("🛑 OCR processor worker received shutdown signal...");
@@ -122,7 +126,12 @@ async fn process_queued_jobs(
 ) -> Result<(), anyhow::Error> {
     let now = Utc::now();
 
-    // Find jobs in QUEUED status that are scheduled for now or in the past
+    // Find jobs in QUEUED status that are scheduled for now or in the past.
+    // Bounded batch + FIFO ordering: under a large backlog (e.g. after an outage)
+    // we would otherwise load every queued job into memory at once, while
+    // concurrency is already capped by the semaphore. The next poll picks up
+    // the next batch.
+    const QUEUE_BATCH_SIZE: u64 = 100;
     let queued_jobs = entities::ocr_jobs::Entity::find()
         .filter(entities::ocr_jobs::Column::Status.eq("QUEUED"))
         .filter(
@@ -130,6 +139,9 @@ async fn process_queued_jobs(
                 .is_null()
                 .or(entities::ocr_jobs::Column::ScheduledAt.lte(now)),
         )
+        .order_by_asc(entities::ocr_jobs::Column::ScheduledAt)
+        .order_by_asc(entities::ocr_jobs::Column::CreatedAt)
+        .limit(QUEUE_BATCH_SIZE)
         .all(&*db)
         .await?;
 
@@ -153,7 +165,7 @@ async fn process_queued_jobs(
                 let _permit = permit;
 
                 if let Err(e) = crate::process_job(
-                    &*db_clone,
+                    &db_clone,
                     ocr_service_clone,
                     &upload_client_clone,
                     ocr_tx_clone,
@@ -172,25 +184,55 @@ async fn process_queued_jobs(
 }
 
 async fn recover_stale_jobs(db: &DatabaseConnection) -> Result<(), anyhow::Error> {
+    use crate::ops::lifecycle::MAX_OCR_RETRIES;
+    use sea_orm::sea_query::Expr;
+
     let ten_minutes_ago = Utc::now() - chrono::Duration::minutes(10);
 
-    // Re-queue jobs that have been PROCESSING for more than 10 minutes
-    let result = entities::ocr_jobs::Entity::update_many()
+    // 1. Dead-letter stale jobs that have already exhausted their retry budget,
+    //    so a perpetually-hanging job cannot bounce PROCESSING -> QUEUED forever.
+    let dead = entities::ocr_jobs::Entity::update_many()
         .col_expr(
             entities::ocr_jobs::Column::Status,
-            sea_orm::sea_query::Expr::value("QUEUED".to_string()),
+            Expr::value("DEAD_LETTER".to_string()),
+        )
+        .col_expr(
+            entities::ocr_jobs::Column::LastError,
+            Expr::value("Stale processing timeout".to_string()),
+        )
+        .filter(entities::ocr_jobs::Column::Status.eq("PROCESSING"))
+        .filter(entities::ocr_jobs::Column::StartedAt.lt(ten_minutes_ago))
+        .filter(entities::ocr_jobs::Column::RetryCount.gte(MAX_OCR_RETRIES))
+        .exec(db)
+        .await?;
+
+    // 2. Re-queue the remaining stale jobs, charging one attempt against the budget.
+    let requeued = entities::ocr_jobs::Entity::update_many()
+        .col_expr(
+            entities::ocr_jobs::Column::Status,
+            Expr::value("QUEUED".to_string()),
         )
         .col_expr(
             entities::ocr_jobs::Column::StartedAt,
-            sea_orm::sea_query::Expr::value(Option::<chrono::DateTime<chrono::Utc>>::None),
+            Expr::value(Option::<chrono::DateTime<chrono::Utc>>::None),
+        )
+        .col_expr(
+            entities::ocr_jobs::Column::RetryCount,
+            Expr::col(entities::ocr_jobs::Column::RetryCount).add(1),
         )
         .filter(entities::ocr_jobs::Column::Status.eq("PROCESSING"))
         .filter(entities::ocr_jobs::Column::StartedAt.lt(ten_minutes_ago))
         .exec(db)
         .await?;
 
-    if result.rows_affected > 0 {
-        tracing::warn!("🔄 Re-queued {} stale OCR jobs", result.rows_affected);
+    if dead.rows_affected > 0 {
+        tracing::warn!(
+            "💀 Dead-lettered {} stale OCR jobs (retry budget exhausted)",
+            dead.rows_affected
+        );
+    }
+    if requeued.rows_affected > 0 {
+        tracing::warn!("🔄 Re-queued {} stale OCR jobs", requeued.rows_affected);
     }
 
     Ok(())

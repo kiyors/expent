@@ -35,6 +35,10 @@ pub fn get_strategy(doc_type: &str) -> Box<dyn OcrExtractionStrategy> {
     match doc_type {
         "BANK_STATEMENT" => Box::new(bank::BankStatementStrategy),
         "GPAY" => Box::new(upi::GPayStrategy),
-        _ => Box::new(generic::GenericStrategy),
+        "GENERIC" => Box::new(generic::GenericStrategy),
+        other => {
+            tracing::warn!("Unknown OCR doc_type '{other}', falling back to GenericStrategy");
+            Box::new(generic::GenericStrategy)
+        }
     }
 }

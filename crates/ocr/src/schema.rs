@@ -41,11 +41,11 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
         obj.remove("description");
         obj.remove("additionalProperties");
 
-        if let Some(props) = obj.get_mut("properties") {
-            if let Some(props_obj) = props.as_object_mut() {
-                for (_, v) in props_obj.iter_mut() {
-                    *v = clean_schema(v.clone());
-                }
+        if let Some(props) = obj.get_mut("properties")
+            && let Some(props_obj) = props.as_object_mut()
+        {
+            for (_, v) in props_obj.iter_mut() {
+                *v = clean_schema(v.clone());
             }
         }
 
@@ -54,36 +54,36 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
         }
 
         // Handle anyOf (for Optionals)
-        if let Some(any_of) = obj.remove("anyOf") {
-            if let Some(arr) = any_of.as_array() {
-                // Find the first non-null type
-                let non_null = arr
-                    .iter()
-                    .find(|v| v.get("type").and_then(|t| t.as_str()) != Some("null"));
+        if let Some(any_of) = obj.remove("anyOf")
+            && let Some(arr) = any_of.as_array()
+        {
+            // Find the first non-null type
+            let non_null = arr
+                .iter()
+                .find(|v| v.get("type").and_then(|t| t.as_str()) != Some("null"));
 
-                if let Some(val) = non_null {
-                    let mut cleaned_val = clean_schema(val.clone());
+            if let Some(val) = non_null {
+                let mut cleaned_val = clean_schema(val.clone());
 
-                    // If the cleaned value is an object, merge our existing metadata into it
-                    if let Some(cleaned_obj) = cleaned_val.as_object_mut() {
-                        for (k, v) in obj.iter() {
-                            if !cleaned_obj.contains_key(k) {
-                                cleaned_obj.insert(k.clone(), v.clone());
-                            }
+                // If the cleaned value is an object, merge our existing metadata into it
+                if let Some(cleaned_obj) = cleaned_val.as_object_mut() {
+                    for (k, v) in obj.iter() {
+                        if !cleaned_obj.contains_key(k) {
+                            cleaned_obj.insert(k.clone(), v.clone());
                         }
                     }
-                    return cleaned_val;
                 }
+                return cleaned_val;
             }
         }
 
         // Handle array of types: e.g. "type": ["string", "null"] -> "type": "string"
-        if let Some(t) = obj.get_mut("type") {
-            if let Some(arr) = t.as_array() {
-                let non_null = arr.iter().find(|v| v.as_str() != Some("null"));
-                if let Some(val) = non_null {
-                    *t = val.clone();
-                }
+        if let Some(t) = obj.get_mut("type")
+            && let Some(arr) = t.as_array()
+        {
+            let non_null = arr.iter().find(|v| v.as_str() != Some("null"));
+            if let Some(val) = non_null {
+                *t = val.clone();
             }
         }
 

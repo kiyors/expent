@@ -76,6 +76,7 @@ pub async fn confirm_ocr_job(
             last_error: None,
             scheduled_at: None,
             resolution_candidates: None,
+            is_high_res: None,
         },
     )
     .await?;
@@ -155,6 +156,7 @@ pub async fn resolve_contact_collision(
             last_error: None,
             scheduled_at: None,
             resolution_candidates: None,
+            is_high_res: None,
         },
     )
     .await?;

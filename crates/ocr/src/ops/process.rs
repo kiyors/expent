@@ -1,10 +1,10 @@
 use crate::OcrService;
 use crate::OcrUpdate;
-use crate::ops::lifecycle::{OcrJobUpdateParams, update_ocr_job};
+use crate::ops::lifecycle::{MAX_OCR_RETRIES, OcrJobUpdateParams, update_ocr_job};
 use db::AppError;
 use db::entities;
 use rand::Rng;
-use sea_orm::{DatabaseConnection, EntityTrait};
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use std::sync::Arc;
 use upload::UploadClient;
 
@@ -62,23 +62,28 @@ pub async fn process_job(
         job.r2_key.clone()
     };
 
-    // 1. Update status to PROCESSING
-    update_ocr_job(
-        db,
-        &job_id,
-        OcrJobUpdateParams {
-            status: "PROCESSING".to_string(),
-            processed_data: None,
-            error_message: None,
-            transaction_id: None,
-            started_at: Some(chrono::Utc::now()),
-            retry_count: None,
-            last_error: None,
-            scheduled_at: None,
-            resolution_candidates: None,
-        },
-    )
-    .await?;
+    // 1. Atomically claim the job (observed status -> PROCESSING). This guards
+    //    against the poll tick, a LISTEN/NOTIFY wake-up, process_immediately, and
+    //    other instances all racing on the same job: only the caller whose UPDATE
+    //    actually affects a row proceeds; the rest return early.
+    let claim = entities::ocr_jobs::Entity::update_many()
+        .col_expr(
+            entities::ocr_jobs::Column::Status,
+            sea_orm::sea_query::Expr::value("PROCESSING".to_string()),
+        )
+        .col_expr(
+            entities::ocr_jobs::Column::StartedAt,
+            sea_orm::sea_query::Expr::value(chrono::Utc::now().naive_utc()),
+        )
+        .filter(entities::ocr_jobs::Column::Id.eq(job_id.clone()))
+        .filter(entities::ocr_jobs::Column::Status.eq(job.status.clone()))
+        .exec(db)
+        .await?;
+
+    if claim.rows_affected != 1 {
+        // Lost the race; another worker already claimed this job.
+        return Ok(());
+    }
 
     let _ = ocr_tx.send(OcrUpdate {
         user_id: user_id.clone(),
@@ -251,6 +256,9 @@ pub async fn process_job(
                         last_error: None,
                         scheduled_at: Some(chrono::Utc::now()),
                         resolution_candidates: None,
+                        // Escalate to high-res so the retry uses raw_key and the
+                        // low-confidence guard cannot re-queue this job again.
+                        is_high_res: Some(true),
                     },
                 )
                 .await?;
@@ -277,6 +285,7 @@ pub async fn process_job(
                         last_error: None,
                         scheduled_at: None,
                         resolution_candidates: candidates,
+                        is_high_res: None,
                     },
                 )
                 .await?;
@@ -293,9 +302,8 @@ pub async fn process_job(
             tracing::error!("❌ OCR Background Job {} failed: {}", job_id, e);
 
             let new_retry_count = job.retry_count + 1;
-            let max_retries = 5;
 
-            if new_retry_count < max_retries {
+            if new_retry_count < MAX_OCR_RETRIES {
                 let base_delay = 10;
                 let backoff_secs = base_delay * (2_i64.pow(new_retry_count as u32));
                 let jitter = rand::rng().random_range(0..5);
@@ -315,6 +323,7 @@ pub async fn process_job(
                         last_error: Some(e.to_string()),
                         scheduled_at: Some(next_run),
                         resolution_candidates: None,
+                        is_high_res: None,
                     },
                 )
                 .await?;
@@ -339,6 +348,7 @@ pub async fn process_job(
                         last_error: Some(e.to_string()),
                         scheduled_at: None,
                         resolution_candidates: None,
+                        is_high_res: None,
                     },
                 )
                 .await?;
