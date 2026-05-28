@@ -29,9 +29,12 @@ class MockEventSource {
   readyState = MockEventSource.CONNECTING;
   url: string;
   withCredentials = false;
-  onopen: ((this: EventSource, ev: Event) => unknown) | null = null;
-  onmessage: ((this: EventSource, ev: MessageEvent) => unknown) | null = null;
-  onerror: ((this: EventSource, ev: Event) => unknown) | null = null;
+  // Plain function types (no `this: EventSource`) so the mock can invoke the
+  // handlers from within its own constructor without TS complaining that
+  // MockEventSource isn't structurally assignable to EventSource.
+  onopen: ((ev: Event) => unknown) | null = null;
+  onmessage: ((ev: MessageEvent) => unknown) | null = null;
+  onerror: ((ev: Event) => unknown) | null = null;
   constructor(url: string) {
     this.url = url;
     // Queue a default COMPLETED message on the next microtask so consumers
@@ -40,11 +43,8 @@ class MockEventSource {
     queueMicrotask(() => {
       if (this.readyState === MockEventSource.CLOSED) return;
       this.readyState = MockEventSource.OPEN;
-      const payload =
-        (globalThis as any).__MOCK_SSE_PAYLOAD__ ?? DEFAULT_SSE_PAYLOAD;
-      this.onmessage?.(
-        new MessageEvent("message", { data: JSON.stringify(payload) }),
-      );
+      const payload = (globalThis as any).__MOCK_SSE_PAYLOAD__ ?? DEFAULT_SSE_PAYLOAD;
+      this.onmessage?.(new MessageEvent("message", { data: JSON.stringify(payload) }));
     });
   }
   addEventListener = vi.fn();

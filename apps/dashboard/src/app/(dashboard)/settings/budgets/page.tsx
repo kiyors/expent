@@ -9,6 +9,7 @@ import { PlusIcon, TargetIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
 import { CreateBudgetDialog } from "@/components/budgets/create-budget-dialog";
 import { useBudgets } from "@/hooks/use-budgets";
+import { formatCurrency } from "@/lib/format";
 
 export default function SettingsBudgetsPage() {
   const { health, isLoading, deleteMutation } = useBudgets();
@@ -21,13 +22,9 @@ export default function SettingsBudgetsPage() {
     });
   };
 
-  const formatCurrency = (amount: string) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(Number(amount));
-  };
+  // Whole-rupee display in the budget list view (no decimal noise alongside
+  // a "₹50,000 / ₹80,000" target). Detail views can override per-call.
+  const formatBudgetAmount = (amount: string) => formatCurrency(amount, "INR", { maximumFractionDigits: 0 });
 
   return (
     <div className="gap-y-6 w-full max-w-2xl">
@@ -74,7 +71,7 @@ export default function SettingsBudgetsPage() {
                     <div>
                       <p className="text-sm font-medium">{b.category_name}</p>
                       <p className="text-xs text-muted-foreground uppercase tracking-tight">
-                        {b.period} · {formatCurrency(b.limit_amount)} limit
+                        {b.period} · {formatBudgetAmount(b.limit_amount)} limit
                       </p>
                     </div>
                     <Button
@@ -89,10 +86,10 @@ export default function SettingsBudgetsPage() {
                   </div>
                   <div className="gap-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Spent: {formatCurrency(b.spent_amount)}</span>
+                      <span className="text-muted-foreground">Spent: {formatBudgetAmount(b.spent_amount)}</span>
                       <span className={cn("font-medium", isOver ? "text-destructive" : "text-muted-foreground")}>
                         {isOver ? "Over by " : "Remaining: "}
-                        {formatCurrency(Math.abs(Number(b.remaining_amount)).toString())}
+                        {formatBudgetAmount(Math.abs(Number(b.remaining_amount)).toString())}
                       </span>
                     </div>
                     <Progress value={Math.min(percentage, 100)}>

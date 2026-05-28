@@ -2,15 +2,18 @@ import type {
   AggregatedMetrics,
   BatchMatchResult,
   BudgetPeriod,
+  Category,
   DashboardSummary,
   DetectedSubscription,
   FuzzySearchResult,
   SavingsProjection,
-  SearchableField,
   SearchableItem,
   SpendingVelocity,
+  StatementRowMinimal,
+  TransactionMinimal,
   Txn,
   TxnPattern,
+  Wallet,
 } from "@expent/types";
 
 /**
@@ -118,7 +121,10 @@ export async function calculateMatchScoreWasm(
 /**
  * Performs a batch matching of statement rows against transactions using Rust/WASM.
  */
-export async function matchStatementBatchWasm(statementRows: any[], transactions: any[]) {
+export async function matchStatementBatchWasm(
+  statementRows: StatementRowMinimal[],
+  transactions: TransactionMinimal[],
+) {
   const wasm = await loadExpentWasm();
   return wasm.match_statement_batch(statementRows, transactions) as BatchMatchResult[];
 }
@@ -158,7 +164,7 @@ export async function aggregateTransactionsWasm(transactions: Txn[]) {
 /**
  * Generates a full dashboard summary locally using Rust/WASM.
  */
-export async function generateDashboardSummaryWasm(transactions: any[], wallets: any[], categories: any[]) {
+export async function generateDashboardSummaryWasm(transactions: Txn[], wallets: Wallet[], categories: Category[]) {
   const wasm = await loadExpentWasm();
   return wasm.generate_dashboard_summary(transactions, wallets, categories) as DashboardSummary;
 }

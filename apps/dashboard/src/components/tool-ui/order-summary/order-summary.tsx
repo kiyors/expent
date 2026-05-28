@@ -1,19 +1,14 @@
 import { CheckCircle, Package } from "lucide-react";
 import Image from "next/image";
 import type { ReactElement } from "react";
+import { formatCurrency } from "@/lib/format";
 import { cn, Separator } from "./_adapter";
 import type { OrderDecision, OrderItem, OrderSummaryProps, OrderSummaryVariant, Pricing } from "./schema";
 
-function formatCurrency(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
-  }
-}
+// `order-summary` lives in a generic tool-ui surface that may render any
+// currency, so let `Intl.NumberFormat` choose the locale rather than
+// forcing en-IN like the budgets page.
+const formatOrderAmount = (amount: number, currency: string) => formatCurrency(amount, currency, { locale: undefined });
 
 function formatQuantity(quantity: number): string {
   return quantity === 1 ? "" : `Qty: ${quantity}`;
@@ -44,7 +39,7 @@ function OrderItemRow({ item, currency }: { item: OrderItem; currency: string })
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex items-center justify-between">
             <span className="truncate text-sm font-medium">{item.name}</span>
-            <span className="truncate text-sm tabular-nums">{formatCurrency(lineTotal, currency)}</span>
+            <span className="truncate text-sm tabular-nums">{formatOrderAmount(lineTotal, currency)}</span>
           </div>
           {hasDescription && (
             <div className="text-muted-foreground truncate text-sm">
@@ -64,13 +59,13 @@ function PricingBreakdown({ pricing, className }: { pricing: Pricing; className?
     <dl className={cn("flex flex-col gap-2 text-sm", className)}>
       <div className="flex justify-between gap-4">
         <dt className="text-muted-foreground">Subtotal</dt>
-        <dd className="tabular-nums">{formatCurrency(pricing.subtotal, currency)}</dd>
+        <dd className="tabular-nums">{formatOrderAmount(pricing.subtotal, currency)}</dd>
       </div>
 
       {pricing.discount !== undefined && pricing.discount > 0 && (
         <div className="flex justify-between gap-4 text-green-600 dark:text-green-500">
           <dt>{pricing.discountLabel || "Discount"}</dt>
-          <dd className="tabular-nums">-{formatCurrency(pricing.discount, currency)}</dd>
+          <dd className="tabular-nums">-{formatOrderAmount(pricing.discount, currency)}</dd>
         </div>
       )}
 
@@ -78,7 +73,7 @@ function PricingBreakdown({ pricing, className }: { pricing: Pricing; className?
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">Shipping</dt>
           <dd className="tabular-nums">
-            {pricing.shipping === 0 ? "Free" : formatCurrency(pricing.shipping, currency)}
+            {pricing.shipping === 0 ? "Free" : formatOrderAmount(pricing.shipping, currency)}
           </dd>
         </div>
       )}
@@ -86,13 +81,13 @@ function PricingBreakdown({ pricing, className }: { pricing: Pricing; className?
       {pricing.tax !== undefined && (
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">{pricing.taxLabel || "Tax"}</dt>
-          <dd className="tabular-nums">{formatCurrency(pricing.tax, currency)}</dd>
+          <dd className="tabular-nums">{formatOrderAmount(pricing.tax, currency)}</dd>
         </div>
       )}
 
       <div className="flex justify-between gap-4">
         <dt className="font-medium">Total</dt>
-        <dd className="font-semibold tabular-nums">{formatCurrency(pricing.total, currency)}</dd>
+        <dd className="font-semibold tabular-nums">{formatOrderAmount(pricing.total, currency)}</dd>
       </div>
     </dl>
   );
