@@ -3,6 +3,11 @@ use db::entities;
 use db::entities::enums::IdentifierType;
 use sea_orm::{ActiveModelTrait, ConnectionTrait, EntityTrait, Set};
 
+/// Adds a new identifier (UPI, email, phone, etc.) to a contact belonging to the given user.
+///
+/// # Errors
+/// Returns `AppError::NotFound` if the user does not have access to the contact, or
+/// `AppError::Db` if the identifier insert fails.
 pub async fn add_contact_identifier<C>(
     db: &C,
     user_id: &str,

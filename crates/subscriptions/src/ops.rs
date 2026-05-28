@@ -6,6 +6,11 @@ use rust_decimal::Decimal;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 use strsim::jaro_winkler;
 
+/// Scans the user's last 90 days of transactions and returns potential recurring
+/// subscriptions detected via fuzzy name matching, amount proximity and cycle inference.
+///
+/// # Errors
+/// Returns `AppError::Db` if loading the user's transactions from the database fails.
 pub async fn detect_subscriptions(
     db: &DatabaseConnection,
     user_id: &str,
@@ -101,6 +106,10 @@ pub async fn detect_subscriptions(
     Ok(potential_subs)
 }
 
+/// Lists all subscriptions that the user has confirmed (persisted in the database).
+///
+/// # Errors
+/// Returns `AppError::Db` if the query fails.
 pub async fn list_confirmed_subscriptions(
     db: &DatabaseConnection,
     user_id: &str,
@@ -122,6 +131,11 @@ pub struct ConfirmSubscriptionParams {
     pub keywords: Option<serde_json::Value>,
 }
 
+/// Confirms (persists) a subscription for the user. Idempotent: if a subscription with the
+/// same user, name and cycle already exists, that existing row is returned instead.
+///
+/// # Errors
+/// Returns `AppError::Db` if the idempotency lookup or the insert fails.
 pub async fn confirm_subscription(
     db: &DatabaseConnection,
     params: ConfirmSubscriptionParams,
@@ -152,6 +166,10 @@ pub async fn confirm_subscription(
     sub.insert(db).await.map_err(AppError::from)
 }
 
+/// Stops tracking a subscription by deleting its row (scoped to the user).
+///
+/// # Errors
+/// Returns `AppError::Db` if the delete query fails.
 pub async fn stop_tracking_subscription(
     db: &DatabaseConnection,
     user_id: &str,
@@ -165,6 +183,11 @@ pub async fn stop_tracking_subscription(
     Ok(())
 }
 
+/// Creates an alert for a subscription, configured to fire `days_before` the next charge
+/// on the given channel.
+///
+/// # Errors
+/// Returns `AppError::Db` if the alert insert fails.
 pub async fn configure_subscription_alert(
     db: &DatabaseConnection,
     sub_id: &str,

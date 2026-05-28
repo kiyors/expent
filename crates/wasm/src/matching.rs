@@ -92,14 +92,12 @@ pub fn match_statement_batch(
                 *t_amount,
             );
 
-            if score >= 50 {
-                if best_match.as_ref().map_or(true, |m| score > m.confidence) {
-                    best_match = Some(BatchMatchResult {
-                        row_id: r_id.clone(),
-                        transaction_id: t_id.clone(),
-                        confidence: score,
-                    });
-                }
+            if score >= 50 && best_match.as_ref().is_none_or(|m| score > m.confidence) {
+                best_match = Some(BatchMatchResult {
+                    row_id: r_id.clone(),
+                    transaction_id: t_id.clone(),
+                    confidence: score,
+                });
             }
         }
 

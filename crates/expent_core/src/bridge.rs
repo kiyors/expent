@@ -6,6 +6,7 @@ use db::{AppError, OcrTransactionResponse, ProcessedOcr};
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, TransactionTrait};
 use std::sync::Arc;
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn enrich_ocr(
     db: &DatabaseConnection,
     contacts_manager: Arc<ContactsManager>,
@@ -19,6 +20,7 @@ pub async fn enrich_ocr(
         .await
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn process_ocr(
     db: &DatabaseConnection,
     contacts_manager: Arc<ContactsManager>,
@@ -29,7 +31,7 @@ pub async fn process_ocr(
     // 3.2 Idempotency check
     if let Some(ref key) = processed.r2_key {
         let existing_source = entities::transaction_sources::Entity::find()
-            .filter(entities::transaction_sources::Column::R2FileUrl.eq(Some(key.to_string())))
+            .filter(entities::transaction_sources::Column::R2FileUrl.eq(Some(key.clone())))
             .one(db)
             .await?;
 

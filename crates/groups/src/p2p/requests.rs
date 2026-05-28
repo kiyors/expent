@@ -10,6 +10,7 @@ use sea_orm::{
 use std::str::FromStr;
 use transactions::TransactionsManager;
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn list_pending_p2p_requests(
     db: &DatabaseConnection,
     email: &str,
@@ -30,6 +31,7 @@ pub async fn list_pending_p2p_requests(
         .collect())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn create_p2p_request(
     db: &DatabaseConnection,
     sender_id: &str,
@@ -63,6 +65,7 @@ pub async fn create_p2p_request(
     request.insert(db).await.map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn accept_p2p_request(
     db: &DatabaseConnection,
     transactions: &TransactionsManager,
@@ -168,6 +171,7 @@ pub async fn accept_p2p_request(
     })
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn reject_p2p_request(
     db: &DatabaseConnection,
     user_id: &str,

@@ -24,7 +24,7 @@ impl ReconciliationManager {
         &self,
         user_id: &str,
     ) -> Result<Vec<entities::bank_statement_rows::Model>, AppError> {
-        matching::list_unmatched_rows(&*self.db, user_id).await
+        matching::list_unmatched_rows(&self.db, user_id).await
     }
 
     #[allow(clippy::missing_errors_doc)]
@@ -33,7 +33,7 @@ impl ReconciliationManager {
         user_id: &str,
         row_id: &str,
     ) -> Result<Vec<(entities::transactions::Model, i32)>, AppError> {
-        matching::get_row_matches(&*self.db, user_id, row_id).await
+        matching::get_row_matches(&self.db, user_id, row_id).await
     }
 
     #[allow(clippy::missing_errors_doc)]
@@ -44,7 +44,7 @@ impl ReconciliationManager {
         txn_id: &str,
         confidence: i32,
     ) -> Result<(), AppError> {
-        matching::confirm_match(&*self.db, user_id, row_id, txn_id, confidence).await
+        matching::confirm_match(&self.db, user_id, row_id, txn_id, confidence).await
     }
 
     #[allow(clippy::missing_errors_doc)]
@@ -56,7 +56,7 @@ impl ReconciliationManager {
         amount: Decimal,
         raw_data: Option<serde_json::Value>,
     ) -> Result<entities::bank_statement_rows::Model, AppError> {
-        statement::upload_statement(&*self.db, user_id, date, description, amount, raw_data).await
+        statement::upload_statement(&self.db, user_id, date, description, amount, raw_data).await
     }
 
     #[allow(clippy::missing_errors_doc)]

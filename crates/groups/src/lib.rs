@@ -17,6 +17,9 @@ pub struct GroupsManager {
     transactions: Arc<TransactionsManager>,
 }
 
+// Manager methods are thin pass-throughs whose error variants mirror the
+// underlying ops modules; per-method `# Errors` docs would duplicate that info.
+#[allow(clippy::missing_errors_doc)]
 impl GroupsManager {
     #[must_use]
     pub fn new(
@@ -39,14 +42,14 @@ impl GroupsManager {
         name: &str,
         description: Option<String>,
     ) -> Result<entities::groups::Model, AppError> {
-        groups::create_group(&*self.db, user_id, name, description).await
+        groups::create_group(&self.db, user_id, name, description).await
     }
 
     pub async fn list_groups(
         &self,
         user_id: &str,
     ) -> Result<Vec<entities::groups::Model>, AppError> {
-        groups::list_groups(&*self.db, user_id).await
+        groups::list_groups(&self.db, user_id).await
     }
 
     pub async fn get_group(
@@ -54,7 +57,7 @@ impl GroupsManager {
         user_id: &str,
         group_id: &str,
     ) -> Result<entities::groups::Model, AppError> {
-        groups::get_group(&*self.db, user_id, group_id).await
+        groups::get_group(&self.db, user_id, group_id).await
     }
 
     pub async fn invite_to_group(
@@ -63,7 +66,7 @@ impl GroupsManager {
         receiver_email: &str,
         group_id: &str,
     ) -> Result<entities::p2p_requests::Model, AppError> {
-        groups::invite_to_group(&*self.db, sender_id, receiver_email, group_id).await
+        groups::invite_to_group(&self.db, sender_id, receiver_email, group_id).await
     }
 
     pub async fn remove_group_member(
@@ -72,7 +75,7 @@ impl GroupsManager {
         group_id: &str,
         target_user_id: &str,
     ) -> Result<(), AppError> {
-        groups::remove_group_member(&*self.db, admin_id, group_id, target_user_id).await
+        groups::remove_group_member(&self.db, admin_id, group_id, target_user_id).await
     }
 
     pub async fn update_member_role(
@@ -82,7 +85,7 @@ impl GroupsManager {
         target_user_id: &str,
         new_role: GroupRole,
     ) -> Result<(), AppError> {
-        groups::update_member_role(&*self.db, admin_id, group_id, target_user_id, new_role).await
+        groups::update_member_role(&self.db, admin_id, group_id, target_user_id, new_role).await
     }
 
     pub async fn list_group_transactions(
@@ -90,7 +93,7 @@ impl GroupsManager {
         user_id: &str,
         group_id: &str,
     ) -> Result<Vec<entities::transactions::Model>, AppError> {
-        groups::list_group_transactions(&*self.db, user_id, group_id).await
+        groups::list_group_transactions(&self.db, user_id, group_id).await
     }
 
     pub async fn list_group_members(
@@ -98,7 +101,7 @@ impl GroupsManager {
         user_id: &str,
         group_id: &str,
     ) -> Result<Vec<db::GroupMemberDetail>, AppError> {
-        groups::members::list_group_members(&*self.db, user_id, group_id).await
+        groups::members::list_group_members(&self.db, user_id, group_id).await
     }
 
     // --- P2P API ---
@@ -113,7 +116,7 @@ impl GroupsManager {
         target_amount: Decimal,
     ) -> Result<entities::ledger_tabs::Model, AppError> {
         p2p::create_ledger_tab(
-            &*self.db,
+            &self.db,
             creator_id,
             counterparty_id,
             tab_type,
@@ -128,7 +131,7 @@ impl GroupsManager {
         &self,
         email: &str,
     ) -> Result<Vec<db::P2pRequestWithSender>, AppError> {
-        p2p::list_pending_p2p_requests(&*self.db, email).await
+        p2p::list_pending_p2p_requests(&self.db, email).await
     }
 
     pub async fn create_p2p_request(
@@ -137,7 +140,7 @@ impl GroupsManager {
         receiver_email: &str,
         txn_id: &str,
     ) -> Result<entities::p2p_requests::Model, AppError> {
-        p2p::create_p2p_request(&*self.db, sender_id, receiver_email, txn_id).await
+        p2p::create_p2p_request(&self.db, sender_id, receiver_email, txn_id).await
     }
 
     pub async fn accept_p2p_request(
@@ -147,7 +150,7 @@ impl GroupsManager {
         request_id: &str,
     ) -> Result<entities::p2p_requests::Model, AppError> {
         p2p::accept_p2p_request(
-            &*self.db,
+            &self.db,
             &self.transactions,
             receiver_id,
             receiver_email,
@@ -162,7 +165,7 @@ impl GroupsManager {
         user_email: &str,
         request_id: &str,
     ) -> Result<(), AppError> {
-        p2p::reject_p2p_request(&*self.db, user_id, user_email, request_id).await
+        p2p::reject_p2p_request(&self.db, user_id, user_email, request_id).await
     }
 
     pub async fn register_repayment(
@@ -173,7 +176,7 @@ impl GroupsManager {
         wallet_id: Option<String>,
     ) -> Result<entities::transactions::Model, AppError> {
         p2p::register_repayment(
-            &*self.db,
+            &self.db,
             Arc::clone(&self.wallets),
             user_id,
             tab_id,

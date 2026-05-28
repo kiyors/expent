@@ -6,6 +6,11 @@ use sea_orm::{
     RelationTrait,
 };
 
+/// Loads a contact along with its identifiers and related transactions for a given user.
+///
+/// # Errors
+/// Returns `AppError::NotFound` if the user-contact link or the contact itself does not exist,
+/// or `AppError::Db` if any of the underlying database queries fail.
 pub async fn get_contact_detail(
     db: &DatabaseConnection,
     user_id: &str,

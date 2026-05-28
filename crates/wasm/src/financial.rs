@@ -53,12 +53,10 @@ pub fn parse_numeric_like(input: &str) -> Option<f64> {
                 }
             }
         }
-        (None, Some(_)) => {
-            if has_grouped_thousands(&s, '.') {
-                s = s.replace('.', "");
-            } else if s.chars().filter(|&c| c == '.').count() > 1 {
-                s = s.replace('.', "");
-            }
+        (None, Some(_))
+            if has_grouped_thousands(&s, '.') || s.chars().filter(|&c| c == '.').count() > 1 =>
+        {
+            s = s.replace('.', "");
         }
         _ => {}
     }

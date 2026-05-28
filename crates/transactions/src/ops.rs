@@ -15,6 +15,13 @@ use sea_orm::{
 use std::sync::Arc;
 use wallets::WalletsManager;
 
+/// Creates a transaction, records any counterparty, and adjusts wallet balances atomically.
+///
+/// # Errors
+/// Returns an error if the database transaction fails to commit, if inserting the
+/// transaction, counterparty party, or wallet balance adjustment fails.
+// Wide parameter list mirrors the domain DTO; refactor tracked separately.
+#[allow(clippy::too_many_arguments)]
 pub async fn create_transaction(
     db: &DatabaseConnection,
     wallets: Arc<WalletsManager>,
@@ -78,6 +85,14 @@ pub async fn create_transaction(
     })
 }
 
+/// Lists a user's non-deleted transactions with related category, wallet, and contact details.
+///
+/// # Errors
+/// Returns an error if any of the count, transaction, relation, contact, or wallet
+/// database queries fail.
+// Loads multiple related entities in parallel and stitches them per row; the
+// logic reads more clearly as a single function than as several thin helpers.
+#[allow(clippy::too_many_lines)]
 pub async fn list_transactions(
     db: &DatabaseConnection,
     user_id: &str,
@@ -226,6 +241,13 @@ pub async fn list_transactions(
     })
 }
 
+/// Updates a transaction's mutable fields, syncs its counterparty, and rebalances wallets.
+///
+/// # Errors
+/// Returns an error if the transaction is not found, if the caller does not own it,
+/// or if any database read, edit-log insert, update, or wallet adjustment fails.
+// Wide parameter list mirrors the domain DTO; refactor tracked separately.
+#[allow(clippy::too_many_arguments)]
 pub async fn update_transaction(
     db: &DatabaseConnection,
     wallets: Arc<WalletsManager>,
@@ -326,6 +348,11 @@ pub async fn update_transaction(
     })
 }
 
+/// Soft-deletes a transaction and reverses its effect on wallet balances.
+///
+/// # Errors
+/// Returns an error if the transaction is not found, if the caller does not own it,
+/// or if any database update or wallet adjustment fails.
 pub async fn delete_transaction(
     db: &DatabaseConnection,
     wallets: Arc<WalletsManager>,
@@ -364,6 +391,11 @@ pub async fn delete_transaction(
     })
 }
 
+/// Creates pending P2P requests that split an existing transaction across recipients.
+///
+/// # Errors
+/// Returns an error if the source transaction is not found, or if any P2P request
+/// insert within the database transaction fails.
 pub async fn split_transaction(
     db: &DatabaseConnection,
     sender_id: &str,
@@ -407,6 +439,11 @@ pub async fn split_transaction(
     })
 }
 
+/// Reverses the wallet effect of `old_txn` (if active) and applies the effect of
+/// `new_txn` (if active), so balances stay consistent across create/update/delete.
+///
+/// # Errors
+/// Returns an error if any of the underlying wallet balance adjustments fail.
 pub async fn adjust_transaction_wallets<C>(
     db: &C,
     wallets: Arc<WalletsManager>,

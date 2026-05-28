@@ -262,11 +262,10 @@ where
                     }
 
                     // Periodic recovery check
-                    if Utc::now().second() % 60 == 0 {
-                        if let Err(e) = self.recover_stuck_jobs().await {
+                    if Utc::now().second().is_multiple_of(60)
+                        && let Err(e) = self.recover_stuck_jobs().await {
                             tracing::error!("❌ Background recovery failed: {}", e);
                         }
-                    }
                 }
                 notification = async {
                     if let Some(l) = listener.as_mut() {
@@ -275,11 +274,10 @@ where
                         std::future::pending::<Option<sqlx::postgres::PgNotification>>().await
                     }
                 } => {
-                    if notification.is_some() {
-                        if let Err(e) = self.process_queued_jobs().await {
+                    if notification.is_some()
+                        && let Err(e) = self.process_queued_jobs().await {
                             tracing::error!("❌ Background worker pool failed (notify): {}", e);
                         }
-                    }
                 }
                 _ = self.cancellation_token.cancelled() => {
                     tracing::info!("🛑 Worker pool received shutdown signal, waiting for jobs to finish...");

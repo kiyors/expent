@@ -162,10 +162,10 @@ pub fn generate_dashboard_summary(
 
         if tx.direction == "OUT" {
             // Category distribution
-            if let Some(cat_id) = &tx.category_id {
-                if let Some(cat_name) = cat_map.get(cat_id) {
-                    *cat_dist_map.entry(cat_name.clone()).or_default() += amt;
-                }
+            if let Some(cat_id) = &tx.category_id
+                && let Some(cat_name) = cat_map.get(cat_id)
+            {
+                *cat_dist_map.entry(cat_name.clone()).or_default() += amt;
             }
             // Top expenses
             if let Some(name) = &tx.contact_name {
@@ -226,20 +226,20 @@ pub fn generate_dashboard_summary(
         .into_iter()
         .map(|(name, amount)| NamedAmount { name, amount })
         .collect();
-    category_distribution.sort_by(|a, b| b.amount.cmp(&a.amount));
+    category_distribution.sort_by_key(|b| std::cmp::Reverse(b.amount));
 
     let mut top_expenses: Vec<NamedAmount> = contact_exp_map
         .into_iter()
         .map(|(name, amount)| NamedAmount { name, amount })
         .collect();
-    top_expenses.sort_by(|a, b| b.amount.cmp(&a.amount));
+    top_expenses.sort_by_key(|b| std::cmp::Reverse(b.amount));
     top_expenses.truncate(5);
 
     let mut top_income: Vec<NamedAmount> = contact_inc_map
         .into_iter()
         .map(|(name, amount)| NamedAmount { name, amount })
         .collect();
-    top_income.sort_by(|a, b| b.amount.cmp(&a.amount));
+    top_income.sort_by_key(|b| std::cmp::Reverse(b.amount));
     top_income.truncate(5);
 
     let result = DashboardSummary {
@@ -347,7 +347,7 @@ pub fn detect_subscription_patterns_internal(
             normalize_text(tx.purpose_tag.as_deref().unwrap_or("unknown")),
             tx.amount.clone(),
         );
-        patterns.entry(key).or_insert_with(Vec::new).push(tx);
+        patterns.entry(key).or_default().push(tx);
     }
 
     let mut suspected = Vec::new();

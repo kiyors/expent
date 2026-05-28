@@ -41,8 +41,10 @@ fn main() {
         names.len(),
         duration
     );
+    // names.len() is a tiny compile-time-known slice; u32::try_from cannot fail here.
+    let names_len = u32::try_from(names.len()).expect("names.len() fits in u32");
     println!(
         "Average time per normalization: {:?}",
-        duration / (iterations * names.len() as u32)
+        duration / (iterations * names_len)
     );
 }

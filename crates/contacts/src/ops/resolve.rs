@@ -88,6 +88,14 @@ where
     Ok(identifier.map(|ident| ident.contact_id))
 }
 
+/// Resolves a batch of [`ResolveParams`] to contacts in a single pass, sharing a single
+/// contact fetch and bulk identifier lookups across the entire batch for performance.
+///
+/// # Errors
+/// Returns `AppError::Db` if any of the bulk database queries (contacts, identifiers,
+/// phone lookups) fail.
+// Long but linear bulk resolver kept inline for cache locality; refactoring would split shared lookups.
+#[allow(clippy::too_many_lines)]
 pub async fn resolve_contacts_bulk<C>(
     db: &C,
     user_id: &str,
@@ -142,16 +150,16 @@ where
     for params in batch {
         let mut matches: HashMap<String, f64> = HashMap::new();
 
-        if let Some(upi_id) = &params.upi_id {
-            if let Some(id) = upi_map.get(upi_id) {
-                *matches.entry(id.clone()).or_insert(0.0) += 0.5;
-            }
+        if let Some(upi_id) = &params.upi_id
+            && let Some(id) = upi_map.get(upi_id)
+        {
+            *matches.entry(id.clone()).or_insert(0.0) += 0.5;
         }
 
-        if let Some(phone) = &params.phone {
-            if let Some(id) = phone_map.get(phone) {
-                *matches.entry(id.clone()).or_insert(0.0) += 0.3;
-            }
+        if let Some(phone) = &params.phone
+            && let Some(id) = phone_map.get(phone)
+        {
+            *matches.entry(id.clone()).or_insert(0.0) += 0.3;
         }
 
         if let Some(name) = &params.name {
@@ -202,6 +210,8 @@ where
         if best_score < f64::from(MIN_CONFIDENCE_THRESHOLD) {
             results.push(ContactResolution {
                 contact_id: None,
+                // Score is bounded in [0.0, 1.0]; f32 precision is sufficient for confidence.
+                #[allow(clippy::cast_possible_truncation)]
                 confidence_score: best_score as f32,
                 ..Default::default()
             });
@@ -216,6 +226,8 @@ where
             {
                 results.push(ContactResolution {
                     contact_id: None,
+                    // Score is bounded in [0.0, 1.0]; f32 precision is sufficient for confidence.
+                    #[allow(clippy::cast_possible_truncation)]
                     confidence_score: best_score as f32,
                     is_collision: true,
                     // Note: collision_candidates omitted for performance in bulk
@@ -227,6 +239,8 @@ where
 
         results.push(ContactResolution {
             contact_id: Some(best_contact_id),
+            // Score is bounded in [0.0, 1.0]; f32 precision is sufficient for confidence.
+            #[allow(clippy::cast_possible_truncation)]
             confidence_score: best_score as f32,
             ..Default::default()
         });

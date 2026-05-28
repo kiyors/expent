@@ -3,6 +3,10 @@ use db::AppError;
 use db::entities;
 use sea_orm::{ActiveModelTrait, ConnectionTrait, Set};
 
+/// Creates a new contact and links it to the given user.
+///
+/// # Errors
+/// Returns `AppError::Db` if inserting the contact or its user link into the database fails.
 pub async fn create_contact<C>(
     db: &C,
     user_id: &str,

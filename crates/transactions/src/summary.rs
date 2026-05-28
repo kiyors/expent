@@ -13,16 +13,17 @@ use sea_orm::{
 /// # Errors
 /// Returns `AppError::Db` if any database query fails.
 /// Returns `AppError::NotFound` if the user is not found.
+///
+/// # Panics
+/// Panics if the start-of-month timestamp (year/month/1 00:00) cannot be constructed,
+/// which is unreachable for any valid current UTC instant.
+// Aggregates many independent summary queries in parallel; splitting would
+// fragment the `tokio::try_join!` and hurt readability.
+#[allow(clippy::too_many_lines)]
 pub async fn get_dashboard_summary(
     db: &DatabaseConnection,
     user_id: &str,
 ) -> Result<DashboardSummary, AppError> {
-    // 0. Get user email for P2P requests
-    let user = entities::users::Entity::find_by_id(user_id.to_string())
-        .one(db)
-        .await?
-        .ok_or_else(|| AppError::not_found("User not found"))?;
-
     #[derive(FromQueryResult)]
     struct SumResult {
         total: Option<Decimal>,
@@ -32,6 +33,12 @@ pub async fn get_dashboard_summary(
     struct TotalResult {
         total: Option<Decimal>,
     }
+
+    // 0. Get user email for P2P requests
+    let user = entities::users::Entity::find_by_id(user_id.to_string())
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("User not found"))?;
 
     let now = Utc::now();
     let start_of_month = Utc
@@ -225,6 +232,13 @@ async fn get_monthly_trends(
     db: &DatabaseConnection,
     user_id: &str,
 ) -> Result<Vec<MonthlyTrend>, AppError> {
+    #[derive(FromQueryResult)]
+    struct TrendResult {
+        date_key: String,
+        direction: TransactionDirection,
+        total_amount: Decimal,
+    }
+
     let now = Utc::now();
     let six_months_ago = now - Duration::days(180);
 
@@ -233,13 +247,6 @@ async fn get_monthly_trends(
         DbBackend::Postgres => "to_char(date, 'YYYY-MM')",
         _ => "strftime('%Y-%m', date)",
     };
-
-    #[derive(FromQueryResult)]
-    struct TrendResult {
-        date_key: String,
-        direction: TransactionDirection,
-        total_amount: Decimal,
-    }
 
     let trends = entities::transactions::Entity::find()
         .filter(entities::transactions::Column::UserId.eq(user_id))
@@ -309,6 +316,13 @@ async fn get_weekly_trends(
     db: &DatabaseConnection,
     user_id: &str,
 ) -> Result<Vec<MonthlyTrend>, AppError> {
+    #[derive(FromQueryResult)]
+    struct TrendResult {
+        date_key: String,
+        direction: TransactionDirection,
+        total_amount: Decimal,
+    }
+
     let now = Utc::now();
     let seven_days_ago = now - Duration::days(7);
 
@@ -317,13 +331,6 @@ async fn get_weekly_trends(
         DbBackend::Postgres => "to_char(date, 'YYYY-MM-DD')",
         _ => "strftime('%Y-%m-%d', date)",
     };
-
-    #[derive(FromQueryResult)]
-    struct TrendResult {
-        date_key: String,
-        direction: TransactionDirection,
-        total_amount: Decimal,
-    }
 
     let trends = entities::transactions::Entity::find()
         .filter(entities::transactions::Column::UserId.eq(user_id))
@@ -361,7 +368,7 @@ async fn get_weekly_trends(
     for (key, (inc, exp)) in trends_map {
         let parts: Vec<&str> = key.split('-').collect();
         let y = parts
-            .get(0)
+            .first()
             .and_then(|s| s.parse::<i32>().ok())
             .unwrap_or(0);
         let m = parts

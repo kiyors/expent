@@ -19,6 +19,11 @@ fn get_similarity_threshold() -> f64 {
         .unwrap_or(0.88)
 }
 
+/// Returns pairs of contacts that look like duplicates and should potentially be merged,
+/// using exact phone, shared identifier, or fuzzy name matching.
+///
+/// # Errors
+/// Returns `AppError::Db` if any of the queries to load contacts, links, or identifiers fail.
 pub async fn get_merge_suggestions(
     db: &DatabaseConnection,
     user_id: &str,

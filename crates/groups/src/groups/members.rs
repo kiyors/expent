@@ -7,6 +7,7 @@ use sea_orm::{
     QuerySelect, RelationTrait, Set,
 };
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn list_group_members(
     db: &DatabaseConnection,
     user_id: &str,
@@ -40,6 +41,7 @@ pub async fn list_group_members(
     Ok(results)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn invite_to_group(
     db: &DatabaseConnection,
     sender_id: &str,
@@ -79,6 +81,7 @@ pub async fn invite_to_group(
     request.insert(db).await.map_err(AppError::from)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn remove_group_member(
     db: &DatabaseConnection,
     admin_id: &str,
@@ -102,6 +105,7 @@ pub async fn remove_group_member(
     Ok(())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn update_member_role(
     db: &DatabaseConnection,
     admin_id: &str,

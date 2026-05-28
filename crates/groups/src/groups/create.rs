@@ -4,6 +4,7 @@ use db::entities;
 use db::entities::enums::GroupRole;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn create_group(
     db: &DatabaseConnection,
     user_id: &str,

@@ -5,6 +5,7 @@ use db::entities::enums::{LedgerTabStatus, LedgerTabType};
 use rust_decimal::Decimal;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn create_ledger_tab(
     db: &DatabaseConnection,
     creator_id: &str,

@@ -28,7 +28,7 @@ impl WalletsManager {
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
         let resolve_cache = Cache::builder()
             .max_capacity(1000)
-            .time_to_idle(Duration::from_secs(300)) // 5 minutes
+            .time_to_idle(Duration::from_mins(5)) // 5 minutes
             .build();
 
         Self { db, resolve_cache }
@@ -50,7 +50,7 @@ impl WalletsManager {
 
     #[allow(clippy::missing_errors_doc)]
     pub async fn list(&self, user_id: &str) -> Result<Vec<entities::wallets::Model>, AppError> {
-        ops::list_wallets(&*self.db, user_id).await
+        ops::list_wallets(&self.db, user_id).await
     }
 
     #[allow(clippy::missing_errors_doc)]
@@ -104,6 +104,7 @@ impl WalletsManager {
         Ok(wallet)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub async fn adjust_balance<C>(
         &self,
         db: &C,

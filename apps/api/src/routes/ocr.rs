@@ -39,11 +39,10 @@ pub async fn ocr_stream_handler(
             match rx.recv().await {
                 Ok(update) => {
                     // Only send updates for the current user
-                    if update.user_id == user_id {
-                        if let Ok(event) = Event::default().json_data(update) {
+                    if update.user_id == user_id
+                        && let Ok(event) = Event::default().json_data(update) {
                             yield Ok(event);
                         }
-                    }
                 }
                 Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
                     continue;
@@ -68,18 +67,17 @@ pub async fn process_image_ocr_handler(
         .and_then(|h| h.to_str().ok())
         .map(|s| s.to_string());
 
-    if let Some(ref key) = idempotency_key {
-        if let Some(existing_job) =
+    if let Some(ref key) = idempotency_key
+        && let Some(existing_job) =
             ocr::get_ocr_job_by_idempotency_key(&state.core.db, &session.user.id, key).await?
-        {
-            return Ok((
-                StatusCode::OK,
-                Json(OcrJobResponse {
-                    job_id: existing_job.id,
-                    status: existing_job.status,
-                }),
-            ));
-        }
+    {
+        return Ok((
+            StatusCode::OK,
+            Json(OcrJobResponse {
+                job_id: existing_job.id,
+                status: existing_job.status,
+            }),
+        ));
     }
 
     // Per-user rate limiting
@@ -102,17 +100,17 @@ pub async fn process_image_ocr_handler(
         ));
     }
 
-    if let Some(ref raw_key) = payload.raw_key {
-        if !raw_key.starts_with(&user_id_prefix) {
-            tracing::warn!(
-                "🔒 Potential IDOR attempt by user {} for raw_key {}",
-                session.user.id,
-                raw_key
-            );
-            return Err(ApiError::Unauthorized(
-                "You do not have permission to access this file".to_string(),
-            ));
-        }
+    if let Some(ref raw_key) = payload.raw_key
+        && !raw_key.starts_with(&user_id_prefix)
+    {
+        tracing::warn!(
+            "🔒 Potential IDOR attempt by user {} for raw_key {}",
+            session.user.id,
+            raw_key
+        );
+        return Err(ApiError::Unauthorized(
+            "You do not have permission to access this file".to_string(),
+        ));
     }
 
     // 1. Create a record in ocr_jobs table (QUEUED)

@@ -7,6 +7,13 @@ use sea_orm::{
 };
 use std::collections::HashSet;
 
+/// Merges the secondary contact into the primary contact (transactions, identifiers, phone)
+/// and deletes the secondary contact. The operation runs inside a database transaction.
+///
+/// # Errors
+/// Returns `AppError::Validation` if `primary_id == secondary_id`,
+/// `AppError::NotFound` if either contact link does not belong to the user or a contact
+/// row is missing, or `AppError::Db` if any database operation in the transaction fails.
 pub async fn merge_contacts(
     db: &DatabaseConnection,
     user_id: &str,

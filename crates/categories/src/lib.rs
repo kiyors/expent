@@ -26,7 +26,7 @@ impl CategoriesManager {
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
         let list_cache = Cache::builder()
             .max_capacity(1000)
-            .time_to_idle(Duration::from_secs(600)) // 10 minutes
+            .time_to_idle(Duration::from_mins(10)) // 10 minutes
             .build();
 
         Self { db, list_cache }
@@ -67,6 +67,6 @@ impl CategoriesManager {
 
     #[allow(clippy::missing_errors_doc)]
     pub async fn ensure_system_categories(&self) -> Result<(), AppError> {
-        ops::ensure_system_categories(&*self.db).await
+        ops::ensure_system_categories(&self.db).await
     }
 }

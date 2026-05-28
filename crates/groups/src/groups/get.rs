@@ -2,6 +2,7 @@ use db::AppError;
 use db::entities;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn get_group(
     db: &DatabaseConnection,
     user_id: &str,

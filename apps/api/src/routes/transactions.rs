@@ -100,7 +100,7 @@ pub async fn update_transaction_handler(
             &session.user.id,
             &id,
             payload.amount,
-            payload.date.map(|d| d.into()),
+            payload.date,
             payload.purpose_tag,
             payload.category_id,
             payload.status,

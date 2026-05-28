@@ -3,6 +3,11 @@ use db::AppError;
 use db::entities;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 
+/// Updates mutable fields (name, phone, pinned flag) on a contact owned by the given user.
+///
+/// # Errors
+/// Returns `AppError::NotFound` if the user-contact link or the contact does not exist,
+/// or `AppError::Db` if the update query fails.
 pub async fn update_contact(
     db: &DatabaseConnection,
     user_id: &str,

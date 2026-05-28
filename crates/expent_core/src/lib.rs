@@ -142,13 +142,14 @@ pub struct CoreConfig {
 }
 
 impl Core {
+    // Bootstrap wires DB, managers, OCR worker, etc.; splitting purely to satisfy
+    // the line-count lint would obscure the linear startup sequence.
+    #[allow(clippy::missing_errors_doc, clippy::too_many_lines)]
     pub async fn init(
         config: CoreConfig,
         ocr_tx: tokio::sync::broadcast::Sender<::ocr::OcrUpdate>,
     ) -> Result<Self, anyhow::Error> {
-        let shutdown_token = config
-            .shutdown_token
-            .unwrap_or_else(tokio_util::sync::CancellationToken::new);
+        let shutdown_token = config.shutdown_token.unwrap_or_default();
         // 1. Resilient Database Connection
         let mut opt = ConnectOptions::new(config.database_url);
         opt.max_connections(100)
@@ -156,7 +157,7 @@ impl Core {
             .connect_timeout(Duration::from_secs(10))
             .acquire_timeout(Duration::from_secs(10))
             .idle_timeout(Duration::from_secs(30))
-            .max_lifetime(Duration::from_secs(30 * 60))
+            .max_lifetime(Duration::from_mins(30))
             .sqlx_logging(true);
 
         let mut retry_count = 0;
@@ -174,8 +175,7 @@ impl Core {
                 }
                 Err(e) => {
                     return Err(anyhow::anyhow!(
-                        "Database connection failed after 3 retries: {}",
-                        e
+                        "Database connection failed after 3 retries: {e}"
                     ));
                 }
             }
