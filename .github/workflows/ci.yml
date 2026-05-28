@@ -14,7 +14,7 @@ env:
 
 jobs:
   rust:
-    name: Rust (fmt, clippy, test)
+    name: Rust (fmt, clippy, test on sqlite)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,53 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: Test
+      - name: Test (sqlite::memory)
+        run: cargo test --workspace
+
+  rust-postgres:
+    name: Rust (test on Postgres)
+    runs-on: ubuntu-latest
+    # Exercises the migrations and DB-backed code paths against a real Postgres
+    # — including the plpgsql LISTEN/NOTIFY trigger migration that is a no-op
+    # on SQLite. Without this, those code paths are unreachable in CI.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: expent_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d expent_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://test:test@localhost:5432/expent_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@1.91.1
+
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: postgres
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..20}; do
+            pg_isready -h localhost -p 5432 -U test && break
+            sleep 2
+          done
+
+      - name: Test (Postgres)
+        # expent_core's setup_test_core honours TEST_DATABASE_URL when set so
+        # the same integration tests run against Postgres here. Other crates'
+        # unit tests stay backend-agnostic.
         run: cargo test --workspace
 
   web:
@@ -62,3 +108,6 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Dashboard tests
+        run: pnpm --filter @expent/dashboard test

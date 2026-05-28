@@ -2,8 +2,15 @@ use expent_core::{Core, CoreConfig};
 use migration::{Migrator, MigratorTrait};
 
 pub async fn setup_test_core() -> Core {
+    // Honour `DATABASE_URL` when set so CI can run the same integration suite
+    // against Postgres (where the plpgsql LISTEN/NOTIFY migration actually
+    // executes). Falls back to sqlite::memory locally for fast dev tests.
+    let database_url = std::env::var("TEST_DATABASE_URL")
+        .or_else(|_| std::env::var("DATABASE_URL"))
+        .unwrap_or_else(|_| "sqlite::memory:".to_string());
+
     let config = CoreConfig {
-        database_url: "sqlite::memory:".to_string(),
+        database_url,
         s3_endpoint: "http://localhost:9000".to_string(),
         s3_access_key_id: "test".to_string(),
         s3_secret_access_key: "test".to_string(),
