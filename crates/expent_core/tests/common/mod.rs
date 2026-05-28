@@ -5,9 +5,38 @@ pub async fn setup_test_core() -> Core {
     // Honour `DATABASE_URL` when set so CI can run the same integration suite
     // against Postgres (where the plpgsql LISTEN/NOTIFY migration actually
     // executes). Falls back to sqlite::memory locally for fast dev tests.
-    let database_url = std::env::var("TEST_DATABASE_URL")
+    let raw_url = std::env::var("TEST_DATABASE_URL")
         .or_else(|_| std::env::var("DATABASE_URL"))
         .unwrap_or_else(|_| "sqlite::memory:".to_string());
+
+    // Postgres has one physical database but many parallel `#[tokio::test]`
+    // threads. Each fixture call must isolate itself with a private schema
+    // so the migrator's `CREATE TYPE` (Postgres enums aren't idempotent) and
+    // every test's inserted rows don't race or leak across tests. We do this
+    // by creating a uniquely-named schema and appending `?options=-c
+    // search_path=<schema>` to the URL — sqlx forwards the option to Postgres
+    // at connection-startup time so every pooled connection uses it.
+    let database_url = if raw_url.starts_with("postgres") {
+        use sea_orm::{ConnectionTrait, Database, DatabaseBackend, Statement};
+        let schema = format!("test_{}", uuid::Uuid::now_v7().simple());
+        let admin = Database::connect(&raw_url)
+            .await
+            .expect("connect (admin) to Postgres for schema setup");
+        admin
+            .execute(Statement::from_string(
+                DatabaseBackend::Postgres,
+                format!("CREATE SCHEMA \"{schema}\""),
+            ))
+            .await
+            .expect("create per-test schema");
+        drop(admin);
+
+        let sep = if raw_url.contains('?') { '&' } else { '?' };
+        // `-c search_path=name` -> URL-encoded space (%20) and equals (%3D).
+        format!("{raw_url}{sep}options=-c%20search_path%3D{schema}")
+    } else {
+        raw_url
+    };
 
     let config = CoreConfig {
         database_url,

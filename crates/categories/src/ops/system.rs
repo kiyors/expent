@@ -39,7 +39,14 @@ pub async fn ensure_system_categories(db: &DatabaseConnection) -> Result<(), App
         ("cat-hth-0007", "Health & Medical", "activity", "#ef4444"),
     ];
 
-    let ids: Vec<String> = system_cats.iter().map(|(id, ..)| id.to_string()).collect();
+    // `id` is `&&str` (tuple binding through iter); dereference once so we hit
+    // the fast `str -> String` specialization rather than the slow `&str ->
+    // String` blanket impl (clippy::inefficient_to_string, gated by -D warnings
+    // on rustc 1.91+).
+    let ids: Vec<String> = system_cats
+        .iter()
+        .map(|(id, ..)| (*id).to_string())
+        .collect();
 
     let existing_ids: HashSet<String> = entities::categories::Entity::find()
         .filter(entities::categories::Column::Id.is_in(ids))
