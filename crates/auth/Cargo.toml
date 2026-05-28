@@ -17,4 +17,9 @@ uuid.workspace        = true
 
 [lib]
 doctest = false
-test    = false
+
+[dev-dependencies]
+anyhow.workspace = true
+migration        = { workspace = true }
+rstest           = "0.26.1"
+tokio            = { features = ["macros", "rt-multi-thread"], workspace = true }
