@@ -6,13 +6,19 @@ use db::entities::enums::{
 };
 use rust_decimal::Decimal;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set,
-    TransactionError, TransactionTrait,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter,
+    QuerySelect, Set, TransactionError, TransactionTrait, sea_query::Expr,
 };
 
 use std::sync::Arc;
 use wallets::WalletsManager;
 
+#[derive(FromQueryResult)]
+struct SumResult {
+    total: Option<Decimal>,
+}
+
+#[allow(clippy::missing_errors_doc)]
 pub async fn register_repayment(
     db: &DatabaseConnection,
     wallets: Arc<WalletsManager>,
@@ -63,14 +69,22 @@ pub async fn register_repayment(
             ::transactions::ops::adjust_transaction_wallets(txn_db, wallets, None, Some(&result))
                 .await?;
 
+            // Aggregate at the DB instead of materialising every transaction in
+            // the tab just to .sum() them — keeps payload + lock scope small as
+            // tabs accumulate repayments.
             let total_paid: Decimal = entities::transactions::Entity::find()
+                .select_only()
+                .column_as(
+                    Expr::col(entities::transactions::Column::Amount).sum(),
+                    "total",
+                )
                 .filter(entities::transactions::Column::LedgerTabId.eq(tab.id.clone()))
                 .filter(entities::transactions::Column::DeletedAt.is_null())
-                .all(txn_db)
+                .into_model::<SumResult>()
+                .one(txn_db)
                 .await?
-                .iter()
-                .map(|t| t.amount)
-                .sum();
+                .and_then(|r| r.total)
+                .unwrap_or(Decimal::ZERO);
 
             if total_paid >= tab.target_amount {
                 let mut tab_active: entities::ledger_tabs::ActiveModel = tab.into();

@@ -149,6 +149,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         core: core.clone(),
         ocr_limiter: UserRateLimiter::new(10, 20),
     };
+    // Drop idle per-user rate limiter entries periodically so the map tracks
+    // active users instead of growing monotonically for the life of the process.
+    state.ocr_limiter.spawn_cleanup_task(shutdown_token.clone());
 
     let auth_router = core.auth.clone().axum_router();
 

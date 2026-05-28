@@ -1,9 +1,10 @@
 use axum::Router;
-use axum::extract::{Json, Path, State};
+use axum::extract::{Json, Path, Query, State};
 use axum::http::StatusCode;
 use axum::routing::{get, post};
 use db::dto::{
-    AddIdentifierRequest, CreateContactRequest, MergeContactsRequest, UpdateContactRequest,
+    AddIdentifierRequest, CreateContactRequest, MergeContactsRequest, PaginationParams,
+    UpdateContactRequest,
 };
 
 use crate::extractors::ValidatedJson;
@@ -27,8 +28,13 @@ pub fn router() -> Router<AppState> {
 pub async fn list_contacts_handler(
     State(state): State<AppState>,
     session: AuthSession,
+    Query(params): Query<PaginationParams>,
 ) -> Result<Json<Vec<db::entities::contacts::Model>>, ApiError> {
-    let result = state.core.contacts.list(&session.user.id).await?;
+    let result = state
+        .core
+        .contacts
+        .list(&session.user.id, params.limit, params.offset)
+        .await?;
     Ok(Json(result))
 }
 
