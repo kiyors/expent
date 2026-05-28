@@ -33,7 +33,7 @@ pub async fn list_contacts_handler(
     let result = state
         .core
         .contacts
-        .list(&session.user.id, params.limit, params.offset)
+        .list(&session.user.id, Some(params.safe_limit()), params.offset)
         .await?;
     Ok(Json(result))
 }

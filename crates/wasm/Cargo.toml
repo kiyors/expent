@@ -15,11 +15,9 @@ rphonetic    = "3.0"
 rust_decimal = { workspace = true }
 regex        = { workspace = true }
 serde        = { features = [ "derive" ], workspace = true }
-serde_json   = { workspace = true }
 serde-wasm-bindgen = "0.6"
 strsim       = "0.11"
 ts-rs        = { workspace = true }
-getrandom    = { version = "0.2", features = ["js"] }
 wasm-bindgen = "0.2.121"
 dlmalloc     = { version = "0.2", features = ["global"] }
 

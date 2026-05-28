@@ -4,16 +4,47 @@ use axum::{
 };
 use better_auth::plugins::{EmailPasswordPlugin, SessionManagementPlugin};
 use better_auth::{AuthBuilder, AuthConfig, AuthRequest, BetterAuth, HttpMethod};
+use moka::future::Cache;
 use sea_orm::DatabaseConnection;
 use std::collections::HashMap;
 use std::env;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
+use std::time::Duration;
 
 pub mod adapter;
 use crate::adapter::PostgresAdapter;
 
 pub struct AuthSession {
     pub user: better_auth::types_mod::User,
+}
+
+/// Process-wide cache of resolved sessions keyed by the raw cookie + authorization
+/// header values. Better-auth's session lookup hits Postgres on every request; this
+/// short-lived cache absorbs the common case where a single client makes many
+/// requests in quick succession. TTL is intentionally short so revoked sessions
+/// stop authenticating quickly.
+static SESSION_CACHE: LazyLock<Cache<String, better_auth::types_mod::User>> = LazyLock::new(|| {
+    let ttl_secs = env::var("AUTH_SESSION_CACHE_TTL_SECS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(60);
+    let capacity = env::var("AUTH_SESSION_CACHE_CAPACITY")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(10_000);
+    Cache::builder()
+        .max_capacity(capacity)
+        .time_to_live(Duration::from_secs(ttl_secs))
+        .build()
+});
+
+fn session_cache_key(headers: &axum::http::HeaderMap) -> Option<String> {
+    let cookie = headers.get("cookie").and_then(|v| v.to_str().ok());
+    let auth = headers.get("authorization").and_then(|v| v.to_str().ok());
+    match (cookie, auth) {
+        (None, None) => None,
+        (c, a) => Some(format!("{}|{}", c.unwrap_or(""), a.unwrap_or(""))),
+    }
 }
 
 impl<S> FromRequestParts<S> for AuthSession
@@ -24,6 +55,14 @@ where
     type Rejection = (StatusCode, String);
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let cache_key = session_cache_key(&parts.headers);
+
+        if let Some(ref key) = cache_key
+            && let Some(user) = SESSION_CACHE.get(key).await
+        {
+            return Ok(AuthSession { user });
+        }
+
         let auth = Arc::from_ref(state);
 
         let mut mapped_headers = HashMap::with_capacity(parts.headers.len());
@@ -79,10 +118,14 @@ where
             )
         })?;
 
-        tracing::info!(
+        tracing::debug!(
             "🔑 Auth Session extracted for user: {}",
             session_data.user.email.as_deref().unwrap_or("unknown")
         );
+
+        if let Some(key) = cache_key {
+            SESSION_CACHE.insert(key, session_data.user.clone()).await;
+        }
 
         Ok(AuthSession {
             user: session_data.user,

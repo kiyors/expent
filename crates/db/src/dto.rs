@@ -118,6 +118,20 @@ pub struct PaginationParams {
     pub offset: Option<u64>,
 }
 
+impl PaginationParams {
+    pub const MAX_LIMIT: u64 = 100;
+    pub const DEFAULT_LIMIT: u64 = 25;
+
+    /// Returns the requested limit clamped to [1, MAX_LIMIT], defaulting when unset.
+    /// Use this at API entry points to prevent clients from requesting unbounded pages.
+    #[must_use]
+    pub fn safe_limit(&self) -> u64 {
+        self.limit
+            .unwrap_or(Self::DEFAULT_LIMIT)
+            .clamp(1, Self::MAX_LIMIT)
+    }
+}
+
 #[derive(Deserialize, TS)]
 #[ts(export, rename = "SplitTransactionRequest")]
 pub struct SplitTransactionRequest {

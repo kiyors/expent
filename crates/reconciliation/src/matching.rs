@@ -3,9 +3,14 @@ use db::AppError;
 use db::entities;
 use rust_decimal::Decimal;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set,
-    TransactionError, TransactionTrait,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder,
+    QuerySelect, Set, TransactionError, TransactionTrait,
 };
+
+/// Upper bound on candidate transactions per row. Scoring is O(n) and the
+/// caller only needs a ranked list, so trimming here prevents pathological
+/// queries when many transactions share the same amount.
+const MAX_MATCH_CANDIDATES: u64 = 50;
 
 #[allow(clippy::missing_errors_doc)]
 pub async fn list_unmatched_rows(
@@ -18,6 +23,20 @@ pub async fn list_unmatched_rows(
         .all(db)
         .await
         .map_err(AppError::from)
+}
+
+#[allow(clippy::missing_errors_doc)]
+pub async fn get_row(
+    db: &DatabaseConnection,
+    user_id: &str,
+    row_id: &str,
+) -> Result<entities::bank_statement_rows::Model, AppError> {
+    let row = entities::bank_statement_rows::Entity::find_by_id(row_id.to_string())
+        .filter(entities::bank_statement_rows::Column::UserId.eq(user_id))
+        .one(db)
+        .await?
+        .ok_or_else(|| AppError::not_found("Statement row not found"))?;
+    Ok(row)
 }
 
 #[allow(clippy::missing_errors_doc)]
@@ -41,6 +60,8 @@ pub async fn get_row_matches(
         .filter(entities::transactions::Column::UserId.eq(user_id))
         .filter(entities::transactions::Column::Amount.eq(amount.abs()))
         .filter(entities::transactions::Column::Date.between(start_date, end_date))
+        .order_by_desc(entities::transactions::Column::Date)
+        .limit(MAX_MATCH_CANDIDATES)
         .all(db)
         .await?;
 

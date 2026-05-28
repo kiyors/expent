@@ -58,7 +58,7 @@ pub async fn list_transactions_handler(
     let result = state
         .core
         .transactions
-        .list(&session.user.id, params.limit, params.offset)
+        .list(&session.user.id, Some(params.safe_limit()), params.offset)
         .await?;
     Ok(Json(result))
 }

@@ -43,7 +43,6 @@ transactions   = { path = "crates/transactions", version = "0.2.0" }
 upload         = { path = "crates/upload", version = "0.2.0" }
 users          = { path = "crates/users", version = "0.2.0" }
 wallets        = { path = "crates/wallets", version = "0.2.0" }
-wasm           = { path = "crates/wasm", version = "0.2.0" }
 
 # External crates
 any_ascii = "0.3"
@@ -87,7 +86,7 @@ strum = { features = [ "derive" ], version = "0.28" }
 thiserror = "2.0"
 tokio = { features = [ "full" ], version = "1.52" }
 tokio-util = { features = [ "rt" ], version = "0.7.13" }
-tower-http = { features = [ "cors", "fs", "trace" ], version = "0.6" }
+tower-http = { features = [ "compression-br", "compression-gzip", "cors", "fs", "trace" ], version = "0.6" }
 tower_governor = "0.8.0"
 tracing = "0.1"
 tracing-subscriber = { features = [ "env-filter" ], version = "0.3" }
@@ -108,7 +107,7 @@ style    = { level = "warn", priority = -4 }
 
 [profile.release]
 lto = true
-opt-level = "s"
+opt-level = 3
 strip = true
 panic = "abort"
 codegen-units = 1

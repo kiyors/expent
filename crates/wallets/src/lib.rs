@@ -34,6 +34,13 @@ impl WalletsManager {
         Self { db, resolve_cache }
     }
 
+    fn invalidate_user(&self, user_id: &str) {
+        let prefix = user_id.to_string();
+        self.resolve_cache
+            .invalidate_entries_if(move |key, _| key.0 == prefix)
+            .ok();
+    }
+
     #[allow(clippy::missing_errors_doc)]
     pub async fn create(
         &self,
@@ -44,7 +51,7 @@ impl WalletsManager {
     ) -> Result<entities::wallets::Model, AppError> {
         let result =
             ops::create_wallet(&self.db, user_id, name, wallet_type, initial_balance).await?;
-        self.resolve_cache.invalidate_all(); // Simple invalidation for now
+        self.invalidate_user(user_id);
         Ok(result)
     }
 
@@ -71,7 +78,7 @@ impl WalletsManager {
         balance: Option<Decimal>,
     ) -> Result<entities::wallets::Model, AppError> {
         let result = ops::update_wallet(&self.db, user_id, wallet_id, name, balance).await?;
-        self.resolve_cache.invalidate_all();
+        self.invalidate_user(user_id);
         Ok(result)
     }
 
@@ -79,7 +86,7 @@ impl WalletsManager {
     pub async fn delete(&self, user_id: &str, wallet_id: &str) -> Result<u64, AppError> {
         let res = ops::delete_wallet(&self.db, user_id, wallet_id).await?;
         if res > 0 {
-            self.resolve_cache.invalidate_all();
+            self.invalidate_user(user_id);
         }
         Ok(res)
     }

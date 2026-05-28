@@ -131,7 +131,7 @@ STEP 3: FORMAT OUTPUT
 
         let mut extracted_text = String::new();
         if media_type == "application/pdf" {
-            extracted_text = extract_pdf_text(&data).unwrap_or_default();
+            extracted_text = extract_pdf_text(&data).await.unwrap_or_default();
         } else if media_type == "text/csv" {
             extracted_text = parse_csv(&data).unwrap_or_default();
         } else if media_type == "application/vnd.ms-excel"

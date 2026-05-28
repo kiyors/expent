@@ -7,7 +7,7 @@ use sea_orm::{
     QueryFilter, QueryOrder, QuerySelect,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use ts_rs::TS;
 use uuid::Uuid;
@@ -166,21 +166,36 @@ impl BudgetsManager {
             category_names.insert(cat.id, cat.name);
         }
 
-        for budget in budgets {
-            let (start_date, end_date) = get_period_bounds(budget.period);
+        // Pre-compute bounds for every distinct period that appears in the user's
+        // budgets, then aggregate spend per (period, category) bucket in a single
+        // pass over transactions. A `None` category-key bucket collects total
+        // spend per period for budgets that span all categories.
+        let distinct_periods: HashSet<BudgetPeriod> = budgets.iter().map(|b| b.period).collect();
+        let period_bounds: HashMap<BudgetPeriod, _> = distinct_periods
+            .iter()
+            .map(|p| (*p, get_period_bounds(*p)))
+            .collect();
 
-            let spent = txns
-                .iter()
-                .filter(|t| {
-                    let within_period = t.date >= start_date && t.date < end_date;
-                    let matches_category = match &budget.category_id {
-                        Some(cat_id) => t.category_id.as_ref() == Some(cat_id),
-                        None => true,
-                    };
-                    within_period && matches_category
-                })
-                .map(|t| t.amount)
-                .sum::<Decimal>();
+        let mut spent_by_key: HashMap<(BudgetPeriod, Option<String>), Decimal> = HashMap::new();
+        for txn in &txns {
+            for (period, (start_date, end_date)) in &period_bounds {
+                if txn.date < *start_date || txn.date >= *end_date {
+                    continue;
+                }
+                *spent_by_key.entry((*period, None)).or_default() += txn.amount;
+                if let Some(cat) = &txn.category_id {
+                    *spent_by_key
+                        .entry((*period, Some(cat.clone())))
+                        .or_default() += txn.amount;
+                }
+            }
+        }
+
+        for budget in budgets {
+            let spent = spent_by_key
+                .get(&(budget.period, budget.category_id.clone()))
+                .copied()
+                .unwrap_or(Decimal::ZERO);
 
             let remaining = budget.amount - spent;
             let percentage = if budget.amount.is_zero() {

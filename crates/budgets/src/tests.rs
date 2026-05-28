@@ -164,3 +164,88 @@ async fn test_budget_health() {
     assert_eq!(health[0].percentage_consumed, dec!(20));
     assert_eq!(health[0].category_name, Some("Food".to_string()));
 }
+
+#[tokio::test]
+async fn test_budget_health_mixed_categories() {
+    // Verifies that an "all categories" budget and a category-specific budget
+    // of the same period are computed independently from the same bucketed pass.
+    let db = setup_test_db().await;
+    let user = create_test_user(&db, "user_mix").await;
+    let manager = BudgetsManager::new(db.clone());
+    let now = Utc::now();
+
+    let food = db::entities::categories::ActiveModel {
+        id: Set("cat_food".to_string()),
+        name: Set("Food".to_string()),
+        user_id: Set("system".to_string()),
+        ..Default::default()
+    };
+    db::entities::categories::Entity::insert(food)
+        .exec(&*db)
+        .await
+        .unwrap();
+
+    // Food-only monthly budget
+    manager
+        .create(
+            &user.id,
+            Some("cat_food".to_string()),
+            dec!(1000),
+            BudgetPeriod::Monthly,
+        )
+        .await
+        .unwrap();
+
+    // All-categories monthly budget
+    manager
+        .create(&user.id, None, dec!(2000), BudgetPeriod::Monthly)
+        .await
+        .unwrap();
+
+    // 150 in Food, 300 uncategorised, 50 IN (should be ignored)
+    for (id, amount, dir, cat) in [
+        (
+            "txn_food",
+            dec!(150),
+            TransactionDirection::Out,
+            Some("cat_food"),
+        ),
+        ("txn_other", dec!(300), TransactionDirection::Out, None),
+        ("txn_in", dec!(50), TransactionDirection::In, None),
+    ] {
+        let txn = db::entities::transactions::ActiveModel {
+            id: Set(id.to_string()),
+            user_id: Set(user.id.clone()),
+            amount: Set(amount),
+            direction: Set(dir),
+            date: Set(now.into()),
+            source: Set(TransactionSource::Manual),
+            status: Set(TransactionStatus::Completed),
+            category_id: Set(cat.map(str::to_string)),
+            ..Default::default()
+        };
+        db::entities::transactions::Entity::insert(txn)
+            .exec(&*db)
+            .await
+            .unwrap();
+    }
+
+    let health = manager.get_all_budget_health(&user.id).await.unwrap();
+    let by_cat: std::collections::HashMap<Option<String>, rust_decimal::Decimal> = health
+        .iter()
+        .map(|h| {
+            (
+                if h.category_name.as_deref() == Some("All Categories") {
+                    None
+                } else {
+                    h.category_name.clone()
+                },
+                h.spent_amount,
+            )
+        })
+        .collect();
+    // Food budget sees only the Food txn (150). All-categories sees both OUT
+    // txns (150 + 300 = 450). IN txn is filtered at the SQL layer.
+    assert_eq!(by_cat.get(&Some("Food".to_string())), Some(&dec!(150)));
+    assert_eq!(by_cat.get(&None), Some(&dec!(450)));
+}

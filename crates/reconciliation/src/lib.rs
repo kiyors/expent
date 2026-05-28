@@ -28,6 +28,15 @@ impl ReconciliationManager {
     }
 
     #[allow(clippy::missing_errors_doc)]
+    pub async fn get_row(
+        &self,
+        user_id: &str,
+        row_id: &str,
+    ) -> Result<entities::bank_statement_rows::Model, AppError> {
+        matching::get_row(&self.db, user_id, row_id).await
+    }
+
+    #[allow(clippy::missing_errors_doc)]
     pub async fn get_row_matches(
         &self,
         user_id: &str,

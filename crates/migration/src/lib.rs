@@ -29,6 +29,7 @@ pub mod m20260522_000001_add_ocr_jobs_batch_and_idempotency;
 pub mod m20260526_000001_enhance_background_jobs_table;
 pub mod m20260526_000002_add_job_notifications;
 pub mod m20260526_000003_add_performance_indexes;
+pub mod m20260529_000001_add_transaction_date_index;
 
 pub struct Migrator;
 
@@ -65,6 +66,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260526_000001_enhance_background_jobs_table::Migration),
             Box::new(m20260526_000002_add_job_notifications::Migration),
             Box::new(m20260526_000003_add_performance_indexes::Migration),
+            Box::new(m20260529_000001_add_transaction_date_index::Migration),
         ]
     }
 }

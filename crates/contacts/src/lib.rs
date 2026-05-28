@@ -2,20 +2,44 @@ use db::AppError;
 use db::ContactDetail;
 use db::entities;
 use db::entities::enums::IdentifierType;
+use moka::future::Cache;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
 use std::sync::Arc;
+use std::time::Duration;
 
 pub mod ops;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ContactsManager {
     db: Arc<DatabaseConnection>,
+    // Cache key is `(user_id, limit, offset)` so distinct paginations live
+    // alongside each other. Mutations invalidate every entry for the user.
+    list_cache: Cache<(String, Option<u64>, Option<u64>), Vec<entities::contacts::Model>>,
+}
+
+impl std::fmt::Debug for ContactsManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ContactsManager")
+            .field("db", &self.db)
+            .finish_non_exhaustive()
+    }
 }
 
 impl ContactsManager {
     #[must_use]
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
-        Self { db }
+        let list_cache = Cache::builder()
+            .max_capacity(10_000)
+            .time_to_idle(Duration::from_mins(10))
+            .build();
+        Self { db, list_cache }
+    }
+
+    fn invalidate_user(&self, user_id: &str) {
+        let prefix = user_id.to_string();
+        self.list_cache
+            .invalidate_entries_if(move |key, _| key.0 == prefix)
+            .ok();
     }
 
     /// Creates a new contact for the given user.
@@ -29,7 +53,9 @@ impl ContactsManager {
         name: &str,
         phone: Option<String>,
     ) -> Result<entities::contacts::Model, AppError> {
-        ops::create_contact(&*self.db, user_id, name.to_string(), phone).await
+        let result = ops::create_contact(&*self.db, user_id, name.to_string(), phone).await?;
+        self.invalidate_user(user_id);
+        Ok(result)
     }
 
     /// Lists contacts linked to the given user, optionally paginated. See
@@ -43,7 +69,13 @@ impl ContactsManager {
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<Vec<entities::contacts::Model>, AppError> {
-        ops::list_contacts(&self.db, user_id, limit, offset).await
+        let key = (user_id.to_string(), limit, offset);
+        if let Some(cached) = self.list_cache.get(&key).await {
+            return Ok(cached);
+        }
+        let result = ops::list_contacts(&self.db, user_id, limit, offset).await?;
+        self.list_cache.insert(key, result.clone()).await;
+        Ok(result)
     }
 
     /// Removes the link between the user and the contact.
@@ -51,7 +83,9 @@ impl ContactsManager {
     /// # Errors
     /// Propagates [`AppError::Db`] from [`ops::delete_contact`] if the delete fails.
     pub async fn delete(&self, user_id: &str, contact_id: &str) -> Result<(), AppError> {
-        ops::delete_contact(&self.db, user_id, contact_id).await
+        ops::delete_contact(&self.db, user_id, contact_id).await?;
+        self.invalidate_user(user_id);
+        Ok(())
     }
 
     /// Updates mutable fields on a contact owned by the user.
@@ -67,7 +101,10 @@ impl ContactsManager {
         phone: Option<String>,
         is_pinned: Option<bool>,
     ) -> Result<entities::contacts::Model, AppError> {
-        ops::update_contact(&self.db, user_id, contact_id, name, phone, is_pinned).await
+        let result =
+            ops::update_contact(&self.db, user_id, contact_id, name, phone, is_pinned).await?;
+        self.invalidate_user(user_id);
+        Ok(result)
     }
 
     /// Loads a contact along with its identifiers and related transactions.
@@ -95,7 +132,10 @@ impl ContactsManager {
         r#type: IdentifierType,
         value: String,
     ) -> Result<entities::contact_identifiers::Model, AppError> {
-        ops::add_contact_identifier(&*self.db, user_id, contact_id, r#type, value).await
+        let result =
+            ops::add_contact_identifier(&*self.db, user_id, contact_id, r#type, value).await?;
+        self.invalidate_user(user_id);
+        Ok(result)
     }
 
     /// Merges `source_id` into `target_id`, transferring identifiers and transactions.
@@ -110,7 +150,9 @@ impl ContactsManager {
         source_id: &str,
         target_id: &str,
     ) -> Result<entities::contacts::Model, AppError> {
-        ops::merge_contacts(&self.db, user_id, source_id, target_id).await
+        let result = ops::merge_contacts(&self.db, user_id, source_id, target_id).await?;
+        self.invalidate_user(user_id);
+        Ok(result)
     }
 
     /// Returns pairs of contacts that look like duplicates for the user.

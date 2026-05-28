@@ -10,8 +10,11 @@ use expent_core::{Core, CoreConfig, sea_orm::DatabaseConnection};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
+use tower_http::LatencyUnit;
+use tower_http::compression::CompressionLayer;
 use tower_http::cors::CorsLayer;
-use tower_http::trace::TraceLayer;
+use tower_http::trace::{DefaultOnResponse, TraceLayer};
+use tracing::Level;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub mod background_tasks;
@@ -19,12 +22,14 @@ pub mod extractors;
 pub mod middleware;
 pub mod routes;
 
+use crate::middleware::metrics::MetricsRegistry;
 use crate::middleware::rate_limit::UserRateLimiter;
 
 #[derive(Clone)]
 pub struct AppState {
     pub core: Core,
     pub ocr_limiter: UserRateLimiter,
+    pub metrics: MetricsRegistry,
 }
 
 #[global_allocator]
@@ -159,6 +164,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let state = AppState {
         core: core.clone(),
         ocr_limiter: UserRateLimiter::new(ocr_rpm, ocr_burst),
+        metrics: MetricsRegistry::default(),
     };
     // Drop idle per-user rate limiter entries periodically so the map tracks
     // active users instead of growing monotonically for the life of the process.
@@ -192,6 +198,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .nest("/reconciliation", routes::reconciliation::router())
         .nest("/upload", routes::uploads::router())
         .nest("/ocr", routes::ocr::router())
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            middleware::metrics::record_request,
+        ))
         .layer(GovernorLayer::new(governor_conf));
 
     let allowed_origins = std::env::var("ALLOWED_ORIGINS")
@@ -203,7 +213,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let app = Router::new()
         .nest("/api/auth", auth_router.with_state(core.auth.clone()))
         .nest("/api", api_router)
-        .layer(TraceLayer::new_for_http())
+        // /metrics is mounted AFTER the api_router so it is not measured by
+        // the metrics middleware itself (which is attached inside api_router).
+        .route(
+            "/metrics",
+            get(middleware::metrics::render_metrics).with_state(state.clone()),
+        )
+        .layer(CompressionLayer::new().gzip(true).br(true))
+        .layer(
+            TraceLayer::new_for_http().on_response(
+                DefaultOnResponse::new()
+                    .level(Level::INFO)
+                    .latency_unit(LatencyUnit::Millis),
+            ),
+        )
         .layer(axum::extract::DefaultBodyLimit::max(10 * 1024 * 1024))
         .layer(
             CorsLayer::new()

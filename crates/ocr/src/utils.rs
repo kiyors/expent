@@ -32,17 +32,22 @@ pub fn get_media_type(filename: &str) -> &'static str {
     }
 }
 
-pub fn extract_pdf_text(data: &[u8]) -> Result<String, anyhow::Error> {
-    let temp_dir = std::env::temp_dir();
-    let temp_path = temp_dir.join(format!("temp_{}.pdf", uuid::Uuid::new_v4()));
-    std::fs::write(&temp_path, data)
-        .map_err(|e| anyhow::anyhow!("Failed to write temporary PDF file: {}", e))?;
+pub async fn extract_pdf_text(data: &[u8]) -> Result<String, anyhow::Error> {
+    let owned = data.to_vec();
+    tokio::task::spawn_blocking(move || {
+        let temp_dir = std::env::temp_dir();
+        let temp_path = temp_dir.join(format!("temp_{}.pdf", uuid::Uuid::new_v4()));
+        std::fs::write(&temp_path, &owned)
+            .map_err(|e| anyhow::anyhow!("Failed to write temporary PDF file: {}", e))?;
 
-    let text = pdf_extract::extract_text(&temp_path)
-        .map_err(|e| anyhow::anyhow!("Failed to extract text from PDF: {}", e));
+        let text = pdf_extract::extract_text(&temp_path)
+            .map_err(|e| anyhow::anyhow!("Failed to extract text from PDF: {}", e));
 
-    let _ = std::fs::remove_file(&temp_path);
-    text
+        let _ = std::fs::remove_file(&temp_path);
+        text
+    })
+    .await
+    .map_err(|e| anyhow::anyhow!("PDF extraction task panicked: {}", e))?
 }
 
 pub fn parse_csv(data: &[u8]) -> Result<String, anyhow::Error> {

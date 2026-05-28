@@ -38,22 +38,13 @@ pub async fn get_row_matches_handler(
     session: AuthSession,
     Path(id): Path<String>,
 ) -> Result<Json<RowMatchesResponse>, ApiError> {
-    // Note: We could move this "get row" into the manager too, but for now we list details
-    let result = state
-        .core
-        .reconciliation
-        .list_unmatched_rows(&session.user.id)
-        .await?;
-    let row = result
-        .into_iter()
-        .find(|r| r.id == id)
-        .ok_or_else(|| ApiError::NotFound("Row not found".to_string()))?;
-
-    let matches = state
-        .core
-        .reconciliation
-        .get_row_matches(&session.user.id, &id)
-        .await?;
+    let (row, matches) = tokio::try_join!(
+        state.core.reconciliation.get_row(&session.user.id, &id),
+        state
+            .core
+            .reconciliation
+            .get_row_matches(&session.user.id, &id),
+    )?;
 
     Ok(Json(RowMatchesResponse { row, matches }))
 }

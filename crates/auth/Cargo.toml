@@ -9,6 +9,7 @@ axum.workspace        = true
 better-auth.workspace = true
 chrono.workspace      = true
 db                    = { workspace = true }
+moka.workspace        = true
 sea-orm.workspace     = true
 serde.workspace       = true
 serde_json.workspace  = true
@@ -19,7 +20,5 @@ uuid.workspace        = true
 doctest = false
 
 [dev-dependencies]
-anyhow.workspace = true
 migration        = { workspace = true }
-rstest           = "0.26.1"
 tokio            = { features = ["macros", "rt-multi-thread"], workspace = true }

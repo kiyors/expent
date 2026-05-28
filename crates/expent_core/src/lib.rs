@@ -129,6 +129,20 @@ impl OcrProcessor for Core {
     }
 }
 
+fn parse_env_u32(key: &str, default: u32) -> u32 {
+    std::env::var(key)
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(default)
+}
+
+fn parse_env_u64(key: &str, default: u64) -> u64 {
+    std::env::var(key)
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(default)
+}
+
 pub struct CoreConfig {
     pub database_url: String,
     pub s3_endpoint: String,
@@ -151,14 +165,25 @@ impl Core {
     ) -> Result<Self, anyhow::Error> {
         let shutdown_token = config.shutdown_token.unwrap_or_default();
         // 1. Resilient Database Connection
+        //
+        // Pool sizing is tuned for short-lived API requests: a deeper pool with a
+        // tight acquire timeout fails fast under spikes instead of letting clients
+        // wait 10 s for a connection. A longer idle timeout avoids tearing down
+        // connections between bursts of traffic.
         let mut opt = ConnectOptions::new(config.database_url);
-        opt.max_connections(100)
-            .min_connections(2)
+        let max_connections = parse_env_u32("DB_MAX_CONNECTIONS", 100);
+        let min_connections = parse_env_u32("DB_MIN_CONNECTIONS", 5);
+        let acquire_timeout_secs = parse_env_u64("DB_ACQUIRE_TIMEOUT_SECS", 3);
+        let idle_timeout_secs = parse_env_u64("DB_IDLE_TIMEOUT_SECS", 600);
+        opt.max_connections(max_connections)
+            .min_connections(min_connections)
             .connect_timeout(Duration::from_secs(10))
-            .acquire_timeout(Duration::from_secs(10))
-            .idle_timeout(Duration::from_secs(30))
+            .acquire_timeout(Duration::from_secs(acquire_timeout_secs))
+            .idle_timeout(Duration::from_secs(idle_timeout_secs))
             .max_lifetime(Duration::from_mins(30))
-            .sqlx_logging(true);
+            // Per-query logging is useful in dev but the formatting cost is
+            // non-trivial under load. Release builds opt out entirely.
+            .sqlx_logging(cfg!(debug_assertions));
 
         let mut retry_count = 0;
         let db = loop {

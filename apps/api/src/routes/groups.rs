@@ -87,7 +87,12 @@ pub async fn list_group_transactions_handler(
     let result = state
         .core
         .groups
-        .list_group_transactions(&session.user.id, &id, params.limit, params.offset)
+        .list_group_transactions(
+            &session.user.id,
+            &id,
+            Some(params.safe_limit()),
+            params.offset,
+        )
         .await?;
 
     Ok(Json(result))
