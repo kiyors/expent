@@ -6,6 +6,12 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // LISTEN/NOTIFY plpgsql functions and triggers are Postgres-only. Skip on
+        // other backends (e.g. the SQLite in-memory test database).
+        if manager.get_database_backend() != sea_orm::DatabaseBackend::Postgres {
+            return Ok(());
+        }
+
         let db = manager.get_connection();
 
         // 1. Function and Trigger for background_jobs
@@ -48,6 +54,10 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        if manager.get_database_backend() != sea_orm::DatabaseBackend::Postgres {
+            return Ok(());
+        }
+
         let db = manager.get_connection();
 
         db.execute_unprepared(

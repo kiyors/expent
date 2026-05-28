@@ -3,9 +3,11 @@ mod common;
 use chrono::Utc;
 use common::{create_test_user, create_test_wallet, setup_test_core};
 use db::entities::enums::{TransactionDirection, TransactionSource};
+use db::entities::transactions;
 use rstest::*;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 #[rstest]
 #[tokio::test]
@@ -60,9 +62,6 @@ async fn test_wallet_ledger_parity() {
     assert_eq!(wallet.balance, Decimal::from_i32(1200).unwrap());
 
     // Manual double-entry check
-    use db::entities::transactions;
-    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
-
     let txns = transactions::Entity::find()
         .filter(transactions::Column::DeletedAt.is_null())
         .all(&*core.db)

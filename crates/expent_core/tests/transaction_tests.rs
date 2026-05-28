@@ -280,7 +280,7 @@ async fn test_list_transactions_optimized() {
                 TransactionDirection::Out,
                 Utc::now().fixed_offset(),
                 TransactionSource::Manual,
-                Some(format!("Txn {}", i)),
+                Some(format!("Txn {i}")),
                 None,
                 Some(wallet_id.clone()),
                 None,

@@ -11,6 +11,7 @@ pub async fn setup_test_core() -> Core {
         google_api_key: Some("test_key".to_string()),
         better_auth_secret: "test_secret_key_at_least_32_chars_long_12345".to_string(),
         better_auth_base_url: "http://localhost:3000".to_string(),
+        shutdown_token: None,
     };
 
     let (tx, _) = tokio::sync::broadcast::channel(100);
@@ -32,7 +33,7 @@ pub async fn create_test_user(core: &Core) -> String {
     let user_id = uuid::Uuid::now_v7().to_string();
     let user = users::ActiveModel {
         id: Set(user_id.clone()),
-        email: Set(format!("test-{}@example.com", user_id)),
+        email: Set(format!("test-{user_id}@example.com")),
         name: Set("Test User".to_string()),
         email_verified: Set(true),
         is_active: Set(true),

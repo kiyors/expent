@@ -1,4 +1,3 @@
-use env_logger;
 use expent_core::{Core, CoreConfig};
 use rstest::*;
 use std::sync::Arc;
@@ -16,6 +15,7 @@ fn default_core_config() -> CoreConfig {
         google_api_key: Some("http://localhost:8090".to_string()),
         better_auth_secret: "test_secret_key_at_least_32_chars_long_12345".to_string(),
         better_auth_base_url: "http://localhost:3000".to_string(),
+        shutdown_token: None,
     }
 }
 
@@ -81,6 +81,7 @@ async fn test_core_init_db_connection_failure(
         google_api_key: Some("http://localhost:8090".to_string()),
         better_auth_secret: "test_secret_key_at_least_32_chars_long_12345".to_string(),
         better_auth_base_url: "http://localhost:3000".to_string(),
+        shutdown_token: None,
     };
 
     let core = Core::init(config, broadcast_channel).await;
@@ -97,7 +98,6 @@ async fn test_core_init_db_connection_failure(
     assert!(
         error_message.contains("Database connection failed")
             || error_message.contains("cannot be parsed"),
-        "Error message should indicate database connection issue: {}",
-        error_message
+        "Error message should indicate database connection issue: {error_message}"
     );
 }
