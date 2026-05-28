@@ -34,13 +34,41 @@ export function aggregate_transactions(transactions: any): any;
 
 export function batch_fuzzy_search(query: string, items: string[], threshold: number): any;
 
-export function calculate_budget_percentage(spent: string, limit: string): string;
+/**
+ * Compute `spent / limit * 100` as a Decimal-precise percentage string.
+ *
+ * Returns `None` (becomes `undefined` in JS) when either input fails to parse,
+ * surfacing bad caller data instead of silently reporting "0". A zero `limit`
+ * is still treated as 0% so dividing-by-zero doesn't blow up.
+ */
+export function calculate_budget_percentage(spent: string, limit: string): string | undefined;
 
 export function calculate_match_score(row_date_ms: bigint, row_desc: string, row_amount: string, txn_date_ms: bigint, txn_desc: string, txn_amount: string): number;
 
 export function calculate_spending_velocity(spent: string, limit: string, period: string): SpendingVelocity | undefined;
 
+/**
+ * Best-effort guess at the currency a piece of free-form text refers to.
+ *
+ * Priority: explicit ISO codes (case-insensitive whole-word match) win over
+ * symbols, because OCR pipelines often see "INR 250" alongside a unicode
+ * rupee sign, and the code is the surer signal. Returns `None` when nothing
+ * matches — callers should keep their existing fallback.
+ */
+export function detect_currency_from_text(text: string): string | undefined;
+
 export function detect_subscription_patterns(transactions: any): any;
+
+/**
+ * Format a Decimal-precision amount as a currency string.
+ *
+ * Returns `None` when `amount` does not parse. INR uses Indian
+ * lakhs/crores grouping (e.g. `₹12,34,567.89`); other supported codes use
+ * Western grouping (`$1,234,567.89`). Unknown codes are still formatted with
+ * the code itself as the prefix (e.g. `XYZ 1,234.56`) — the function never
+ * silently substitutes a different currency.
+ */
+export function format_currency(amount: string, currency_code: string): string | undefined;
 
 export function fuzzy_score(a: string, b: string): number;
 
@@ -68,7 +96,13 @@ export function validate_budget_wasm(amount: string): any;
 
 export function validate_contact_wasm(name: string): any;
 
+export function validate_email_wasm(email: string): any;
+
+export function validate_phone_wasm(phone: string): any;
+
 export function validate_transaction_wasm(amount: string, purpose: string): any;
+
+export function validate_upi_id_wasm(upi_id: string): any;
 
 export function validate_wallet_wasm(name: string, balance: string): any;
 
@@ -100,7 +134,9 @@ export interface InitOutput {
     readonly calculate_budget_percentage: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly calculate_match_score: (a: bigint, b: number, c: number, d: number, e: number, f: bigint, g: number, h: number, i: number, j: number) => number;
     readonly calculate_spending_velocity: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+    readonly detect_currency_from_text: (a: number, b: number, c: number) => void;
     readonly detect_subscription_patterns: (a: number, b: number) => void;
+    readonly format_currency: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly fuzzy_score: (a: number, b: number, c: number, d: number) => number;
     readonly generate_dashboard_summary: (a: number, b: number, c: number, d: number) => void;
     readonly get_period_bounds: (a: number, b: number) => number;
@@ -114,7 +150,10 @@ export interface InitOutput {
     readonly project_savings_goal: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
     readonly validate_budget_wasm: (a: number, b: number) => number;
     readonly validate_contact_wasm: (a: number, b: number) => number;
+    readonly validate_email_wasm: (a: number, b: number) => number;
+    readonly validate_phone_wasm: (a: number, b: number) => number;
     readonly validate_transaction_wasm: (a: number, b: number, c: number, d: number) => number;
+    readonly validate_upi_id_wasm: (a: number, b: number) => number;
     readonly validate_wallet_wasm: (a: number, b: number, c: number, d: number) => number;
     readonly __wbg_set_spendingvelocity_daily_burn_rate: (a: number, b: number) => void;
     readonly __wbg_get_spendingvelocity_daily_burn_rate: (a: number) => number;

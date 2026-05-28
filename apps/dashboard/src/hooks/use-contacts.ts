@@ -10,12 +10,24 @@ import type {
   ValidationResult,
 } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
+import { validateContactWasm, validatePhoneWasm, validateUpiIdWasm } from "@expent/wasm";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
-import { validateContactWasm } from "@expent/wasm";
+
+/**
+ * Run an awaited wasm validator and throw a flat user-facing message if the
+ * result reports any errors. Pass-through helper so the create/update/identifier
+ * mutations share one shape.
+ */
+async function assertValid(promise: Promise<unknown>): Promise<void> {
+  const result = (await promise) as unknown as ValidationResult;
+  if (result && !result.is_valid) {
+    throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+  }
+}
 
 export function useContacts() {
   const session = useSession();
@@ -25,10 +37,10 @@ export function useContacts() {
 
   const createMutation = useMutation({
     mutationFn: async (data: CreateContactRequest) => {
-      // 0. Shared WASM Validation
-      const result = (await validateContactWasm(data.name)) as unknown as ValidationResult;
-      if (!result.is_valid) {
-        throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+      // 0. Shared WASM Validation — name is required, phone is optional.
+      await assertValid(validateContactWasm(data.name));
+      if (data.phone) {
+        await assertValid(validatePhoneWasm(data.phone));
       }
       return api.post<Contact, CreateContactRequest>("/api/contacts", data);
     },
@@ -41,12 +53,12 @@ export function useContacts() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateContactRequest }) => {
-      // 0. Shared WASM Validation
+      // 0. Shared WASM Validation — both fields are optional on update.
       if (data.name) {
-        const result = (await validateContactWasm(data.name)) as unknown as ValidationResult;
-        if (!result.is_valid) {
-          throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
-        }
+        await assertValid(validateContactWasm(data.name));
+      }
+      if (data.phone) {
+        await assertValid(validatePhoneWasm(data.phone));
       }
       return api.put<Contact, UpdateContactRequest>(`/api/contacts/${id}`, data);
     },
@@ -142,8 +154,16 @@ export function useContactDetail(id: string) {
   });
 
   const addIdentifierMutation = useMutation({
-    mutationFn: (data: AddIdentifierRequest) =>
-      api.post<ContactIdentifier, AddIdentifierRequest>(`/api/contacts/${id}/identifiers`, data),
+    mutationFn: async (data: AddIdentifierRequest) => {
+      // Validate UPI / phone before round-tripping. BANK_ACC has no shared
+      // wasm validator yet; the server-side validator still applies.
+      if (data.type === "UPI") {
+        await assertValid(validateUpiIdWasm(data.value));
+      } else if (data.type === "PHONE") {
+        await assertValid(validatePhoneWasm(data.value));
+      }
+      return api.post<ContactIdentifier, AddIdentifierRequest>(`/api/contacts/${id}/identifiers`, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contact-detail", id] });
       toast.success("Identifier added");

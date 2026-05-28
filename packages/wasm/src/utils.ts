@@ -27,8 +27,12 @@ export async function loadExpentWasm() {
 
 /**
  * Calculates budget percentage consumption using Rust/WASM.
+ *
+ * Returns `undefined` when either input is not a parseable Decimal
+ * (previously this silently produced "0" — callers should treat
+ * `undefined` as "bad input" rather than "zero").
  */
-export async function calculateBudgetPercentageWasm(spent: string, limit: string) {
+export async function calculateBudgetPercentageWasm(spent: string, limit: string): Promise<string | undefined> {
   const wasm = await loadExpentWasm();
   return wasm.calculate_budget_percentage(spent, limit);
 }
@@ -213,4 +217,67 @@ export async function validateWalletWasm(name: string, balance: string) {
 export async function validateContactWasm(name: string) {
   const wasm = await loadExpentWasm();
   return wasm.validate_contact_wasm(name);
+}
+
+/**
+ * Validates a UPI ID (`handle@provider`) using Rust/WASM.
+ *
+ * Returns a `ValidationResult`; cast at the call site as we do for the other
+ * validators. Tighter than RFC 5321 — handles are constrained to
+ * `[a-zA-Z0-9._-]` (3-256 chars) and providers to `[a-zA-Z0-9.]` (2-64
+ * chars), matching the NPCI namespace.
+ */
+export async function validateUpiIdWasm(upiId: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_upi_id_wasm(upiId);
+}
+
+/**
+ * Validates an email address using Rust/WASM.
+ *
+ * Minimal RFC-5321-shaped check: one `@`, local <= 64 chars, domain with a
+ * dot and >= 2-char TLD, no whitespace. Deliberately not a full RFC
+ * validator.
+ */
+export async function validateEmailWasm(email: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_email_wasm(email);
+}
+
+/**
+ * Validates a phone number using Rust/WASM.
+ *
+ * Strips `' -()+'` separators, then requires 7-15 ASCII digits (E.164 range).
+ */
+export async function validatePhoneWasm(phone: string) {
+  const wasm = await loadExpentWasm();
+  return wasm.validate_phone_wasm(phone);
+}
+
+/**
+ * Formats a Decimal-precision amount as a currency string using Rust/WASM.
+ *
+ * Prefer JS `Intl.NumberFormat` for high-frequency render paths (it's
+ * synchronous and locale-aware). Use this wrapper when you already have
+ * wasm loaded — e.g. inside the OCR pipeline or other wasm-resident
+ * processing — where the rust_decimal precision matters and avoiding
+ * float drift is worth the async cost.
+ *
+ * INR uses Indian lakhs/crores grouping; other supported codes use Western
+ * thousands. Unknown codes fall back to `<CODE> 1,234.56`. Returns
+ * `undefined` for unparseable amounts.
+ */
+export async function formatCurrencyWasm(amount: string, currencyCode: string): Promise<string | undefined> {
+  const wasm = await loadExpentWasm();
+  return wasm.format_currency(amount, currencyCode);
+}
+
+/**
+ * Best-effort guess at the currency referenced by a piece of free-form text
+ * (OCR receipts, pasted text, …). Priority: ISO codes > unicode symbols >
+ * `Rs`/`INR` shorthand. Returns the ISO code or `undefined`.
+ */
+export async function detectCurrencyFromTextWasm(text: string): Promise<string | undefined> {
+  const wasm = await loadExpentWasm();
+  return wasm.detect_currency_from_text(text);
 }

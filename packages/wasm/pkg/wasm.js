@@ -237,13 +237,16 @@ export function batch_fuzzy_search(query, items, threshold) {
 }
 
 /**
+ * Compute `spent / limit * 100` as a Decimal-precise percentage string.
+ *
+ * Returns `None` (becomes `undefined` in JS) when either input fails to parse,
+ * surfacing bad caller data instead of silently reporting "0". A zero `limit`
+ * is still treated as 0% so dividing-by-zero doesn't blow up.
  * @param {string} spent
  * @param {string} limit
- * @returns {string}
+ * @returns {string | undefined}
  */
 export function calculate_budget_percentage(spent, limit) {
-    let deferred3_0;
-    let deferred3_1;
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         const ptr0 = passStringToWasm0(spent, wasm.__wbindgen_export, wasm.__wbindgen_export2);
@@ -253,12 +256,14 @@ export function calculate_budget_percentage(spent, limit) {
         wasm.calculate_budget_percentage(retptr, ptr0, len0, ptr1, len1);
         var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
         var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-        deferred3_0 = r0;
-        deferred3_1 = r1;
-        return getStringFromWasm0(r0, r1);
+        let v3;
+        if (r0 !== 0) {
+            v3 = getStringFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 1, 1);
+        }
+        return v3;
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_export4(deferred3_0, deferred3_1, 1);
     }
 }
 
@@ -302,6 +307,35 @@ export function calculate_spending_velocity(spent, limit, period) {
 }
 
 /**
+ * Best-effort guess at the currency a piece of free-form text refers to.
+ *
+ * Priority: explicit ISO codes (case-insensitive whole-word match) win over
+ * symbols, because OCR pipelines often see "INR 250" alongside a unicode
+ * rupee sign, and the code is the surer signal. Returns `None` when nothing
+ * matches — callers should keep their existing fallback.
+ * @param {string} text
+ * @returns {string | undefined}
+ */
+export function detect_currency_from_text(text) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.detect_currency_from_text(retptr, ptr0, len0);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        let v2;
+        if (r0 !== 0) {
+            v2 = getStringFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 1, 1);
+        }
+        return v2;
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+}
+
+/**
  * @param {any} transactions
  * @returns {any}
  */
@@ -316,6 +350,39 @@ export function detect_subscription_patterns(transactions) {
             throw takeObject(r1);
         }
         return takeObject(r0);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+}
+
+/**
+ * Format a Decimal-precision amount as a currency string.
+ *
+ * Returns `None` when `amount` does not parse. INR uses Indian
+ * lakhs/crores grouping (e.g. `₹12,34,567.89`); other supported codes use
+ * Western grouping (`$1,234,567.89`). Unknown codes are still formatted with
+ * the code itself as the prefix (e.g. `XYZ 1,234.56`) — the function never
+ * silently substitutes a different currency.
+ * @param {string} amount
+ * @param {string} currency_code
+ * @returns {string | undefined}
+ */
+export function format_currency(amount, currency_code) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(amount, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(currency_code, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len1 = WASM_VECTOR_LEN;
+        wasm.format_currency(retptr, ptr0, len0, ptr1, len1);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        let v3;
+        if (r0 !== 0) {
+            v3 = getStringFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_export4(r0, r1 * 1, 1);
+        }
+        return v3;
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
     }
@@ -552,6 +619,28 @@ export function validate_contact_wasm(name) {
 }
 
 /**
+ * @param {string} email
+ * @returns {any}
+ */
+export function validate_email_wasm(email) {
+    const ptr0 = passStringToWasm0(email, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.validate_email_wasm(ptr0, len0);
+    return takeObject(ret);
+}
+
+/**
+ * @param {string} phone
+ * @returns {any}
+ */
+export function validate_phone_wasm(phone) {
+    const ptr0 = passStringToWasm0(phone, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.validate_phone_wasm(ptr0, len0);
+    return takeObject(ret);
+}
+
+/**
  * @param {string} amount
  * @param {string} purpose
  * @returns {any}
@@ -562,6 +651,17 @@ export function validate_transaction_wasm(amount, purpose) {
     const ptr1 = passStringToWasm0(purpose, wasm.__wbindgen_export, wasm.__wbindgen_export2);
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.validate_transaction_wasm(ptr0, len0, ptr1, len1);
+    return takeObject(ret);
+}
+
+/**
+ * @param {string} upi_id
+ * @returns {any}
+ */
+export function validate_upi_id_wasm(upi_id) {
+    const ptr0 = passStringToWasm0(upi_id, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.validate_upi_id_wasm(ptr0, len0);
     return takeObject(ret);
 }
 
