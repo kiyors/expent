@@ -18,14 +18,19 @@ vi.mock("@/lib/auth-client", () => ({
   useSession: () => ({ data: { user: { id: "test-user" } } }),
 }));
 vi.mock("@tanstack/react-query", () => ({
-  useMutation: vi.fn(({ mutationFn, onSuccess, onError }) => ({
+  // The real react-query signatures are `onSuccess(data, variables, context)`
+  // and `onError(error, variables, context)`. The previous mock dropped
+  // variables/context, which crashed production destructures like
+  // `onError: (err, { id }, ctx) => …`.
+  useMutation: vi.fn(({ mutationFn, onSuccess, onError, onMutate }) => ({
     mutateAsync: async (variables: any) => {
+      const context = onMutate ? await onMutate(variables) : undefined;
       try {
         const result = await mutationFn(variables);
-        if (onSuccess) onSuccess(result, variables);
+        if (onSuccess) onSuccess(result, variables, context);
         return result;
       } catch (error) {
-        if (onError) onError(error);
+        if (onError) onError(error, variables, context);
         throw error;
       }
     },
@@ -37,14 +42,30 @@ vi.mock("@tanstack/react-query", () => ({
   }),
   useQueryClient: () => ({
     invalidateQueries: vi.fn(),
+    cancelQueries: vi.fn(),
   }),
 }));
 vi.mock("@tanstack/react-db", () => ({
   useLiveQuery: vi.fn(() => ({ data: [], isLoading: false })),
 }));
+
+// @expent/wasm dynamically imports the .wasm binary, which jsdom can't
+// instantiate. Stub the surface the hook actually uses with always-valid
+// responses so the production code path runs end-to-end.
+vi.mock("@expent/wasm", () => ({
+  validateTransactionWasm: vi.fn(async () => ({ is_valid: true, errors: [] })),
+  aggregateTransactionsWasm: vi.fn(async () => ({})),
+  generateDashboardSummaryWasm: vi.fn(async () => ({})),
+  useWasmWorker: vi.fn(() => ({ worker: null, isReady: false })),
+}));
 vi.mock("@/lib/db", () => ({
   db: {
     transactions: {
+      // onMutate / onError reach into db.transactions for optimistic snapshots
+      // and rollback; need stubs for all of them or the mutation aborts before
+      // the request goes out.
+      get: vi.fn(),
+      insert: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
     },

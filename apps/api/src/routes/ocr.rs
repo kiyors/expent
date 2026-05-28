@@ -80,9 +80,10 @@ pub async fn process_image_ocr_handler(
         ));
     }
 
-    // Per-user rate limiting
+    // Per-user rate limiting — proper 429 with Retry-After (not a 400) so
+    // clients can back off intelligently and distinguish quota from input errors.
     if !state.ocr_limiter.check(&session.user.id) {
-        return Err(ApiError::BadRequest(
+        return Err(ApiError::RateLimited(
             "Rate limit exceeded for OCR requests. Please wait a moment.".to_string(),
         ));
     }

@@ -1,10 +1,14 @@
 use axum::{
     Json,
-    http::StatusCode,
+    http::{HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
 };
 use serde_json::json;
 use thiserror::Error;
+
+/// Suggested `Retry-After` value (in seconds) for rate-limited responses. Sized
+/// to comfortably exceed the per-minute window the OCR limiter uses today.
+const RATE_LIMIT_RETRY_AFTER_SECS: u32 = 60;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
@@ -16,12 +20,30 @@ pub enum ApiError {
     BadRequest(String),
     #[error("Unauthorized: {0}")]
     Unauthorized(String),
+    #[error("Too Many Requests: {0}")]
+    RateLimited(String),
     #[error("Database error: {0}")]
     App(#[from] db::AppError),
 }
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
+        // Rate-limit responses are handled separately so they can carry a
+        // Retry-After hint to clients (lets them back off intelligently
+        // instead of immediately retrying and burning more of the quota).
+        if let ApiError::RateLimited(msg) = self {
+            let body = Json(json!({ "error": msg }));
+            let retry_header_value =
+                HeaderValue::from_str(&RATE_LIMIT_RETRY_AFTER_SECS.to_string())
+                    .unwrap_or_else(|_| HeaderValue::from_static("60"));
+            return (
+                StatusCode::TOO_MANY_REQUESTS,
+                [(header::RETRY_AFTER, retry_header_value)],
+                body,
+            )
+                .into_response();
+        }
+
         let (status, message) = match self {
             ApiError::Internal(msg) => {
                 tracing::error!("Internal Server Error: {}", msg);
@@ -33,6 +55,7 @@ impl IntoResponse for ApiError {
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             ApiError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),
+            ApiError::RateLimited(_) => unreachable!("handled above"),
             ApiError::App(app_err) => match app_err {
                 db::AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
                 db::AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),

@@ -46,6 +46,10 @@ describe("useOcrUpload", () => {
     vi.clearAllMocks();
     // Global fetch mock
     global.fetch = vi.fn();
+    // The shared SSE stub in setup.ts checks globalThis.__MOCK_SSE_PAYLOAD__
+    // before falling back to its default; reset it between tests so payloads
+    // don't bleed across cases.
+    (globalThis as any).__MOCK_SSE_PAYLOAD__ = undefined;
   });
 
   it("should block PDF upload if it has more than 5 pages", async () => {
@@ -86,6 +90,14 @@ describe("useOcrUpload", () => {
       status: "COMPLETED",
       processed_data: { doc_type: "GPAY", data: {} },
     });
+    // The SSE stub fires this payload when waitForJobCompletion subscribes;
+    // its job_id must match the one api.post just returned or the hook ignores
+    // the message and times out.
+    (globalThis as any).__MOCK_SSE_PAYLOAD__ = {
+      job_id: "job-123",
+      status: "COMPLETED",
+      processed_data: { doc_type: "GPAY", data: {} },
+    };
 
     const { result } = renderHook(() => useOcrUpload());
 
@@ -111,6 +123,11 @@ describe("useOcrUpload", () => {
       status: "COMPLETED",
       processed_data: { doc_type: "GPAY", data: {} },
     });
+    (globalThis as any).__MOCK_SSE_PAYLOAD__ = {
+      job_id: "job-123",
+      status: "COMPLETED",
+      processed_data: { doc_type: "GPAY", data: {} },
+    };
 
     const { result } = renderHook(() => useOcrUpload());
 

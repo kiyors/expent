@@ -57,9 +57,10 @@ pub async fn direct_upload_handler(
     session: AuthSession,
     mut multipart: Multipart,
 ) -> Result<Json<PresignedUrlResponse>, ApiError> {
-    // Per-user rate limiting
+    // Per-user rate limiting — proper 429 with Retry-After (not a 400) so
+    // clients can back off intelligently and distinguish quota from input errors.
     if !state.ocr_limiter.check(&session.user.id) {
-        return Err(ApiError::BadRequest(
+        return Err(ApiError::RateLimited(
             "Rate limit exceeded for upload requests. Please wait a moment.".to_string(),
         ));
     }
