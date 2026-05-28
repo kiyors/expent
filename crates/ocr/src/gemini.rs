@@ -77,31 +77,49 @@ STEP 3: FORMAT OUTPUT
         &self,
         files: Vec<(Vec<u8>, String)>,
     ) -> Result<Vec<UnifiedExtraction>, anyhow::Error> {
-        let mut futures = Vec::new();
-
+        // Carry the filename alongside each future so per-page failures can be
+        // logged with context. Previously failures were collected anonymously
+        // and silently dropped when at least one page succeeded — multi-page
+        // PDFs would lose pages with no signal in the logs.
+        let total = files.len();
+        let mut futures = Vec::with_capacity(total);
         for (data, filename) in files {
-            futures.push(self.extract_single(data, filename));
+            let fname = filename.clone();
+            let fut = self.extract_single(data, filename);
+            futures.push(async move { (fname, fut.await) });
         }
 
         let results = futures::future::join_all(futures).await;
-        let mut successful = Vec::new();
-        let mut errors = Vec::new();
+        let mut successful = Vec::with_capacity(total);
+        let mut first_error: Option<(String, anyhow::Error)> = None;
+        let mut failure_count: usize = 0;
 
-        for res in results {
+        for (filename, res) in results {
             match res {
                 Ok(ext) => successful.push(ext),
-                Err(e) => errors.push(e),
+                Err(e) => {
+                    failure_count += 1;
+                    tracing::warn!("⚠️ OCR page failed ({filename}): {e}");
+                    if first_error.is_none() {
+                        first_error = Some((filename, e));
+                    }
+                }
             }
         }
 
-        if !errors.is_empty() && successful.is_empty() {
-            return Err(anyhow::anyhow!(
-                "All batch OCR attempts failed. First error: {}",
-                errors[0]
-            ));
+        match (successful.is_empty(), first_error) {
+            (true, Some((filename, err))) => Err(anyhow::anyhow!(
+                "All {total} batch OCR attempts failed (first: {filename}): {err}"
+            )),
+            (false, Some(_)) => {
+                tracing::warn!(
+                    "⚠️ OCR batch had partial failures: {} of {total} pages failed",
+                    failure_count
+                );
+                Ok(successful)
+            }
+            _ => Ok(successful),
         }
-
-        Ok(successful)
     }
 
     async fn extract_single(

@@ -178,18 +178,12 @@ mod tests {
             format_currency("1234567.5", "USD").as_deref(),
             Some("$1,234,567.50")
         );
-        assert_eq!(
-            format_currency("-100", "EUR").as_deref(),
-            Some("-€100.00")
-        );
+        assert_eq!(format_currency("-100", "EUR").as_deref(), Some("-€100.00"));
     }
 
     #[test]
     fn unknown_code_uses_code_prefix() {
-        assert_eq!(
-            format_currency("100", "XYZ").as_deref(),
-            Some("XYZ 100.00")
-        );
+        assert_eq!(format_currency("100", "XYZ").as_deref(), Some("XYZ 100.00"));
     }
 
     #[test]

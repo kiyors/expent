@@ -92,8 +92,10 @@ impl GroupsManager {
         &self,
         user_id: &str,
         group_id: &str,
+        limit: Option<u64>,
+        offset: Option<u64>,
     ) -> Result<Vec<entities::transactions::Model>, AppError> {
-        groups::list_group_transactions(&self.db, user_id, group_id).await
+        groups::list_group_transactions(&self.db, user_id, group_id, limit, offset).await
     }
 
     pub async fn list_group_members(

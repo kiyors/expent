@@ -1,7 +1,8 @@
 use axum::Router;
-use axum::extract::{Json, Path, State};
+use axum::extract::{Json, Path, Query, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, patch, post};
+use db::dto::PaginationParams;
 use serde::Deserialize;
 use validator::Validate;
 
@@ -81,11 +82,12 @@ pub async fn list_group_transactions_handler(
     State(state): State<AppState>,
     session: AuthSession,
     Path(id): Path<String>,
+    Query(params): Query<PaginationParams>,
 ) -> Result<Json<Vec<db::entities::transactions::Model>>, ApiError> {
     let result = state
         .core
         .groups
-        .list_group_transactions(&session.user.id, &id)
+        .list_group_transactions(&session.user.id, &id, params.limit, params.offset)
         .await?;
 
     Ok(Json(result))
