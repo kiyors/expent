@@ -15,7 +15,7 @@
     "test": "dotenv -- turbo test",
     "test:core": "cargo test -p expent_core",
     "test:dashboard": "pnpm --filter @expent/dashboard test",
-    "test:ocr": "cd apps/ocr && uv run pytest",
+    "test:ocr": "cargo test -p ocr",
     "test:all": "pnpm test:core && pnpm test:dashboard && pnpm test:ocr",
     "fmt-all": "cargo fmt && pnpm fmt",
     "bacon:dev": "bacon dev",

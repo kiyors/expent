@@ -2,6 +2,8 @@
 
 The Reconciliation service allows users to upload raw bank statements and match them against recorded transactions, ensuring the digital ledger matches real-world bank records.
 
+> **Naming note:** `expent_core::services::reconciliation` describes the **target** layout. The working path today is `expent_core::reconciliation` (facade over the `reconciliation` crate). See `docs/core.md`.
+
 ## 1. Logic Workflow
 
 Reconciliation follows a three-step pipeline: **Ingestion**, **Fuzzy Matching**, and **Confirmation**.

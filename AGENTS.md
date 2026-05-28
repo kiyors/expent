@@ -95,8 +95,10 @@ When generating code or reviewing PRs, you must actively apply the loaded skills
 
 ### 6. Repository Architecture (Monorepo Boundaries)
 
-- **Central Hub (`crates/expent_core`):** All business rules, auth orchestration, and OCR delegation live in `expent_core/src/services/`. Split into granular files.
-- **API Entry (`apps/api`):** API routes strictly delegate to `expent_core::services`.
+- **Central Hub (`crates/expent_core`):** Orchestrates business rules, auth, and OCR delegation.
+  - _Current:_ logic lives in the domain crates (`crates/wallets`, `crates/transactions`, `crates/ocr`, …) and is surfaced through the `expent_core` facade as `expent_core::<domain>` (e.g. `expent_core::ocr`, `expent_core::wallets`).
+  - _Target:_ consolidate this logic under `expent_core/src/services/`, split into granular files. New cross-crate orchestration should move toward this layout.
+- **API Entry (`apps/api`):** API routes strictly delegate to the `expent_core` facade (`expent_core::<domain>`; target: `expent_core::services`). No business logic in routes.
 - **Shared Packages:** Do not define types or UI locally within apps. Use `packages/types` (generated via `ts-rs`) and `packages/ui`.
 - **Dependency Management:** Common Rust dependencies belong in root `Cargo.toml` using `workspace = true`.
 

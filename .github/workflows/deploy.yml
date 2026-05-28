@@ -27,7 +27,7 @@ jobs:
             image: ghcr.io/${{ github.repository }}-dashboard
           - service: server
             context: .
-            dockerfile: apps/server/Dockerfile
+            dockerfile: apps/api/Dockerfile
             image: ghcr.io/${{ github.repository }}-server
 
     steps:

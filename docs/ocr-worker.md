@@ -2,6 +2,8 @@
 
 This document covers the structure and logic of the internal OCR background worker. It operates strictly as an asynchronous data-processing pipeline consumed by the **`expent_core`** hub.
 
+> **Naming note:** `expent_core::services::*` paths below describe the **target** layout. The working path today is `expent_core::ocr` (the facade re-exporting the `ocr` crate's `ops`/`worker`). See `docs/core.md` for the convention.
+
 ## Architectural Overview
 
 - **Framework**: Native Rust (`crates/ocr`).

@@ -77,7 +77,7 @@ The instructions in this file are foundational and take absolute precedence over
 
 1. **Security First**: Protect `.env`, `.git`, and system configs. Never commit secrets.
 2. **Context Efficiency**: Combine tool calls. Use `wait_for_previous: true` only when necessary.
-3. **Engineering Integrity**: Adhere to existing patterns. Use `SmartMerge` for DB operations.
+3. **Engineering Integrity**: Adhere to existing patterns. Wrap atomic, multi-write DB operations in `db.transaction` and always adjust wallet balances within the same transaction.
 4. **Validation**: Run `cargo check -p api`, `cd apps/dashboard && pnpm tsc`, or `vitest run` after changes.
 
 ## Testing Strategy & TDD
