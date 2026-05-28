@@ -15,17 +15,22 @@ impl DecimalExt for Decimal {
     }
 }
 
+/// Compute `spent / limit * 100` as a Decimal-precise percentage string.
+///
+/// Returns `None` (becomes `undefined` in JS) when either input fails to parse,
+/// surfacing bad caller data instead of silently reporting "0". A zero `limit`
+/// is still treated as 0% so dividing-by-zero doesn't blow up.
 #[wasm_bindgen]
-pub fn calculate_budget_percentage(spent: String, limit: String) -> String {
-    let spent = Decimal::from_str(&spent).unwrap_or(Decimal::ZERO);
-    let limit = Decimal::from_str(&limit).unwrap_or(Decimal::ZERO);
+pub fn calculate_budget_percentage(spent: String, limit: String) -> Option<String> {
+    let spent = Decimal::from_str(&spent).ok()?;
+    let limit = Decimal::from_str(&limit).ok()?;
 
     if limit.is_zero() {
-        return "0".to_string();
+        return Some("0".to_string());
     }
 
     let percentage = (spent / limit) * Decimal::from(100);
-    percentage.round_dp(2).to_string()
+    Some(percentage.round_dp(2).to_string())
 }
 
 #[wasm_bindgen]
@@ -196,11 +201,21 @@ mod tests {
     fn test_calculate_percentage() {
         assert_eq!(
             calculate_budget_percentage("50".to_string(), "100".to_string()),
-            "50.00"
+            Some("50.00".to_string())
         );
         assert_eq!(
             calculate_budget_percentage("0".to_string(), "100".to_string()),
-            "0"
+            Some("0".to_string())
+        );
+        // Zero limit short-circuits to "0" rather than dividing by zero.
+        assert_eq!(
+            calculate_budget_percentage("50".to_string(), "0".to_string()),
+            Some("0".to_string())
+        );
+        // Unparseable input surfaces as None instead of silently producing "0".
+        assert_eq!(
+            calculate_budget_percentage("abc".to_string(), "100".to_string()),
+            None
         );
     }
 
