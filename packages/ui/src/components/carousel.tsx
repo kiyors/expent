@@ -112,6 +112,7 @@ function Carousel({
         canScrollNext,
       }}
     >
+      {/* biome-ignore lint/a11y/useSemanticElements: shadcn carousel root; <section> would imply standalone landmark */}
       <div
         onKeyDownCapture={handleKeyDown}
         className={cn("relative", className)}
@@ -140,6 +141,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   const { orientation } = useCarousel();
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: shadcn carousel slide; <fieldset> would inherit form-control semantics
     <div
       role="group"
       aria-roledescription="slide"

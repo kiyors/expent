@@ -7,19 +7,14 @@ import type {
   ValidationResult,
 } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
+import { useWasmWorker, validateTransactionWasm } from "@expent/wasm";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
+import { db } from "@/lib/db";
 import { useCategories } from "./use-categories";
 import { useWallets } from "./use-wallets";
-import { db } from "@/lib/db";
-import {
-  aggregateTransactionsWasm,
-  generateDashboardSummaryWasm,
-  validateTransactionWasm,
-  useWasmWorker,
-} from "@expent/wasm";
 
 export function useTransactions(params: PaginationParams = {}) {
   const session = useSession();
@@ -99,7 +94,7 @@ export function useTransactions(params: PaginationParams = {}) {
 
       return { previousTxn };
     },
-    onError: (err, id, context) => {
+    onError: (err, _id, context) => {
       // Rollback
       if (context?.previousTxn) {
         db.transactions.insert(context.previousTxn);
@@ -115,7 +110,10 @@ export function useTransactions(params: PaginationParams = {}) {
 
   return {
     transactions: query.data as unknown as TransactionWithDetail[],
-    totalCount: (query as any).totalCount || 0, // TanStack DB handles total count in meta
+    // TanStack DB attaches `totalCount` to the live-query result, but it
+    // isn't part of the published react-query result type — read it through
+    // an `unknown` cast rather than a blanket `any`.
+    totalCount: (query as unknown as { totalCount?: number }).totalCount || 0,
     isLoading: query.isLoading,
     isFetching: query.isLoading, // In DB mode, loading is fetching
     error: query.isError ? "Error loading transactions" : null,

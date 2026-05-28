@@ -34,6 +34,7 @@ export function LatestChange() {
         className="w-max px-0 font-light text-xs"
         size="sm"
         variant="link"
+        // biome-ignore lint/a11y/useAnchorContent: Button injects children into the rendered <a> via base-ui render prop
         render={<a href={latestChange.readMore.href} />}
         nativeButton={false}
       >

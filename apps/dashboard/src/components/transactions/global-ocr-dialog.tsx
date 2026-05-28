@@ -13,7 +13,7 @@ import { api } from "@/lib/api-client";
 import { ReviewTransactionForm } from "./review-transaction-form";
 
 export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
-  const { isUploading, uploadSteps, processedOcr, uploadFile, setProcessedOcr, reset } = useOcrUpload();
+  const { isUploading, uploadSteps, processedOcr, uploadFile, reset } = useOcrUpload();
   const [isSaving, setIsSaving] = React.useState(false);
   const queryClient = useQueryClient();
 

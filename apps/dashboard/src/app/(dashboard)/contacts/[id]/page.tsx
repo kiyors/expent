@@ -1,6 +1,6 @@
 "use client";
 
-import type { ContactIdentifier, Transaction } from "@expent/types";
+import type { ContactIdentifier, IdentifierType, Transaction } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -39,7 +39,7 @@ export default function ContactDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [isAddIdDialogOpen, setIsAddIdDialogOpen] = React.useState(false);
-  const [newIdType, setNewIdType] = React.useState("UPI");
+  const [newIdType, setNewIdType] = React.useState<IdentifierType>("UPI");
   const [newIdValue, setNewIdValue] = React.useState("");
 
   const { contactData, isLoading, addIdentifierMutation } = useContactDetail(id);
@@ -131,7 +131,10 @@ export default function ContactDetailPage() {
                     <div className="grid gap-4 py-4">
                       <div className="grid gap-2">
                         <Label htmlFor="type">Type</Label>
-                        <Select value={newIdType} onValueChange={(val) => setNewIdType(val || "UPI")}>
+                        <Select
+                          value={newIdType}
+                          onValueChange={(val) => setNewIdType((val as IdentifierType) || "UPI")}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -159,7 +162,7 @@ export default function ContactDetailPage() {
                       <Button
                         onClick={() =>
                           addIdentifierMutation.mutate(
-                            { type: newIdType as any, value: newIdValue },
+                            { type: newIdType, value: newIdValue },
                             {
                               onSuccess: () => setIsAddIdDialogOpen(false),
                             },

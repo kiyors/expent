@@ -53,10 +53,9 @@ import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
 import { SplitDialog } from "@/components/transactions/split-dialog";
 import { TransactionViewer } from "@/components/transactions/transaction-viewer";
+import { useOcrUpload } from "@/hooks/use-ocr";
 import { useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
-
-import { useOcrUpload } from "@/hooks/use-ocr";
 
 // Route Component
 export default function TransactionsPage() {
@@ -557,6 +556,7 @@ export default function TransactionsPage() {
                 <TableBody>
                   {isTxnsLoading && !rawTransactions ? (
                     Array.from({ length: 5 }).map((_, i) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder, list does not reorder
                       <TableRow key={`skeleton-${i}`}>
                         <TableCell colSpan={columns.length} className="p-0">
                           <Skeleton className="h-12 w-full" />

@@ -23,11 +23,17 @@ interface SplitDialogProps {
   totalAmount: string;
 }
 
+type SplitEntry = { id: string; receiver_email: string; amount: string };
+
+const createSplit = (): SplitEntry => ({
+  id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+  receiver_email: "",
+  amount: "",
+});
+
 export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: SplitDialogProps) {
   const queryClient = useQueryClient();
-  const [splits, setSplits] = useState<{ receiver_email: string; amount: string }[]>([
-    { receiver_email: "", amount: "" },
-  ]);
+  const [splits, setSplits] = useState<SplitEntry[]>(() => [createSplit()]);
 
   const splitMutation = useMutation({
     mutationFn: () =>
@@ -45,7 +51,7 @@ export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: 
     },
   });
 
-  const addSplit = () => setSplits((prev) => [...prev, { receiver_email: "", amount: "" }]);
+  const addSplit = () => setSplits((prev) => [...prev, createSplit()]);
   const removeSplit = (index: number) => setSplits((prev) => prev.filter((_, i) => i !== index));
   const updateSplit = (index: number, field: "receiver_email" | "amount", value: string) => {
     setSplits((prev) => {
@@ -64,7 +70,7 @@ export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: 
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {splits.map((split, index) => (
-            <div key={index} className="flex gap-2 items-end border-b pb-4 last:border-0">
+            <div key={split.id} className="flex gap-2 items-end border-b pb-4 last:border-0">
               <div className="grid gap-2 flex-1">
                 <Label htmlFor={`email-${index}`}>Email</Label>
                 <Input

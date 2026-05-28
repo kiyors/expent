@@ -15,6 +15,7 @@ export function NotFoundPage() {
         </EmptyHeader>
         <EmptyContent>
           <div className="flex gap-2">
+            {/* biome-ignore lint/a11y/useAnchorContent: Button injects children into the rendered <a> via base-ui render prop */}
             <Button render={<a href="/" />} nativeButton={false}>
               <HomeIcon data-icon="inline-start" />
               Go dashboard

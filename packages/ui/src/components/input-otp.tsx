@@ -1,3 +1,7 @@
+// biome-ignore-all lint/a11y/useFocusableInteractive: shadcn input-otp separator is purely visual between slot groups
+// biome-ignore-all lint/a11y/useSemanticElements: <hr> would force block layout; flex item separator is intentional
+// biome-ignore-all lint/a11y/useAriaPropsForRole: visual separator without value; aria-valuenow would be misleading
+
 import { cn } from "@expent/ui/lib/utils";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { MinusIcon } from "lucide-react";

@@ -6,7 +6,7 @@ import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
 
 export function useCategories() {
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const session = useSession();
 
   const query = useLiveQuery((q) => q.from({ categories: db.categories }), [session.data]);
@@ -25,7 +25,7 @@ export function useCategories() {
       db.categories.delete(id);
       return { previousCat };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       if (context?.previousCat) {
         db.categories.insert(context.previousCat);
       }

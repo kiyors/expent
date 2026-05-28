@@ -1,6 +1,6 @@
 "use client";
 
-import type { TransactionWithDetail, Wallet } from "@expent/types";
+import type { TransactionWithDetail, UpdateWalletRequest, Wallet, WalletType } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
@@ -77,7 +77,10 @@ export default function WalletsPage() {
     createMutation.mutate(
       {
         name: newName,
-        type: newType as any,
+        // The Select widget binds `newType` as `string`, but the API DTO
+        // wants the WalletType enum union. The runtime value is constrained
+        // by the SelectItem options to valid variants.
+        type: newType as WalletType,
         initial_balance: newBalance,
       },
       {
@@ -181,7 +184,7 @@ export default function WalletsPage() {
               key={wallet.id}
               wallet={wallet}
               walletTransactions={transactionsByWallet[wallet.id] || []}
-              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data: data as any })}
+              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data: data as UpdateWalletRequest })}
               onDelete={() => deleteMutation.mutate(wallet.id)}
             />
           ))}

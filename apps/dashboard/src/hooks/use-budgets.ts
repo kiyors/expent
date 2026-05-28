@@ -1,10 +1,10 @@
 import type { Budget, BudgetHealth, CreateBudgetRequest, UpdateBudgetRequest, ValidationResult } from "@expent/types";
+import { validateBudgetWasm } from "@expent/wasm";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
-import { validateBudgetWasm } from "@expent/wasm";
 
 export function useBudgets() {
   const queryClient = useQueryClient();
@@ -52,7 +52,7 @@ export function useBudgets() {
       return { previousBudget };
     },
 
-    onError: (err, { id }, context) => {
+    onError: (_err, { id }, context) => {
       if (context?.previousBudget) {
         db.budgets.update(id, (draft) => {
           Object.assign(draft, context.previousBudget);
@@ -74,7 +74,7 @@ export function useBudgets() {
       db.budgets.delete(id);
       return { previousBudget };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       if (context?.previousBudget) {
         db.budgets.insert(context.previousBudget);
       }

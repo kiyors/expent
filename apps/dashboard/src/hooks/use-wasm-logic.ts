@@ -1,7 +1,7 @@
+import type { DetectedSubscription } from "@expent/types";
+import { useWasmWorker } from "@expent/wasm";
 import { useQuery } from "@tanstack/react-query";
 import { useTransactions } from "./use-transactions";
-import { useWasmWorker } from "@expent/wasm";
-import type { DetectedSubscription } from "@expent/types";
 
 /**
  * A hook that uses WASM to detect subscription patterns locally from transaction data.

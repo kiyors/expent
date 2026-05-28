@@ -162,8 +162,8 @@ export function ApprovalCard({
               <>
                 <Separator />
                 <dl className="flex flex-col gap-2 text-sm">
-                  {metadata.map((item, index) => (
-                    <div key={index} className="flex justify-between gap-4">
+                  {metadata.map((item) => (
+                    <div key={item.key} className="flex justify-between gap-4">
                       <dt className="text-muted-foreground shrink-0">{item.key}</dt>
                       <dd className="min-w-0 truncate">{item.value}</dd>
                     </div>

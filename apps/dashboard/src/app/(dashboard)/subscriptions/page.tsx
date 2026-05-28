@@ -1,6 +1,6 @@
 "use client";
 
-import type { Subscription } from "@expent/types";
+import type { JsonValue, Subscription, SubscriptionCycle } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
@@ -183,20 +183,24 @@ export default function SubscriptionsComponent() {
                       id: `temp-${sub.name}`,
                       name: sub.name,
                       amount: sub.amount,
-                      cycle: sub.cycle as any,
+                      // DetectedSubscription.cycle comes back as `string` (the
+                      // detector emits "MONTHLY" / "WEEKLY" / "YEARLY"); the
+                      // shared Subscription type uses the SubscriptionCycle
+                      // enum literal union, so the cast just narrows.
+                      cycle: sub.cycle as SubscriptionCycle,
                       start_date: sub.last_date,
                       next_charge_date: sub.last_date, // Placeholder
-                      detection_keywords: [sub.name] as any,
+                      detection_keywords: [sub.name] as JsonValue,
                     } as Subscription
                   }
                   onAction={() =>
                     confirmMutation.mutate({
                       name: sub.name,
                       amount: sub.amount,
-                      cycle: sub.cycle as any,
+                      cycle: sub.cycle as SubscriptionCycle,
                       start_date: sub.last_date,
                       next_charge_date: sub.last_date,
-                      detection_keywords: [sub.name] as any,
+                      detection_keywords: [sub.name] as JsonValue,
                     } as Subscription)
                   }
                 />

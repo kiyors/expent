@@ -39,7 +39,7 @@ export function SignUp() {
     }
 
     setIsLoading(true);
-    const { data, error } = await signUp.email({
+    const { error } = await signUp.email({
       email,
       password,
       name,
@@ -134,10 +134,11 @@ export function SignUp() {
         <div className="flex flex-col gap-y-4 mt-8 text-center">
           <p className="text-muted-foreground text-sm">
             By signing up, you agree to our{" "}
+            {/* biome-ignore lint/a11y/useValidAnchor: placeholder pending T&C content URL */}
             <a className="underline underline-offset-4 hover:text-primary" href="#">
               Terms
             </a>{" "}
-            and{" "}
+            and {/* biome-ignore lint/a11y/useValidAnchor: placeholder pending privacy-policy content URL */}
             <a className="underline underline-offset-4 hover:text-primary" href="#">
               Privacy
             </a>

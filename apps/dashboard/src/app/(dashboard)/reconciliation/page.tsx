@@ -8,6 +8,7 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Progress } from "@expent/ui/components/progress";
+import { matchStatementBatchWasm } from "@expent/wasm";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircleIcon,
@@ -24,7 +25,6 @@ import { useOcrUpload } from "@/hooks/use-ocr";
 import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
 import { useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
-import { matchStatementBatchWasm } from "@expent/wasm";
 
 export default function ReconciliationPage() {
   const queryClient = useQueryClient();

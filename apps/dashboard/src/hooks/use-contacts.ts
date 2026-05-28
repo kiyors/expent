@@ -5,7 +5,6 @@ import type {
   ContactIdentifier,
   CreateContactRequest,
   MergeContactsRequest,
-  Transaction,
   UpdateContactRequest,
   ValidationResult,
 } from "@expent/types";
@@ -31,7 +30,7 @@ async function assertValid(promise: Promise<unknown>): Promise<void> {
 
 export function useContacts() {
   const session = useSession();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   const query = useLiveQuery((q) => q.from({ contacts: db.contacts }), [session.data]);
 
@@ -93,7 +92,7 @@ export function useContacts() {
       db.contacts.delete(id);
       return { previousContact };
     },
-    onError: (err, id, context) => {
+    onError: (err, _id, context) => {
       if (context?.previousContact) {
         db.contacts.insert(context.previousContact);
       }

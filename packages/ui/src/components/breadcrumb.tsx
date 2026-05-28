@@ -40,6 +40,8 @@ function BreadcrumbLink({ className, render, ...props }: useRender.ComponentProp
 
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   return (
+    // biome-ignore lint/a11y/useFocusableInteractive: shadcn breadcrumb current-page; intentionally non-focusable (it's the page you're already on)
+    // biome-ignore lint/a11y/useSemanticElements: shadcn pattern — role=link conveys current page state without being navigable
     <span
       data-slot="breadcrumb-page"
       role="link"

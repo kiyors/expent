@@ -1,3 +1,4 @@
+// biome-ignore-all lint/a11y/useSemanticElements: virtualised data-table — divs with role attributes preserve assistive-tech semantics without breaking the scroller / column-resize handles.
 "use client";
 
 import * as React from "react";
@@ -36,10 +37,10 @@ function getAlignmentClass(align?: "left" | "right" | "center"): string | undefi
   return undefined;
 }
 
-const DataTableContext = React.createContext<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  DataTableContextValue<any> | undefined
->(undefined);
+// Generic React context type for an unbounded row generic; callers re-cast via
+// `useDataTable<T>()` to recover the concrete row type at the use-site.
+// biome-ignore lint/suspicious/noExplicitAny: erased generic in shared context
+const DataTableContext = React.createContext<DataTableContextValue<any> | undefined>(undefined);
 
 export function useDataTable<T extends object = RowData>() {
   const context = React.use(DataTableContext) as DataTableContextValue<T> | undefined;

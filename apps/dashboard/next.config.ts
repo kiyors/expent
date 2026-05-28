@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
       "mupdf-wasm.wasm": "../../node_modules/mupdf/dist/mupdf-wasm.wasm",
     },
   },
-  webpack(config, { isServer, webpack }) {
+  webpack(config, { isServer: _isServer, webpack: _webpack }) {
     config.experiments = {
       ...config.experiments,
       asyncWebAssembly: true,

@@ -1,12 +1,12 @@
 import init, { detect_subscription_patterns, generate_dashboard_summary } from "../pkg/wasm";
 
-onmessage = async (e: MessageEvent) => {
+self.onmessage = async (e: MessageEvent) => {
   const { type, payload } = e.data;
 
   // Initialize WASM in the worker
   await init();
 
-  let result;
+  let result: unknown;
   switch (type) {
     case "DETECT_SUBSCRIPTIONS":
       result = detect_subscription_patterns(payload.transactions);

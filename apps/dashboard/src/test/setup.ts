@@ -43,7 +43,7 @@ class MockEventSource {
     queueMicrotask(() => {
       if (this.readyState === MockEventSource.CLOSED) return;
       this.readyState = MockEventSource.OPEN;
-      const payload = (globalThis as any).__MOCK_SSE_PAYLOAD__ ?? DEFAULT_SSE_PAYLOAD;
+      const payload = (globalThis as { __MOCK_SSE_PAYLOAD__?: unknown }).__MOCK_SSE_PAYLOAD__ ?? DEFAULT_SSE_PAYLOAD;
       this.onmessage?.(new MessageEvent("message", { data: JSON.stringify(payload) }));
     });
   }

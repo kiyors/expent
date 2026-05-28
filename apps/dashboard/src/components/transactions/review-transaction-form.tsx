@@ -614,6 +614,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
 }
 
 const Loader2Icon = (props: React.SVGProps<SVGSVGElement>) => (
+  // biome-ignore lint/a11y/noSvgWithoutTitle: decorative loading spinner; surrounding control conveys state
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"

@@ -9,6 +9,7 @@ import type * as React from "react";
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: shadcn input-group; <fieldset> would inherit form-control semantics
     <div
       data-slot="input-group"
       role="group"
@@ -45,6 +46,8 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: shadcn input-group addon; <fieldset> would inherit form-control semantics
+    // biome-ignore lint/a11y/useKeyWithClickEvents: addon click is a focus-into-input shortcut; keyboard users tab into the input directly
     <div
       role="group"
       data-slot="input-group-addon"

@@ -1,11 +1,11 @@
 import type { CreateWalletRequest, UpdateWalletRequest, ValidationResult, Wallet } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
+import { validateWalletWasm } from "@expent/wasm";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
-import { validateWalletWasm } from "@expent/wasm";
 
 export function useWallets() {
   const session = useSession();
@@ -82,7 +82,7 @@ export function useWallets() {
       db.wallets.delete(id);
       return { previousWallet };
     },
-    onError: (err, id, context) => {
+    onError: (err, _id, context) => {
       if (context?.previousWallet) {
         db.wallets.insert(context.previousWallet);
       }

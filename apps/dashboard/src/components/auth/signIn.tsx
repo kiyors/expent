@@ -32,7 +32,7 @@ export function SignIn() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const { data, error } = await signIn.email({
+    const { error } = await signIn.email({
       email,
       password,
     });
@@ -100,10 +100,11 @@ export function SignIn() {
         <div className="flex flex-col gap-y-4 mt-8 text-center">
           <p className="text-muted-foreground text-sm">
             By clicking continue, you agree to our{" "}
+            {/* biome-ignore lint/a11y/useValidAnchor: placeholder pending T&C content URL */}
             <a className="underline underline-offset-4 hover:text-primary" href="#">
               Terms of Service
             </a>{" "}
-            and{" "}
+            and {/* biome-ignore lint/a11y/useValidAnchor: placeholder pending privacy-policy content URL */}
             <a className="underline underline-offset-4 hover:text-primary" href="#">
               Privacy Policy
             </a>

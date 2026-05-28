@@ -27,7 +27,20 @@ export function SecurityPanel() {
 
   const { data: activeSessions } = useQuery({
     queryKey: ["active-sessions"],
-    queryFn: () => api.get<any[]>("/api/auth/sessions"),
+    // better-auth returns session objects with id + ip + ua + timestamps; the
+    // shared @expent/types Session is server-side only, so we describe just
+    // the surface this panel renders rather than pulling in a full type.
+    queryFn: () =>
+      api.get<
+        Array<{
+          id: string;
+          ipAddress?: string | null;
+          userAgent?: string | null;
+          createdAt?: string;
+          updatedAt?: string;
+          expiresAt?: string;
+        }>
+      >("/api/auth/sessions"),
     enabled: !!session.data,
   });
 
@@ -133,7 +146,8 @@ export function SecurityPanel() {
                         )}
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        IP: {s.ipAddress || "Unknown"} • Last active {new Date(s.updatedAt).toLocaleString()}
+                        IP: {s.ipAddress || "Unknown"} • Last active{" "}
+                        {s.updatedAt ? new Date(s.updatedAt).toLocaleString() : "Unknown"}
                       </p>
                     </div>
                   </div>

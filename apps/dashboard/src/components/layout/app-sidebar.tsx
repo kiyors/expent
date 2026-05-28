@@ -132,8 +132,13 @@ function SidebarNavItemComponent({ item, pathname }: { item: SidebarNavItem; pat
 
   const navigate = (url: string) => {
     startTransition(() => {
-      if (typeof (React as any).addTransitionType === "function") {
-        (React as any).addTransitionType("nav-forward");
+      // React 19's `addTransitionType` is experimental and not in the public
+      // type surface yet; the runtime check lets us no-op cleanly when it's
+      // absent. Both `as any` casts below sit behind the same justification.
+      // biome-ignore lint/suspicious/noExplicitAny: experimental React API not yet typed.
+      const reactWithExperimental = React as any;
+      if (typeof reactWithExperimental.addTransitionType === "function") {
+        reactWithExperimental.addTransitionType("nav-forward");
       }
       router.push(url);
     });
@@ -200,8 +205,11 @@ export function AppSidebar() {
 
   const navigateHome = () => {
     startTransition(() => {
-      if (typeof (React as any).addTransitionType === "function") {
-        (React as any).addTransitionType("nav-back");
+      // Same experimental `addTransitionType` as in `navigate` above.
+      // biome-ignore lint/suspicious/noExplicitAny: experimental React API not yet typed.
+      const reactWithExperimental = React as any;
+      if (typeof reactWithExperimental.addTransitionType === "function") {
+        reactWithExperimental.addTransitionType("nav-back");
       }
       router.push("/");
     });

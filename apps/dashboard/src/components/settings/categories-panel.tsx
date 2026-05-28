@@ -77,6 +77,7 @@ export function CategoriesPanel() {
               >
                 <span className="font-medium">{cat.name}</span>
                 <button
+                  type="button"
                   onClick={() => {
                     if (confirm(`Delete category "${cat.name}"?`)) {
                       deleteMutation.mutate(cat.id);

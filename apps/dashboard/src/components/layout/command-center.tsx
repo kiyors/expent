@@ -31,7 +31,6 @@ import {
   WalletIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import * as React from "react";
 import { useContacts } from "@/hooks/use-contacts";
 import { useWallets } from "@/hooks/use-wallets";
@@ -41,7 +40,6 @@ import { useGlobalStore } from "@/lib/store";
 export function CommandCenter() {
   const [open, setOpen] = React.useState(false);
   const { push } = useRouter();
-  const { theme, setTheme } = useTheme();
   const { setTransactionModalOpen, setOCRModalOpen, setCategoryModalOpen, setHotkeyHelpOpen } = useGlobalStore();
   const [_isTransitionPending, startTransition] = React.useTransition();
 

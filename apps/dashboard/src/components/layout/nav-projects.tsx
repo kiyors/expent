@@ -32,6 +32,7 @@ export function NavProjects({
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
+            {/* biome-ignore lint/a11y/useAnchorContent: SidebarMenuButton injects children into the rendered <a> via base-ui render prop */}
             <SidebarMenuButton render={<a href={item.url} />}>
               {item.icon}
               <span>{item.name}</span>

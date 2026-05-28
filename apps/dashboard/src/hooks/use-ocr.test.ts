@@ -1,8 +1,8 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { useOcrUpload } from "./use-ocr";
 import { toast } from "@expent/ui/components/goey-toaster";
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/api-client";
+import { useOcrUpload } from "./use-ocr";
 
 // Mock dependencies
 vi.mock("@expent/ui/components/goey-toaster", () => ({
@@ -32,6 +32,13 @@ vi.mock("mupdf", () => ({
   },
 }));
 
+// Shape of the SSE payload the shared MockEventSource fires; declared here
+// so tests can populate `globalThis.__MOCK_SSE_PAYLOAD__` without `as any`.
+declare global {
+  // eslint-disable-next-line no-var
+  var __MOCK_SSE_PAYLOAD__: Record<string, unknown> | undefined;
+}
+
 // Helper to create a mock File
 const createMockFile = (name: string, type: string) => {
   const file = new File([""], name, { type });
@@ -49,16 +56,16 @@ describe("useOcrUpload", () => {
     // The shared SSE stub in setup.ts checks globalThis.__MOCK_SSE_PAYLOAD__
     // before falling back to its default; reset it between tests so payloads
     // don't bleed across cases.
-    (globalThis as any).__MOCK_SSE_PAYLOAD__ = undefined;
+    globalThis.__MOCK_SSE_PAYLOAD__ = undefined;
   });
 
   it("should block PDF upload if it has more than 5 pages", async () => {
     const mockFile = createMockFile("large.pdf", "application/pdf");
 
     const mupdf = await import("mupdf");
-    (mupdf.Document.openDocument as any).mockReturnValue({
+    vi.mocked(mupdf.Document.openDocument).mockReturnValue({
       countPages: () => 10,
-    });
+    } as unknown as ReturnType<typeof mupdf.Document.openDocument>);
 
     const { result } = renderHook(() => useOcrUpload());
 
@@ -76,24 +83,24 @@ describe("useOcrUpload", () => {
 
     // Mock mupdf to return 3 pages
     const mupdf = await import("mupdf");
-    (mupdf.Document.openDocument as any).mockReturnValue({
+    vi.mocked(mupdf.Document.openDocument).mockReturnValue({
       countPages: () => 3,
-    });
+    } as unknown as ReturnType<typeof mupdf.Document.openDocument>);
 
     // Mock successful upload and process
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => ({ key: "file-key" }),
-    });
-    (api.post as any).mockResolvedValue({ job_id: "job-123" });
-    (api.get as any).mockResolvedValue({
+    } as Response);
+    vi.mocked(api.post).mockResolvedValue({ job_id: "job-123" });
+    vi.mocked(api.get).mockResolvedValue({
       status: "COMPLETED",
       processed_data: { doc_type: "GPAY", data: {} },
     });
     // The SSE stub fires this payload when waitForJobCompletion subscribes;
     // its job_id must match the one api.post just returned or the hook ignores
     // the message and times out.
-    (globalThis as any).__MOCK_SSE_PAYLOAD__ = {
+    globalThis.__MOCK_SSE_PAYLOAD__ = {
       job_id: "job-123",
       status: "COMPLETED",
       processed_data: { doc_type: "GPAY", data: {} },
@@ -114,16 +121,16 @@ describe("useOcrUpload", () => {
     const mockFile = createMockFile("receipt.png", "image/png");
 
     // Mock successful upload and process
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => ({ key: "file-key" }),
-    });
-    (api.post as any).mockResolvedValue({ job_id: "job-123" });
-    (api.get as any).mockResolvedValue({
+    } as Response);
+    vi.mocked(api.post).mockResolvedValue({ job_id: "job-123" });
+    vi.mocked(api.get).mockResolvedValue({
       status: "COMPLETED",
       processed_data: { doc_type: "GPAY", data: {} },
     });
-    (globalThis as any).__MOCK_SSE_PAYLOAD__ = {
+    globalThis.__MOCK_SSE_PAYLOAD__ = {
       job_id: "job-123",
       status: "COMPLETED",
       processed_data: { doc_type: "GPAY", data: {} },

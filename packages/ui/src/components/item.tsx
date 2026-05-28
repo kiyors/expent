@@ -7,6 +7,7 @@ import type * as React from "react";
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: shadcn item-group; <ul>/<ol> would force list-item children and break composition
     <div
       role="list"
       data-slot="item-group"

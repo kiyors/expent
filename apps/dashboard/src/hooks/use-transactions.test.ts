@@ -23,7 +23,7 @@ vi.mock("@tanstack/react-query", () => ({
   // variables/context, which crashed production destructures like
   // `onError: (err, { id }, ctx) => …`.
   useMutation: vi.fn(({ mutationFn, onSuccess, onError, onMutate }) => ({
-    mutateAsync: async (variables: any) => {
+    mutateAsync: async (variables: unknown) => {
       const context = onMutate ? await onMutate(variables) : undefined;
       try {
         const result = await mutationFn(variables);
@@ -79,7 +79,7 @@ describe("useTransactions", () => {
 
   it("should handle update transaction success", async () => {
     const mockTxn = { id: "1", amount: "100" };
-    (api.patch as any).mockResolvedValue(mockTxn);
+    vi.mocked(api.patch).mockResolvedValue(mockTxn);
 
     const { result } = renderHook(() => useTransactions());
 
@@ -93,7 +93,7 @@ describe("useTransactions", () => {
 
   it("should handle update transaction error", async () => {
     const error = new Error("API Error");
-    (api.patch as any).mockRejectedValue(error);
+    vi.mocked(api.patch).mockRejectedValue(error);
 
     const { result } = renderHook(() => useTransactions());
 
@@ -109,7 +109,7 @@ describe("useTransactions", () => {
   });
 
   it("should handle delete transaction success", async () => {
-    (api.delete as any).mockResolvedValue({});
+    vi.mocked(api.delete).mockResolvedValue({});
 
     const { result } = renderHook(() => useTransactions());
 
@@ -129,7 +129,7 @@ describe("useTransactionSummary", () => {
 
   it("should fetch summary success", async () => {
     const mockSummary = { total_balance: 100 };
-    (api.get as any).mockResolvedValue(mockSummary);
+    vi.mocked(api.get).mockResolvedValue(mockSummary);
 
     renderHook(() => useTransactionSummary());
 

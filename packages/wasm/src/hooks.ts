@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { advancedFuzzySearchWasm } from "./utils";
 import type { SearchableItem } from "@expent/types";
+import { useEffect, useState } from "react";
+import { advancedFuzzySearchWasm } from "./utils";
 
 /**
  * A hook that performs fuzzy search on a list of items using Rust/WASM.

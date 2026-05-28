@@ -12,7 +12,7 @@ export function useWasmWorker() {
     };
   }, []);
 
-  const runTask = useCallback(<T>(type: string, payload: any): Promise<T> => {
+  const runTask = useCallback(<T>(type: string, payload: unknown): Promise<T> => {
     return new Promise((resolve, reject) => {
       if (!workerRef.current) {
         reject(new Error("Worker not initialized"));

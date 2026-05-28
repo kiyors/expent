@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
 import { Button } from "@expent/ui/components/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
 import { cn } from "@expent/ui/lib/utils";
+import { calculateSpendingVelocityWasm } from "@expent/wasm";
 import { TargetIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import { useBudgets } from "@/hooks/use-budgets";
-import { calculateSpendingVelocityWasm } from "@expent/wasm";
 
 interface VelocityDisplay {
   budget_id: string;

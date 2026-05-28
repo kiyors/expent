@@ -98,9 +98,16 @@ function ToggleControl({
   disabled?: boolean;
   label: string;
 }) {
+  // The underlying TogglePrimitive is typed as multi-select
+  // (value: readonly string[], onValueChange: (string[]) => void) but this
+  // consumer uses it as a radio-style single-select. We cast at the prop
+  // boundary rather than restructure the component, and bound the unsafe
+  // edge to two well-justified ignores here.
   return (
     <ToggleGroup
+      // biome-ignore lint/suspicious/noExplicitAny: primitive types value as readonly string[]; consumer is single-select
       value={value as any}
+      // biome-ignore lint/suspicious/noExplicitAny: primitive types onValueChange as (string[]) => void; consumer is single-select
       onValueChange={(v) => v && onChange(v as any)}
       disabled={disabled}
       aria-label={label}
@@ -286,7 +293,7 @@ function PreferenceItemRow({
         <ItemValue item={item} value={value} error={error} showSuccessIndicators={showSuccessIndicators} />
       ) : (
         <div className="flex shrink-0">
-          <PreferenceControl item={item} value={value} onChange={onChange!} disabled={disabled} />
+          <PreferenceControl item={item} value={value} onChange={onChange ?? (() => {})} disabled={disabled} />
         </div>
       )}
     </div>
@@ -441,8 +448,8 @@ export function PreferencesPanelReceipt({
       <div className="bg-card/60 flex w-full flex-col overflow-hidden rounded-2xl border opacity-95 shadow-xs">
         {title && <ReceiptHeader title={title} hasErrors={!!hasErrors} />}
         <div className={cn("flex flex-col gap-4 px-5", title ? "py-6" : "py-2")}>
-          {sections.map((section, index) => (
-            <div key={index}>
+          {sections.map((section) => (
+            <div key={section.heading ?? section.items[0]?.id}>
               <PreferencesSection
                 section={section}
                 values={choice}
@@ -551,6 +558,7 @@ function PreferencesPanelRoot({
   }, [normalizedActions.items, isDirty]);
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: not a real <form> — no submit/native validation; role=form gives AT a labelled landmark
     <article
       data-slot="preferences-panel"
       data-tool-ui-id={id}
@@ -570,8 +578,8 @@ function PreferencesPanelRoot({
           </>
         )}
         <div className={cn("flex flex-col gap-4 px-5", title ? "py-6" : "py-2")}>
-          {sections.map((section, sectionIndex) => (
-            <div key={sectionIndex}>
+          {sections.map((section) => (
+            <div key={section.heading ?? section.items[0]?.id}>
               <PreferencesSection
                 section={section}
                 values={currentValue}

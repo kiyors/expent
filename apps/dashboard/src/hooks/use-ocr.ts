@@ -22,7 +22,7 @@ export function useOcrUpload() {
   const [uploadSteps, setUploadSteps] = useState<UploadStep[]>([]);
   const [processedOcr, setProcessedOcr] = useState<TypedProcessedOcr | null>(null);
 
-  const waitForJobCompletion = async (jobId: string): Promise<TypedProcessedOcr> => {
+  const waitForJobCompletion = useCallback(async (jobId: string): Promise<TypedProcessedOcr> => {
     return new Promise((resolve, reject) => {
       const eventSource = new EventSource("/api/ocr/stream");
 
@@ -68,7 +68,7 @@ export function useOcrUpload() {
         }
       };
 
-      eventSource.onerror = (err) => {
+      eventSource.onerror = (_err) => {
         cleanup();
         reject(new Error("SSE connection failed"));
       };
@@ -79,7 +79,7 @@ export function useOcrUpload() {
         reject(new Error("OCR processing timed out"));
       }, 300000); // 5 minutes
     });
-  };
+  }, []);
 
   const uploadFile = useCallback(
     async (file: File) => {

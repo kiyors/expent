@@ -209,10 +209,10 @@ function SimpleBarList({
 
   return (
     <ul className="gap-y-3">
-      {items.map((i, index) => {
+      {items.map((i) => {
         const width = `${Math.round((i.value / max) * 100)}%`;
         return (
-          <li key={`bar-${index}-${i.name}`} className="flex items-center justify-between gap-3">
+          <li key={`bar-${i.name}`} className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="mb-1 truncate text-xs text-muted-foreground">{i.name}</div>
               <div className="h-2.5 w-full rounded-full bg-muted">

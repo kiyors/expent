@@ -28,6 +28,7 @@ function ButtonGroup({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof buttonGroupVariants>) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: shadcn button-group; <fieldset> would inherit unwanted form-control semantics
     <div
       role="group"
       data-slot="button-group"

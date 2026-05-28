@@ -16,6 +16,7 @@ import {
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+import { useFuzzySearch } from "@expent/wasm";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   AlertCircleIcon,
@@ -31,7 +32,6 @@ import { m } from "motion/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
-import { useFuzzySearch } from "@expent/wasm";
 
 export default function ContactsPage() {
   const { push } = useRouter();
@@ -176,7 +176,7 @@ export default function ContactsPage() {
                       updateMutation.mutate({
                         id: contact.id,
                         data: { is_pinned: false },
-                      } as any)
+                      })
                     }
                     onClick={() => handleContactClick(contact.id)}
                   />
@@ -198,7 +198,7 @@ export default function ContactsPage() {
                     updateMutation.mutate({
                       id: contact.id,
                       data: { is_pinned: true },
-                    } as any)
+                    })
                   }
                   onClick={() => handleContactClick(contact.id)}
                 />

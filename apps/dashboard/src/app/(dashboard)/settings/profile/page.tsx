@@ -60,7 +60,11 @@ export default function SettingsProfilePage() {
   // Populate form fields when session loads
   React.useEffect(() => {
     if (user) {
-      dispatch({ type: "SET_USER_DATA", user: user as any });
+      // The session user from better-auth carries extra runtime fields the
+      // shared @expent/types User doesn't model (oauth provider scopes, etc.);
+      // route through `unknown` so the reducer still gets a structurally
+      // compatible value without a blanket `any`.
+      dispatch({ type: "SET_USER_DATA", user: user as unknown as User });
     }
   }, [user]);
 

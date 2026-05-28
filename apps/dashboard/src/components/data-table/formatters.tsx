@@ -51,18 +51,20 @@ const relativeTimeFormatCache = new Map<string, Intl.RelativeTimeFormat>();
 
 function getNumberFormatter(locale: string | undefined, options: Intl.NumberFormatOptions): Intl.NumberFormat {
   const key = `${locale}-${JSON.stringify(options)}`;
-  if (!numberFormatCache.has(key)) {
-    numberFormatCache.set(key, new Intl.NumberFormat(locale, options));
-  }
-  return numberFormatCache.get(key)!;
+  const cached = numberFormatCache.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.NumberFormat(locale, options);
+  numberFormatCache.set(key, formatter);
+  return formatter;
 }
 
 function getDateTimeFormatter(locale: string | undefined, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
   const key = `${locale}-${JSON.stringify(options)}`;
-  if (!dateTimeFormatCache.has(key)) {
-    dateTimeFormatCache.set(key, new Intl.DateTimeFormat(locale, options));
-  }
-  return dateTimeFormatCache.get(key)!;
+  const cached = dateTimeFormatCache.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.DateTimeFormat(locale, options);
+  dateTimeFormatCache.set(key, formatter);
+  return formatter;
 }
 
 function getRelativeTimeFormatter(
@@ -70,10 +72,11 @@ function getRelativeTimeFormatter(
   options: Intl.RelativeTimeFormatOptions,
 ): Intl.RelativeTimeFormat {
   const key = `${locale}-${JSON.stringify(options)}`;
-  if (!relativeTimeFormatCache.has(key)) {
-    relativeTimeFormatCache.set(key, new Intl.RelativeTimeFormat(locale, options));
-  }
-  return relativeTimeFormatCache.get(key)!;
+  const cached = relativeTimeFormatCache.get(key);
+  if (cached) return cached;
+  const formatter = new Intl.RelativeTimeFormat(locale, options);
+  relativeTimeFormatCache.set(key, formatter);
+  return formatter;
 }
 
 export function DeltaValue({ value, options, locale }: DeltaValueProps) {
@@ -300,6 +303,7 @@ export function LinkValue({ value, options, row }: LinkValueProps) {
     >
       {value}
       {external && (
+        // biome-ignore lint/a11y/useAriaPropsSupportedByRole: parent <a> already carries the accessible name; arrow is a decorative visual indicator
         <span className="ml-1 inline-block" aria-label="Opens in new tab">
           ↗
         </span>
@@ -387,6 +391,7 @@ export function ArrayValue({ value, options }: ArrayValueProps) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1">
       {visible.map((item, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: items may contain duplicates/null; chips render in fixed order from parent-supplied array
         <span key={i} className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5">
           {item === null ? "null" : String(item)}
         </span>

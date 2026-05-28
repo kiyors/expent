@@ -1,3 +1,4 @@
+// biome-ignore-all lint/a11y/noSvgWithoutTitle: decorative brand icons; parent buttons carry the accessible label
 import { Button } from "@expent/ui/components/button";
 import type React from "react";
 

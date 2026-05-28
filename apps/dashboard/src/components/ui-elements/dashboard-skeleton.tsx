@@ -33,6 +33,7 @@ export function TransactionTableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="gap-y-3">
       {Array.from({ length: rows }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static placeholder, list does not reorder
         <div key={i} className="flex items-center gap-x-4 px-4 py-3 border-b last:border-0">
           <Skeleton className="h-4 w-[80px]" />
           <Skeleton className="h-4 flex-1" />

@@ -70,6 +70,7 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
+      // biome-ignore lint/suspicious/noDocumentCookie: simple UI preference cookie, no auth/sensitive data; cookie store API would be overkill here.
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [setOpenProp, open],

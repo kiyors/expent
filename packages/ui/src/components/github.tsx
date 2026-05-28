@@ -108,7 +108,9 @@ const GithubIcon = forwardRef<GithubIconHandle, GithubIconProps>(
     );
 
     return (
+      // biome-ignore lint/a11y/noStaticElementInteractions: hover-only decorative brand mark; not interactive content
       <div className={cn(className)} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
+        {/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative animated GitHub logo; consumers should pair with accessible text */}
         <svg
           fill="none"
           height={size}

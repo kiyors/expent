@@ -1,12 +1,12 @@
 "use client";
 
 import { Toaster } from "@expent/ui/components/goey-toaster";
+import { TooltipProvider } from "@expent/ui/components/tooltip";
 import { HotkeysProvider } from "@tanstack/react-hotkeys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
-import { TooltipProvider } from "@expent/ui/components/tooltip";
 import { ThemeProvider } from "@/components/ui-elements/theme-provider";
 
 function AppToaster() {

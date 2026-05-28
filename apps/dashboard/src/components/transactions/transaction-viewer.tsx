@@ -1,12 +1,6 @@
 "use client";
 
-import type {
-  Category,
-  Transaction,
-  TransactionStatus,
-  TransactionWithDetail,
-  UpdateTransactionRequest,
-} from "@expent/types";
+import type { Category, TransactionStatus, TransactionWithDetail, UpdateTransactionRequest } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
