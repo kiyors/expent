@@ -122,7 +122,7 @@ impl PaginationParams {
     pub const MAX_LIMIT: u64 = 100;
     pub const DEFAULT_LIMIT: u64 = 25;
 
-    /// Returns the requested limit clamped to [1, MAX_LIMIT], defaulting when unset.
+    /// Returns the requested limit clamped to [1, `MAX_LIMIT`], defaulting when unset.
     /// Use this at API entry points to prevent clients from requesting unbounded pages.
     #[must_use]
     pub fn safe_limit(&self) -> u64 {
