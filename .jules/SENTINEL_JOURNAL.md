@@ -9,3 +9,4 @@
   - `accept_p2p_request`: Actor's email must match `receiver_email`.
   - `reject_p2p_request`: Actor must be `sender_user_id` or have an email matching `receiver_email`.
 - **Learning:** Always correlate the authenticated user session with the specific entity being acted upon in multi-party workflows (P2P, ledgers) to prevent unauthorized mutations.
+- **Missing IDOR Verification in Handlers:** OCR job status (`get_ocr_job_status_handler`) and listing (`list_pending_ocr_jobs_handler`) previously failed to verify that the job being accessed belonged to the authenticated user. This allowed unauthorized users to view the status of other users' OCR jobs by simply knowing or iterating through `job_id`s, and potentially list all pending jobs. Fixed by ensuring `job.user_id` matches `session.user.id`.
