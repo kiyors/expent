@@ -272,9 +272,10 @@ async fn get_monthly_trends(
     let mut trends_map = std::collections::BTreeMap::new();
 
     // Initialize the last 6 months with zeros
-    for i in (0..6).rev() {
+    #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
+    for i in (0_i32..6).rev() {
         let mut y = now.year();
-        let mut m = now.month() as i32 - i as i32;
+        let mut m = now.month() as i32 - i;
         if m <= 0 {
             y -= 1;
             m += 12;
@@ -283,8 +284,9 @@ async fn get_monthly_trends(
         trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
+    #[allow(clippy::cast_sign_loss)]
     for t in trends {
-        let key = (t.y as i32, t.m as u32);
+        let key = (t.y, t.m as u32);
         if let Some(entry) = trends_map.get_mut(&key) {
             match t.direction {
                 TransactionDirection::In => entry.0 += t.total_amount,
@@ -378,13 +380,14 @@ async fn get_weekly_trends(
         }
     }
 
+    #[allow(clippy::cast_sign_loss)]
     for t in trends {
-        if let Some(key) = chrono::NaiveDate::from_ymd_opt(t.y as i32, t.m as u32, t.d as u32) {
-            if let Some(entry) = trends_map.get_mut(&key) {
-                match t.direction {
-                    TransactionDirection::In => entry.0 += t.total_amount,
-                    TransactionDirection::Out => entry.1 += t.total_amount,
-                }
+        if let Some(key) = chrono::NaiveDate::from_ymd_opt(t.y, t.m as u32, t.d as u32)
+            && let Some(entry) = trends_map.get_mut(&key)
+        {
+            match t.direction {
+                TransactionDirection::In => entry.0 += t.total_amount,
+                TransactionDirection::Out => entry.1 += t.total_amount,
             }
         }
     }
