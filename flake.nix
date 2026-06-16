@@ -81,6 +81,9 @@
                 libiconv
               ];
 
+            # Leave buildInputs empty on Darwin so Nix doesn't hijack the SDK
+            buildInputs = [ ];
+
             env = {
               # Required by rust-analyzer
               RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
@@ -88,6 +91,13 @@
 
             # Automatically creates/activates the uv venv
             shellHook = ''
+              # 1. Unset the Nix-injected SDK root so xcrun falls back to the host system
+              unset SDKROOT
+              unset DEVELOPER_DIR
+
+              # 2. Re-assert the true system binary paths ahead of the Nix sandbox
+              export PATH="/usr/bin:/usr/sbin:/usr/local/bin:$PATH"
+
               echo "Loading Hybrid Rust, Python, and Node.js Dev Environment"
 
               # Node Setup

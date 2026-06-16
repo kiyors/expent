@@ -44,3 +44,7 @@ pnpm-debug.log*
 .DS_Store
 *.pem
 expent.db
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
