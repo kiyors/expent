@@ -85,8 +85,10 @@ pub async fn get_ocr_job_by_idempotency_key(
 
 pub async fn list_pending_ocr_jobs(
     db: &DatabaseConnection,
+    user_id: &str,
 ) -> Result<Vec<entities::ocr_jobs::Model>, AppError> {
     Ok(entities::ocr_jobs::Entity::find()
+        .filter(entities::ocr_jobs::Column::UserId.eq(user_id.to_string()))
         .filter(entities::ocr_jobs::Column::Status.eq("QUEUED"))
         .all(db)
         .await?)

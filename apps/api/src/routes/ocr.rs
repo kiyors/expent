@@ -165,20 +165,32 @@ pub async fn process_image_ocr_handler(
 
 pub async fn get_ocr_job_status_handler(
     State(state): State<AppState>,
-    _session: AuthSession,
+    session: AuthSession,
     Path(job_id): Path<String>,
 ) -> Result<Json<db::entities::ocr_jobs::Model>, ApiError> {
     let job = ocr::get_ocr_job(&state.core.db, &job_id)
         .await?
         .ok_or_else(|| ApiError::NotFound("OCR Job not found".to_string()))?;
+
+    if job.user_id != session.user.id {
+        tracing::warn!(
+            "🔒 Potential IDOR attempt by user {} for job {}",
+            session.user.id,
+            job_id
+        );
+        return Err(ApiError::Unauthorized(
+            "You do not have permission to access this job".to_string(),
+        ));
+    }
+
     Ok(Json(job))
 }
 
 pub async fn list_pending_ocr_jobs_handler(
     State(state): State<AppState>,
-    _session: AuthSession,
+    session: AuthSession,
 ) -> Result<Json<Vec<db::entities::ocr_jobs::Model>>, ApiError> {
-    let jobs = ocr::list_pending_ocr_jobs(&state.core.db).await?;
+    let jobs = ocr::list_pending_ocr_jobs(&state.core.db, &session.user.id).await?;
     Ok(Json(jobs))
 }
 
