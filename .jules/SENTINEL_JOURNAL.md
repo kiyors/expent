@@ -9,3 +9,8 @@
   - `accept_p2p_request`: Actor's email must match `receiver_email`.
   - `reject_p2p_request`: Actor must be `sender_user_id` or have an email matching `receiver_email`.
 - **Learning:** Always correlate the authenticated user session with the specific entity being acted upon in multi-party workflows (P2P, ledgers) to prevent unauthorized mutations.
+- Found and fixed a High IDOR vulnerability in `crates/transactions/src/ops.rs` within `split_transaction`.
+- **Pattern Identified:** When a user splits an existing transaction across recipients via `split_transaction`, the code retrieved the transaction by `txn_id` but failed to verify that the `txn.user_id` matches the `sender_id`.
+- **Impact:** An attacker could split another user's transaction, effectively leaking the transaction metadata (amount, date, and purpose) to the recipients (or the attacker's own email).
+- **Fix Applied:** Added an authorization check (`if txn.user_id != sender_id`) to ensure the transaction belongs to the sender before creating the P2P requests.
+- **Learning:** Even inside core domain operations, fetching an entity by its primary ID must always be followed by an authorization check against the acting user's ID to prevent IDOR and data leakage.

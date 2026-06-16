@@ -412,6 +412,10 @@ pub async fn split_transaction(
                 .await?
                 .ok_or_else(|| AppError::not_found("Transaction not found"))?;
 
+            if txn.user_id != sender_id {
+                return Err(AppError::unauthorized("Unauthorized"));
+            }
+
             let mut results = Vec::new();
             for split in splits {
                 let request = entities::p2p_requests::ActiveModel {
