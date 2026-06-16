@@ -164,8 +164,9 @@ pub async fn list_transactions(
     // Load wallets (source and destination)
     let wallet_ids: std::collections::HashSet<String> = results
         .iter()
-        .flat_map(|t| vec![t.source_wallet_id.clone(), t.destination_wallet_id.clone()])
+        .flat_map(|t| [&t.source_wallet_id, &t.destination_wallet_id])
         .flatten()
+        .cloned()
         .collect();
 
     let (contacts_res, wallets_res) = tokio::try_join!(
