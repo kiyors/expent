@@ -234,7 +234,8 @@ async fn get_monthly_trends(
 ) -> Result<Vec<MonthlyTrend>, AppError> {
     #[derive(FromQueryResult)]
     struct TrendResult {
-        date_key: String,
+        y: i32,
+        m: i32,
         direction: TransactionDirection,
         total_amount: Decimal,
     }
@@ -243,9 +244,13 @@ async fn get_monthly_trends(
     let six_months_ago = now - Duration::days(180);
 
     let backend = db.get_database_backend();
-    let date_expr = match backend {
-        DbBackend::Postgres => "to_char(date, 'YYYY-MM')",
-        _ => "strftime('%Y-%m', date)",
+    let y_expr = match backend {
+        DbBackend::Postgres => "CAST(EXTRACT(YEAR FROM date) AS INTEGER)",
+        _ => "CAST(strftime('%Y', date) AS INTEGER)",
+    };
+    let m_expr = match backend {
+        DbBackend::Postgres => "CAST(EXTRACT(MONTH FROM date) AS INTEGER)",
+        _ => "CAST(strftime('%m', date) AS INTEGER)",
     };
 
     let trends = entities::transactions::Entity::find()
@@ -253,10 +258,12 @@ async fn get_monthly_trends(
         .filter(entities::transactions::Column::Date.gte(six_months_ago))
         .filter(entities::transactions::Column::DeletedAt.is_null())
         .select_only()
-        .column_as(sea_orm::sea_query::Expr::cust(date_expr), "date_key")
+        .column_as(sea_orm::sea_query::Expr::cust(y_expr), "y")
+        .column_as(sea_orm::sea_query::Expr::cust(m_expr), "m")
         .column(entities::transactions::Column::Direction)
         .column_as(entities::transactions::Column::Amount.sum(), "total_amount")
-        .group_by(sea_orm::sea_query::Expr::cust(date_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(y_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(m_expr))
         .group_by(entities::transactions::Column::Direction)
         .into_model::<TrendResult>()
         .all(db)
@@ -266,13 +273,19 @@ async fn get_monthly_trends(
 
     // Initialize the last 6 months with zeros
     for i in (0..6).rev() {
-        let date = now - Duration::days(i64::from(i) * 30);
-        let key = format!("{}-{:02}", date.year(), date.month());
+        let mut y = now.year();
+        let mut m = now.month() as i32 - i as i32;
+        if m <= 0 {
+            y -= 1;
+            m += 12;
+        }
+        let key = (y, m as u32);
         trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
     for t in trends {
-        if let Some(entry) = trends_map.get_mut(&t.date_key) {
+        let key = (t.y as i32, t.m as u32);
+        if let Some(entry) = trends_map.get_mut(&key) {
             match t.direction {
                 TransactionDirection::In => entry.0 += t.total_amount,
                 TransactionDirection::Out => entry.1 += t.total_amount,
@@ -281,13 +294,8 @@ async fn get_monthly_trends(
     }
 
     let mut result = Vec::new();
-    for (key, (inc, exp)) in trends_map {
-        let month_num = key
-            .split('-')
-            .nth(1)
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
-        let month_name = match month_num {
+    for ((_y, m), (inc, exp)) in trends_map {
+        let month_name = match m {
             1 => "Jan",
             2 => "Feb",
             3 => "Mar",
@@ -318,7 +326,9 @@ async fn get_weekly_trends(
 ) -> Result<Vec<MonthlyTrend>, AppError> {
     #[derive(FromQueryResult)]
     struct TrendResult {
-        date_key: String,
+        y: i32,
+        m: i32,
+        d: i32,
         direction: TransactionDirection,
         total_amount: Decimal,
     }
@@ -327,9 +337,17 @@ async fn get_weekly_trends(
     let seven_days_ago = now - Duration::days(7);
 
     let backend = db.get_database_backend();
-    let date_expr = match backend {
-        DbBackend::Postgres => "to_char(date, 'YYYY-MM-DD')",
-        _ => "strftime('%Y-%m-%d', date)",
+    let y_expr = match backend {
+        DbBackend::Postgres => "CAST(EXTRACT(YEAR FROM date) AS INTEGER)",
+        _ => "CAST(strftime('%Y', date) AS INTEGER)",
+    };
+    let m_expr = match backend {
+        DbBackend::Postgres => "CAST(EXTRACT(MONTH FROM date) AS INTEGER)",
+        _ => "CAST(strftime('%m', date) AS INTEGER)",
+    };
+    let d_expr = match backend {
+        DbBackend::Postgres => "CAST(EXTRACT(DAY FROM date) AS INTEGER)",
+        _ => "CAST(strftime('%d', date) AS INTEGER)",
     };
 
     let trends = entities::transactions::Entity::find()
@@ -337,10 +355,14 @@ async fn get_weekly_trends(
         .filter(entities::transactions::Column::Date.gte(seven_days_ago))
         .filter(entities::transactions::Column::DeletedAt.is_null())
         .select_only()
-        .column_as(sea_orm::sea_query::Expr::cust(date_expr), "date_key")
+        .column_as(sea_orm::sea_query::Expr::cust(y_expr), "y")
+        .column_as(sea_orm::sea_query::Expr::cust(m_expr), "m")
+        .column_as(sea_orm::sea_query::Expr::cust(d_expr), "d")
         .column(entities::transactions::Column::Direction)
         .column_as(entities::transactions::Column::Amount.sum(), "total_amount")
-        .group_by(sea_orm::sea_query::Expr::cust(date_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(y_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(m_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(d_expr))
         .group_by(entities::transactions::Column::Direction)
         .into_model::<TrendResult>()
         .all(db)
@@ -351,41 +373,26 @@ async fn get_weekly_trends(
     // Initialize last 7 days
     for i in (0..7).rev() {
         let date = now - Duration::days(i64::from(i));
-        let key = format!("{}-{:02}-{:02}", date.year(), date.month(), date.day());
-        trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
+        if let Some(key) = chrono::NaiveDate::from_ymd_opt(date.year(), date.month(), date.day()) {
+            trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
+        }
     }
 
     for t in trends {
-        if let Some(entry) = trends_map.get_mut(&t.date_key) {
-            match t.direction {
-                TransactionDirection::In => entry.0 += t.total_amount,
-                TransactionDirection::Out => entry.1 += t.total_amount,
+        if let Some(key) = chrono::NaiveDate::from_ymd_opt(t.y as i32, t.m as u32, t.d as u32) {
+            if let Some(entry) = trends_map.get_mut(&key) {
+                match t.direction {
+                    TransactionDirection::In => entry.0 += t.total_amount,
+                    TransactionDirection::Out => entry.1 += t.total_amount,
+                }
             }
         }
     }
 
     let mut result = Vec::new();
     for (key, (inc, exp)) in trends_map {
-        let parts: Vec<&str> = key.split('-').collect();
-        let y = parts
-            .first()
-            .and_then(|s| s.parse::<i32>().ok())
-            .unwrap_or(0);
-        let m = parts
-            .get(1)
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
-        let d = parts
-            .get(2)
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
-
-        let date = Utc
-            .with_ymd_and_hms(y, m, d, 0, 0, 0)
-            .single()
-            .unwrap_or_else(Utc::now);
         result.push(MonthlyTrend {
-            month: date.format("%a").to_string(),
+            month: key.format("%a").to_string(),
             income: inc,
             expense: exp,
         });
