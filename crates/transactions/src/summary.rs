@@ -280,6 +280,7 @@ async fn get_monthly_trends(
         trends_map.insert((date.year(), date.month()), (Decimal::ZERO, Decimal::ZERO));
     }
 
+    #[allow(clippy::cast_sign_loss)]
     for t in trends {
         if let Some(entry) = trends_map.get_mut(&(t.year, t.month as u32)) {
             match t.direction {
