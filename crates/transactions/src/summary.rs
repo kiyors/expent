@@ -234,7 +234,8 @@ async fn get_monthly_trends(
 ) -> Result<Vec<MonthlyTrend>, AppError> {
     #[derive(FromQueryResult)]
     struct TrendResult {
-        date_key: String,
+        year: i32,
+        month: i32,
         direction: TransactionDirection,
         total_amount: Decimal,
     }
@@ -243,9 +244,15 @@ async fn get_monthly_trends(
     let six_months_ago = now - Duration::days(180);
 
     let backend = db.get_database_backend();
-    let date_expr = match backend {
-        DbBackend::Postgres => "to_char(date, 'YYYY-MM')",
-        _ => "strftime('%Y-%m', date)",
+    let (year_expr, month_expr) = match backend {
+        DbBackend::Postgres => (
+            "CAST(EXTRACT(YEAR FROM date) AS INTEGER)",
+            "CAST(EXTRACT(MONTH FROM date) AS INTEGER)",
+        ),
+        _ => (
+            "CAST(strftime('%Y', date) AS INTEGER)",
+            "CAST(strftime('%m', date) AS INTEGER)",
+        ),
     };
 
     let trends = entities::transactions::Entity::find()
@@ -253,26 +260,28 @@ async fn get_monthly_trends(
         .filter(entities::transactions::Column::Date.gte(six_months_ago))
         .filter(entities::transactions::Column::DeletedAt.is_null())
         .select_only()
-        .column_as(sea_orm::sea_query::Expr::cust(date_expr), "date_key")
+        .column_as(sea_orm::sea_query::Expr::cust(year_expr), "year")
+        .column_as(sea_orm::sea_query::Expr::cust(month_expr), "month")
         .column(entities::transactions::Column::Direction)
         .column_as(entities::transactions::Column::Amount.sum(), "total_amount")
-        .group_by(sea_orm::sea_query::Expr::cust(date_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(year_expr))
+        .group_by(sea_orm::sea_query::Expr::cust(month_expr))
         .group_by(entities::transactions::Column::Direction)
         .into_model::<TrendResult>()
         .all(db)
         .await?;
 
-    let mut trends_map = std::collections::BTreeMap::new();
+    let mut trends_map: std::collections::BTreeMap<(i32, u32), (Decimal, Decimal)> =
+        std::collections::BTreeMap::new();
 
     // Initialize the last 6 months with zeros
     for i in (0..6).rev() {
         let date = now - Duration::days(i64::from(i) * 30);
-        let key = format!("{}-{:02}", date.year(), date.month());
-        trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
+        trends_map.insert((date.year(), date.month()), (Decimal::ZERO, Decimal::ZERO));
     }
 
     for t in trends {
-        if let Some(entry) = trends_map.get_mut(&t.date_key) {
+        if let Some(entry) = trends_map.get_mut(&(t.year, t.month as u32)) {
             match t.direction {
                 TransactionDirection::In => entry.0 += t.total_amount,
                 TransactionDirection::Out => entry.1 += t.total_amount,
@@ -281,12 +290,7 @@ async fn get_monthly_trends(
     }
 
     let mut result = Vec::new();
-    for (key, (inc, exp)) in trends_map {
-        let month_num = key
-            .split('-')
-            .nth(1)
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
+    for (&(_, month_num), (inc, exp)) in &trends_map {
         let month_name = match month_num {
             1 => "Jan",
             2 => "Feb",
@@ -304,8 +308,8 @@ async fn get_monthly_trends(
         };
         result.push(MonthlyTrend {
             month: month_name.to_string(),
-            income: inc,
-            expense: exp,
+            income: *inc,
+            expense: *exp,
         });
     }
 
@@ -318,7 +322,7 @@ async fn get_weekly_trends(
 ) -> Result<Vec<MonthlyTrend>, AppError> {
     #[derive(FromQueryResult)]
     struct TrendResult {
-        date_key: String,
+        date_val: chrono::NaiveDate,
         direction: TransactionDirection,
         total_amount: Decimal,
     }
@@ -328,8 +332,8 @@ async fn get_weekly_trends(
 
     let backend = db.get_database_backend();
     let date_expr = match backend {
-        DbBackend::Postgres => "to_char(date, 'YYYY-MM-DD')",
-        _ => "strftime('%Y-%m-%d', date)",
+        DbBackend::Postgres => "CAST(date AS DATE)",
+        _ => "date(date)",
     };
 
     let trends = entities::transactions::Entity::find()
@@ -337,7 +341,7 @@ async fn get_weekly_trends(
         .filter(entities::transactions::Column::Date.gte(seven_days_ago))
         .filter(entities::transactions::Column::DeletedAt.is_null())
         .select_only()
-        .column_as(sea_orm::sea_query::Expr::cust(date_expr), "date_key")
+        .column_as(sea_orm::sea_query::Expr::cust(date_expr), "date_val")
         .column(entities::transactions::Column::Direction)
         .column_as(entities::transactions::Column::Amount.sum(), "total_amount")
         .group_by(sea_orm::sea_query::Expr::cust(date_expr))
@@ -346,17 +350,17 @@ async fn get_weekly_trends(
         .all(db)
         .await?;
 
-    let mut trends_map = std::collections::BTreeMap::new();
+    let mut trends_map: std::collections::BTreeMap<chrono::NaiveDate, (Decimal, Decimal)> =
+        std::collections::BTreeMap::new();
 
     // Initialize last 7 days
     for i in (0..7).rev() {
         let date = now - Duration::days(i64::from(i));
-        let key = format!("{}-{:02}-{:02}", date.year(), date.month(), date.day());
-        trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
+        trends_map.insert(date.naive_utc().date(), (Decimal::ZERO, Decimal::ZERO));
     }
 
     for t in trends {
-        if let Some(entry) = trends_map.get_mut(&t.date_key) {
+        if let Some(entry) = trends_map.get_mut(&t.date_val) {
             match t.direction {
                 TransactionDirection::In => entry.0 += t.total_amount,
                 TransactionDirection::Out => entry.1 += t.total_amount,
@@ -364,26 +368,8 @@ async fn get_weekly_trends(
         }
     }
 
-    let mut result = Vec::new();
-    for (key, (inc, exp)) in trends_map {
-        let parts: Vec<&str> = key.split('-').collect();
-        let y = parts
-            .first()
-            .and_then(|s| s.parse::<i32>().ok())
-            .unwrap_or(0);
-        let m = parts
-            .get(1)
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
-        let d = parts
-            .get(2)
-            .and_then(|s| s.parse::<u32>().ok())
-            .unwrap_or(0);
-
-        let date = Utc
-            .with_ymd_and_hms(y, m, d, 0, 0, 0)
-            .single()
-            .unwrap_or_else(Utc::now);
+    let mut result = Vec::with_capacity(trends_map.len());
+    for (date, (inc, exp)) in trends_map {
         result.push(MonthlyTrend {
             month: date.format("%a").to_string(),
             income: inc,

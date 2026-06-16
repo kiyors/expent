@@ -151,21 +151,28 @@ pub async fn list_transactions(
     let categories_map = categories
         .into_iter()
         .flatten()
-        .map(|c| (c.id.clone(), c.name))
+        .map(|c| (c.id, c.name))
         .collect::<std::collections::HashMap<String, String>>();
 
     // Now we have parties, we can fetch contacts
     let contact_ids: std::collections::HashSet<String> = parties
         .iter()
         .flatten()
-        .filter_map(|p| p.contact_id.clone())
+        .filter_map(|p| p.contact_id.as_ref())
+        .cloned()
         .collect();
 
     // Load wallets (source and destination)
     let wallet_ids: std::collections::HashSet<String> = results
         .iter()
-        .flat_map(|t| vec![t.source_wallet_id.clone(), t.destination_wallet_id.clone()])
+        .flat_map(|t| {
+            vec![
+                t.source_wallet_id.as_ref(),
+                t.destination_wallet_id.as_ref(),
+            ]
+        })
         .flatten()
+        .cloned()
         .collect();
 
     let (contacts_res, wallets_res) = tokio::try_join!(
@@ -199,7 +206,7 @@ pub async fn list_transactions(
     let wallets_map: std::collections::HashMap<String, String> =
         wallets_res.into_iter().map(|w| (w.id, w.name)).collect();
 
-    let mut final_results = Vec::new();
+    let mut final_results = Vec::with_capacity(results.len());
 
     for (i, txn) in results.into_iter().enumerate() {
         let source_wallet_name = txn
@@ -219,7 +226,7 @@ pub async fn list_transactions(
             .cloned();
 
         let contact = parties[i].first();
-        let contact_id = contact.and_then(|p| p.contact_id.clone());
+        let contact_id = contact.and_then(|p| p.contact_id.as_ref()).cloned();
         let contact_name = contact_id
             .as_ref()
             .and_then(|id| contacts_map.get(id))
