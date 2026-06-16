@@ -178,7 +178,9 @@ pub async fn get_ocr_job_status_handler(
             session.user.id,
             job_id
         );
-        return Err(ApiError::Unauthorized("You do not have permission to access this job".to_string()));
+        return Err(ApiError::Unauthorized(
+            "You do not have permission to access this job".to_string(),
+        ));
     }
 
     Ok(Json(job))
