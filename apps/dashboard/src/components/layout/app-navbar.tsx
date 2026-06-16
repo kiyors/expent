@@ -10,11 +10,13 @@ import {
 } from "@expent/ui/components/breadcrumb";
 import { Button } from "@expent/ui/components/button";
 import { Separator } from "@expent/ui/components/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@expent/ui/components/tooltip";
 import { BellIcon, SearchIcon, SendIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger";
+import { ModeToggle } from "@/components/ui-elements/mode-toggle";
 
 const generateBreadcrumbs = (path: string) => {
   if (path === "/") return [{ label: "Overview", href: "/" }];
@@ -99,12 +101,27 @@ export function AppNavbar() {
           </kbd>
         </button>
 
-        <Button size="icon-sm" variant="outline" aria-label="Quick send">
-          <SendIcon data-icon="inline-start" />
-        </Button>
-        <Button aria-label="Notifications" size="icon-sm" variant="outline">
-          <BellIcon />
-        </Button>
+        <ModeToggle />
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button size="icon-sm" variant="outline" aria-label="Quick send">
+                <SendIcon data-icon="inline-start" />
+              </Button>
+            }
+          />
+          <TooltipContent>Quick send</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button aria-label="Notifications" size="icon-sm" variant="outline">
+                <BellIcon />
+              </Button>
+            }
+          />
+          <TooltipContent>Notifications</TooltipContent>
+        </Tooltip>
       </div>
     </header>
   );
