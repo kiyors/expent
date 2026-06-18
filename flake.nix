@@ -80,6 +80,15 @@
                 entry = "bash -c 'pnpm fmt-all'";
                 pass_filenames = false;
               };
+
+              # Built-in hooks
+              nixfmt.enable = true;
+              clippy.enable = true;
+              check-merge-conflicts.enable = true;
+              detect-private-keys.enable = true;
+              end-of-file-fixer.enable = true;
+              trim-trailing-whitespace.enable = true;
+              check-added-large-files.enable = true;
             };
           };
         }
