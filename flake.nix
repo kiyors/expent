@@ -71,7 +71,7 @@
               encrypt-env = {
                 enable = true;
                 name = "Encrypt .env to secrets.env";
-                entry = "bash -c 'if [ -f .env ]; then cp .env secrets.env && ${pkgs.sops}/bin/sops -e -i secrets.env && git add secrets.env; fi'";
+                entry = "bash -c 'if [ -f .env ]; then hash=$(${pkgs.coreutils}/bin/sha256sum .env | cut -d\" \" -f1); if [ ! -f .env.sha256 ] || [ \"$(cat .env.sha256 2>/dev/null)\" != \"$hash\" ]; then cp .env secrets.env && ${pkgs.sops}/bin/sops -e -i secrets.env && git add secrets.env && echo \"$hash\" > .env.sha256; fi; fi'";
                 pass_filenames = false;
               };
               fmt-all = {
@@ -158,6 +158,7 @@
                 echo "🔓 Decrypting updated secrets.env to .env..."
                 if content=$(sops -d secrets.env 2>/dev/null); then
                   echo "$content" > .env
+                  ${pkgs.coreutils}/bin/sha256sum .env | cut -d' ' -f1 > .env.sha256
                 else
                   echo "⚠️  Skipping decryption: Missing age key."
                 fi
