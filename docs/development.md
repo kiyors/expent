@@ -23,8 +23,26 @@ pnpm install
 cargo build
 ```
 
-### Step 2: Configuration
-Copy `.env.example` to `.env` in the project root and fill in the required values.
+### Step 2: Configuration (Secrets Management)
+
+Expent uses [`sops`](https://github.com/getsops/sops) combined with `age` for environment variable encryption. Encrypted secrets are safely committed to the repository in `secrets.env`.
+
+1. **Prerequisites:** Ensure `sops` and `age` are installed (or simply run `nix develop` if you are using Nix, which provides them automatically).
+2. **Setup your Age Key:** Obtain the project's `age` private key and configure it (e.g., place it in `~/Library/Application Support/sops/age/keys.txt` on macOS).
+3. **Running the Application:**
+   Instead of using a plaintext `.env` file, you can inject the decrypted variables dynamically at runtime:
+   ```bash
+   sops exec-env secrets.env 'pnpm dev'
+   ```
+   **Alternative (Local `.env`):** If you prefer using a traditional `.env` file (which is ignored by Git), you can decrypt `secrets.env` into a local `.env` file:
+   ```bash
+   sops -d secrets.env > .env
+   ```
+4. **Modifying Secrets:**
+   To add or update variables, edit the encrypted file in place. It will be decrypted for your editor and re-encrypted upon saving:
+   ```bash
+   sops secrets.env
+   ```
 
 ### Step 3: Database Migrations
 Initialize the schema and seed system data:
