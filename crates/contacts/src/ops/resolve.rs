@@ -116,7 +116,11 @@ where
         .await?;
 
     // 2. Pre-fetch relevant identifiers for bulk lookups
-    let upi_ids: Vec<String> = batch.iter().filter_map(|p| p.upi_id.clone()).collect();
+    let upi_ids: Vec<String> = batch
+        .iter()
+        .filter_map(|p| p.upi_id.as_ref())
+        .cloned()
+        .collect();
     let upi_map: HashMap<String, String> = if upi_ids.is_empty() {
         HashMap::new()
     } else {
@@ -130,7 +134,11 @@ where
             .collect()
     };
 
-    let phones: Vec<String> = batch.iter().filter_map(|p| p.phone.clone()).collect();
+    let phones: Vec<String> = batch
+        .iter()
+        .filter_map(|p| p.phone.as_ref())
+        .cloned()
+        .collect();
     let phone_map: HashMap<String, String> = if phones.is_empty() {
         HashMap::new()
     } else {
@@ -205,7 +213,7 @@ where
         let mut sorted_matches: Vec<(String, f64)> = matches.into_iter().collect();
         sorted_matches.sort_by(|a, b| b.1.total_cmp(&a.1));
 
-        let (best_contact_id, best_score) = sorted_matches[0].clone();
+        let (best_contact_id, best_score) = (sorted_matches[0].0.clone(), sorted_matches[0].1);
 
         if best_score < f64::from(MIN_CONFIDENCE_THRESHOLD) {
             results.push(ContactResolution {
@@ -332,7 +340,7 @@ where
     // Use total_cmp for safe f64 sorting
     sorted_matches.sort_by(|a, b| b.1.total_cmp(&a.1));
 
-    let (best_contact_id, best_score) = sorted_matches[0].clone();
+    let (best_contact_id, best_score) = (sorted_matches[0].0.clone(), sorted_matches[0].1);
 
     #[allow(clippy::cast_possible_truncation)]
     if best_score < f64::from(MIN_CONFIDENCE_THRESHOLD) {
