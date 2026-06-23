@@ -416,14 +416,7 @@ impl UploadProcessor {
                 content_type: "text/csv".to_string(),
                 data,
             }),
-            FileCategory::Unknown => Ok(RawProcessedFile {
-                id,
-                original_name,
-                category,
-                content_type: content_type
-                    .unwrap_or_else(|| "application/octet-stream".to_string()),
-                data,
-            }),
+            FileCategory::Unknown => Err(UploadError::UnknownFileType),
         }
     }
 
