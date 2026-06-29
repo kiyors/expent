@@ -166,7 +166,7 @@ pub async fn list_transactions(
     let wallet_ids: std::collections::HashSet<String> = results
         .iter()
         .flat_map(|t| {
-            vec![
+            [
                 t.source_wallet_id.as_ref(),
                 t.destination_wallet_id.as_ref(),
             ]
