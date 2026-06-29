@@ -416,14 +416,7 @@ impl UploadProcessor {
                 content_type: "text/csv".to_string(),
                 data,
             }),
-            FileCategory::Unknown => Ok(RawProcessedFile {
-                id,
-                original_name,
-                category,
-                content_type: content_type
-                    .unwrap_or_else(|| "application/octet-stream".to_string()),
-                data,
-            }),
+            FileCategory::Unknown => Err(UploadError::UnknownFileType),
         }
     }
 
@@ -567,6 +560,18 @@ mod tests {
             UploadProcessor::determine_category(b"unknown data", None, None),
             FileCategory::Unknown
         );
+    }
+
+    #[test]
+    fn test_process_unknown_file_type_rejected() {
+        let result = UploadProcessor::process(
+            Bytes::from("unknown data"),
+            Some("test.txt".to_string()),
+            Some("text/plain".to_string()),
+            None,
+        );
+
+        assert!(matches!(result, Err(UploadError::UnknownFileType)));
     }
 
     #[test]
