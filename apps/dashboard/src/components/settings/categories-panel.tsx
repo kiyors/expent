@@ -78,14 +78,15 @@ export function CategoriesPanel() {
                 <span className="font-medium">{cat.name}</span>
                 <button
                   type="button"
+                  aria-label={`Delete ${cat.name} category`}
                   onClick={() => {
                     if (confirm(`Delete category "${cat.name}"?`)) {
                       deleteMutation.mutate(cat.id);
                     }
                   }}
-                  className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                  className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                 >
-                  <Trash2Icon className="size-3" />
+                  <Trash2Icon className="size-3" aria-hidden="true" />
                 </button>
               </div>
             ))
