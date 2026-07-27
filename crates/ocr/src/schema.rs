@@ -80,7 +80,9 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
         // Handle array of types: e.g. "type": ["string", "null"] -> "type": "string"
         if let Some(t) = obj.get_mut("type") {
             let extracted_val = if let Some(arr) = t.as_array_mut() {
-                arr.iter().position(|v| v.as_str() != Some("null")).map(|pos| arr.swap_remove(pos))
+                arr.iter()
+                    .position(|v| v.as_str() != Some("null"))
+                    .map(|pos| arr.swap_remove(pos))
             } else {
                 None
             };
