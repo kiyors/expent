@@ -14,3 +14,6 @@ This drops query load from 2n queries (duplicate check + insert) to exactly 2 qu
 **Result:** Caching these formatters by configuration fingerprint eliminates the redundant constructor calls, leading to substantially faster re-renders for large tables (e.g. 50+ rows).
 
 **Caveat:** Caching mechanisms based on `JSON.stringify` on configuration objects are only viable when the shape and number of configuration variations are inherently bounded and predictable; unbounded parameters could cause a memory leak.
+
+## Avoiding `.clone()` in JSON Schema Generation
+When cleaning or mutating deep JSON structures via `serde_json::Value` in Rust (e.g., `crates/ocr/src/schema.rs`), recursive function calls typically trigger a `.clone()` overhead if the value is passed by ownership and extracted using normal accessors. We can bypass these allocations entirely by leveraging `.take()` from `serde_json::Value`. `.take()` safely extracts the tree branch (leaving a `Null` in its place), allows us to mutate it, and then reassign it directly without deep copying.

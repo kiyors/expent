@@ -44,33 +44,33 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
         if let Some(props) = obj.get_mut("properties")
             && let Some(props_obj) = props.as_object_mut()
         {
-            for (_, v) in props_obj.iter_mut() {
-                *v = clean_schema(v.clone());
+            for v in props_obj.values_mut() {
+                *v = clean_schema(v.take());
             }
         }
 
         if let Some(items) = obj.get_mut("items") {
-            *items = clean_schema(items.clone());
+            *items = clean_schema(items.take());
         }
 
         // Handle anyOf (for Optionals)
-        if let Some(any_of) = obj.remove("anyOf")
-            && let Some(arr) = any_of.as_array()
+        if let Some(mut any_of) = obj.remove("anyOf")
+            && let Some(arr) = any_of.as_array_mut()
         {
             // Find the first non-null type
-            let non_null = arr
+            let non_null_idx = arr
                 .iter()
-                .find(|v| v.get("type").and_then(|t| t.as_str()) != Some("null"));
+                .position(|v| v.get("type").and_then(|t| t.as_str()) != Some("null"));
 
-            if let Some(val) = non_null {
-                let mut cleaned_val = clean_schema(val.clone());
+            if let Some(idx) = non_null_idx {
+                let val = arr.swap_remove(idx);
+                let mut cleaned_val = clean_schema(val);
 
                 // If the cleaned value is an object, merge our existing metadata into it
                 if let Some(cleaned_obj) = cleaned_val.as_object_mut() {
-                    for (k, v) in obj.iter() {
-                        if !cleaned_obj.contains_key(k) {
-                            cleaned_obj.insert(k.clone(), v.clone());
-                        }
+                    let existing = std::mem::take(obj);
+                    for (k, v) in existing {
+                        cleaned_obj.entry(k).or_insert(v);
                     }
                 }
                 return cleaned_val;
@@ -79,11 +79,12 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
 
         // Handle array of types: e.g. "type": ["string", "null"] -> "type": "string"
         if let Some(t) = obj.get_mut("type")
-            && let Some(arr) = t.as_array()
+            && let Some(arr) = t.as_array_mut()
         {
-            let non_null = arr.iter().find(|v| v.as_str() != Some("null"));
-            if let Some(val) = non_null {
-                *t = val.clone();
+            let non_null_idx = arr.iter().position(|v| v.as_str() != Some("null"));
+            if let Some(idx) = non_null_idx {
+                let val = arr.swap_remove(idx);
+                *t = val;
             }
         }
 
