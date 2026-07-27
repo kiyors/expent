@@ -45,31 +45,31 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
             && let Some(props_obj) = props.as_object_mut()
         {
             for (_, v) in props_obj.iter_mut() {
-                *v = clean_schema(v.clone());
+                *v = clean_schema(v.take());
             }
         }
 
         if let Some(items) = obj.get_mut("items") {
-            *items = clean_schema(items.clone());
+            *items = clean_schema(items.take());
         }
 
         // Handle anyOf (for Optionals)
         if let Some(any_of) = obj.remove("anyOf")
-            && let Some(arr) = any_of.as_array()
+            && let serde_json::Value::Array(arr) = any_of
         {
             // Find the first non-null type
             let non_null = arr
-                .iter()
+                .into_iter()
                 .find(|v| v.get("type").and_then(|t| t.as_str()) != Some("null"));
 
             if let Some(val) = non_null {
-                let mut cleaned_val = clean_schema(val.clone());
+                let mut cleaned_val = clean_schema(val);
 
                 // If the cleaned value is an object, merge our existing metadata into it
                 if let Some(cleaned_obj) = cleaned_val.as_object_mut() {
-                    for (k, v) in obj.iter() {
+                    for (k, v) in obj.iter_mut() {
                         if !cleaned_obj.contains_key(k) {
-                            cleaned_obj.insert(k.clone(), v.clone());
+                            cleaned_obj.insert(k.clone(), v.take());
                         }
                     }
                 }
@@ -78,12 +78,14 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
         }
 
         // Handle array of types: e.g. "type": ["string", "null"] -> "type": "string"
-        if let Some(t) = obj.get_mut("type")
-            && let Some(arr) = t.as_array()
-        {
-            let non_null = arr.iter().find(|v| v.as_str() != Some("null"));
-            if let Some(val) = non_null {
-                *t = val.clone();
+        if let Some(t) = obj.get_mut("type") {
+            let extracted_val = if let Some(arr) = t.as_array_mut() {
+                arr.iter().position(|v| v.as_str() != Some("null")).map(|pos| arr.swap_remove(pos))
+            } else {
+                None
+            };
+            if let Some(val) = extracted_val {
+                *t = val;
             }
         }
 
