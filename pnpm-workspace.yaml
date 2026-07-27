@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
 allowBuilds:
+  lightningcss: true
   esbuild: true
   msw: true
   sharp: true

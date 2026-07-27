@@ -3,10 +3,8 @@
 import { Toaster } from "@expent/ui/components/goey-toaster";
 import { TooltipProvider } from "@expent/ui/components/tooltip";
 import { HotkeysProvider } from "@tanstack/react-hotkeys";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
 import { ThemeProvider } from "@/components/ui-elements/theme-provider";
 
 function AppToaster() {
@@ -15,29 +13,16 @@ function AppToaster() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
-          },
-        },
-      }),
-  );
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <HotkeysProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LazyMotion features={domAnimation}>
-            <MotionConfig reducedMotion="user">
-              <TooltipProvider delay={300}>{children}</TooltipProvider>
-              <AppToaster />
-            </MotionConfig>
-          </LazyMotion>
-        </ThemeProvider>
-      </HotkeysProvider>
-    </QueryClientProvider>
+    <HotkeysProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <LazyMotion features={domAnimation}>
+          <MotionConfig reducedMotion="user">
+            <TooltipProvider delay={300}>{children}</TooltipProvider>
+            <AppToaster />
+          </MotionConfig>
+        </LazyMotion>
+      </ThemeProvider>
+    </HotkeysProvider>
   );
 }
