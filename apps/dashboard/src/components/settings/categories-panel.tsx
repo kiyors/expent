@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expe
 import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
+import { Loader2Icon, PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
 import { api } from "@/lib/api-client";
 
@@ -60,7 +60,12 @@ export function CategoriesPanel() {
             onKeyDown={(e) => e.key === "Enter" && createMutation.mutate(newName)}
           />
           <Button onClick={() => createMutation.mutate(newName)} disabled={!newName || createMutation.isPending}>
-            <PlusIcon className="size-4 mr-2" /> Add
+            {createMutation.isPending ? (
+              <Loader2Icon className="size-4 mr-2 animate-spin" />
+            ) : (
+              <PlusIcon className="size-4 mr-2" />
+            )}{" "}
+            Add
           </Button>
         </div>
 
@@ -83,7 +88,8 @@ export function CategoriesPanel() {
                       deleteMutation.mutate(cat.id);
                     }
                   }}
-                  className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                  aria-label={`Delete category ${cat.name}`}
+                  className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded"
                 >
                   <Trash2Icon className="size-3" />
                 </button>
