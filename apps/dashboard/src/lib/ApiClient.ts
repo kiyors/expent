@@ -1,17 +1,9 @@
-import { authClient } from "./AuthClient";
-
-// No need for VITE_API_BASE_URL for client requests if using rewrites
-// For server-side requests (if any), it still needs an absolute URL.
-const API_URL = typeof window === "undefined" ? import.meta.env.VITE_API_BASE_URL || "http://localhost:7878" : "";
+// Use absolute URL for both client and server since TanStack Start dev server doesn't have a proxy for the Rust backend
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:7878";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const session = await authClient.getSession();
-  const token = session?.data?.session.token;
-
   const headers = new Headers(options.headers);
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
+
   if (options.body && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
@@ -22,6 +14,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_URL}${normalizedPath}`, {
     ...options,
     headers,
+    credentials: "include",
   });
 
   if (!res.ok) {

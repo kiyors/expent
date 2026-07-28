@@ -28,6 +28,7 @@ import {
 import { Suspense, useCallback, useMemo, useState, useTransition } from "react";
 
 import { ApprovalCard } from "@/components/approval-card";
+import { ClientOnly } from "@/components/ClientOnly";
 import { Analytics } from "@/components/dashboard/Analytics";
 import { BudgetHealthWidget } from "@/components/dashboard/BudgetHealth";
 import { CategoryChart } from "@/components/dashboard/CategoryChart";
@@ -501,11 +502,12 @@ function StatsCard({
     </Card>
   );
 }
-
 function DashboardPage() {
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardContent />
-    </Suspense>
+    <ClientOnly fallback={<DashboardSkeleton />}>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardContent />
+      </Suspense>
+    </ClientOnly>
   );
 }

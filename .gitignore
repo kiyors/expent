@@ -51,3 +51,4 @@ entities.json
 
 # SOPS hash tracking
 .env.sha256
+/legacy-source

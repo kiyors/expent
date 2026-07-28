@@ -12,4 +12,9 @@ export const Route = createFileRoute("/sign-up")({
       <SignUp />
     </AuthPage>
   ),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return {
+      redirect: search.redirect as string | undefined,
+    };
+  },
 });

@@ -46,11 +46,16 @@ const sidebarNavItems = [
   },
 ];
 
+import * as React from "react";
+
 function SettingsLayout() {
   const pathname = useLocation({
     select: (location) => location.pathname,
   });
-  const isIndex = pathname === "/settings" || pathname === "/settings/";
+
+  // Use deferred value so the layout doesn't tear while the next route is suspending
+  const deferredPathname = React.useDeferredValue(pathname);
+  const isIndex = deferredPathname === "/settings" || deferredPathname === "/settings/";
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 lg:p-8">

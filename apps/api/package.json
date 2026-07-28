@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bacon dev",
+    "dev": "cargo run",
     "check": "bacon check",
     "test": "bacon test",
     "clean": "rm -rf .turbo",
