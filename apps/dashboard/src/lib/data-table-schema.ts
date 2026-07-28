@@ -221,7 +221,7 @@ export type SerializableDataTable = z.infer<typeof SerializableDataTableSchema>;
 export function parseSerializableDataTable(
   input: unknown,
 ): Pick<
-  DataTableProps<RowData>,
+  DataTableProps,
   | "id"
   | "role"
   | "receipt"
@@ -241,17 +241,17 @@ export function parseSerializableDataTable(
     role,
     receipt,
     columns: columns as unknown as Column<RowData>[],
-    data: data as RowData[],
-    rowIdKey: rowIdKey as keyof RowData | undefined,
+    data: data,
+    rowIdKey: rowIdKey,
     defaultSort: defaultSort
       ? {
-          by: defaultSort.by as keyof RowData | undefined,
+          by: defaultSort.by,
           direction: defaultSort.direction,
         }
       : undefined,
     sort: sort
       ? {
-          by: sort.by as keyof RowData | undefined,
+          by: sort.by,
           direction: sort.direction,
         }
       : undefined,
@@ -264,7 +264,7 @@ export function parseSerializableDataTable(
 export function safeParseSerializableDataTable(
   input: unknown,
 ): Pick<
-  DataTableProps<RowData>,
+  DataTableProps,
   | "id"
   | "role"
   | "receipt"
@@ -285,17 +285,17 @@ export function safeParseSerializableDataTable(
     role,
     receipt,
     columns: columns as unknown as Column<RowData>[],
-    data: data as RowData[],
-    rowIdKey: rowIdKey as keyof RowData | undefined,
+    data: data,
+    rowIdKey: rowIdKey,
     defaultSort: defaultSort
       ? {
-          by: defaultSort.by as keyof RowData | undefined,
+          by: defaultSort.by,
           direction: defaultSort.direction,
         }
       : undefined,
     sort: sort
       ? {
-          by: sort.by as keyof RowData | undefined,
+          by: sort.by,
           direction: sort.direction,
         }
       : undefined,

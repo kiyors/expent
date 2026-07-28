@@ -407,7 +407,7 @@ function ReceiptHeader({ title, hasErrors }: ReceiptHeaderProps) {
     <>
       <div className="flex items-center justify-between gap-3 px-5 py-4">
         <h2 className="text-base leading-none font-semibold">{title}</h2>
-        {hasErrors === true ? (
+        {hasErrors ? (
           <span className="text-destructive flex items-center gap-1.5 text-xs font-medium">
             <AlertCircle className="size-3.5" />
             Error
@@ -603,10 +603,6 @@ function PreferencesPanelRoot({
   );
 }
 
-type PreferencesPanelComponent = typeof PreferencesPanelRoot & {
-  Receipt: typeof PreferencesPanelReceipt;
-};
-
 export const PreferencesPanel = Object.assign(PreferencesPanelRoot, {
   Receipt: PreferencesPanelReceipt,
-}) as PreferencesPanelComponent;
+});

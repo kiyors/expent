@@ -29,7 +29,7 @@ import { api } from "@/lib/api-client";
 
 const getCategoryIcon = (iconName: string | null | undefined) => {
   if (!iconName) return TagIcon;
-  return ICON_MAP[iconName as keyof typeof ICON_MAP] || TagIcon;
+  return ICON_MAP[iconName] || TagIcon;
 };
 
 const transactionSchema = z.object({

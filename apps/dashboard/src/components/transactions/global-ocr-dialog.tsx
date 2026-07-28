@@ -30,7 +30,7 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
       toast.success("Transaction saved!");
       onOpenChange(false);
       reset();
-    } catch (_error) {
+    } catch {
       toast.error("Failed to save transaction");
     } finally {
       setIsSaving(false);

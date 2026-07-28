@@ -1,4 +1,4 @@
-import type { TransactionWithDetail, UpdateWalletRequest, Wallet, WalletType } from "@expent/types";
+import type { TransactionWithDetail, Wallet, WalletType } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import {
@@ -186,7 +186,7 @@ function WalletsPage() {
               key={wallet.id}
               wallet={wallet}
               walletTransactions={transactionsByWallet[wallet.id] || []}
-              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data: data as UpdateWalletRequest })}
+              onUpdate={(data) => updateMutation.mutate({ id: wallet.id, data: data })}
               onDelete={() => deleteMutation.mutate(wallet.id)}
             />
           ))}

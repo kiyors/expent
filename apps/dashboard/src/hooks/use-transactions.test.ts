@@ -103,7 +103,7 @@ describe("useTransactions", () => {
       await act(async () => {
         await result.current.updateMutation.mutateAsync({ id: "1", data: { amount: "100" } });
       });
-    } catch (_e) {
+    } catch {
       // Expected
     }
 

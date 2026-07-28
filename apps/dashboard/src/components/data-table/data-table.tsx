@@ -537,15 +537,11 @@ function DataTableCell({ value, column, row, className, columnIndex = 0 }: DataT
   const { locale, cellRenderers } = useDataTable();
 
   // Check for a custom cell renderer first
-  const customRenderer = cellRenderers?.[column.key as string];
+  const customRenderer = cellRenderers?.[column.key];
   if (customRenderer) {
     const align = column.align ?? (columnIndex === 0 ? "left" : "left");
     const alignClass = getAlignmentClass(align);
-    return (
-      <TableCell className={cn("px-5 py-3", alignClass, className)}>
-        {customRenderer(row as Record<string, unknown>)}
-      </TableCell>
-    );
+    return <TableCell className={cn("px-5 py-3", alignClass, className)}>{customRenderer(row)}</TableCell>;
   }
 
   const isNumericKind = isNumericFormat(column.format);

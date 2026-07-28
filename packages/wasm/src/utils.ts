@@ -89,7 +89,7 @@ export function advancedFuzzySearchWasm(query: string, items: SearchableItem[], 
 }
 
 export function parseNumericLikeWasm(input: string) {
-  return wasm.parse_numeric_like(input) as number | undefined;
+  return wasm.parse_numeric_like(input);
 }
 
 export function aggregateTransactionsWasm(transactions: Txn[]) {

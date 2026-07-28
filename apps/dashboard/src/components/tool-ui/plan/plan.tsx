@@ -22,7 +22,7 @@ import type { PlanProps, PlanTodo, PlanTodoStatus } from "./schema";
 
 const INITIAL_VISIBLE_TODO_COUNT = 4;
 
-const TodoIcon = memo(function TodoIcon({ status }: { status: PlanTodoStatus }) {
+const TodoIcon = memo(({ status }: { status: PlanTodoStatus }) => {
   if (status === "pending") {
     return (
       <span
@@ -97,7 +97,7 @@ function areTodoPropsEqual(prev: PlanTodoItemProps, next: PlanTodoItemProps): bo
   );
 }
 
-const PlanTodoItem = memo(function PlanTodoItem({ todo, className, style, showConnector }: PlanTodoItemProps) {
+const PlanTodoItem = memo(({ todo, className, style, showConnector }: PlanTodoItemProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const labelElement = (
@@ -219,7 +219,7 @@ interface ProgressBarProps {
   isCelebrating: boolean;
 }
 
-const ProgressBar = memo(function ProgressBar({ progress, isCelebrating }: ProgressBarProps) {
+const ProgressBar = memo(({ progress, isCelebrating }: ProgressBarProps) => {
   return (
     <div
       className="bg-muted relative mb-3 h-1.5 overflow-hidden rounded-full"
@@ -381,10 +381,6 @@ export function PlanCompact(props: PlanProps) {
   return <PlanRoot key={props.id} {...props} compact />;
 }
 
-type PlanComponentType = typeof PlanComponent & {
-  Compact: typeof PlanCompact;
-};
-
 export const Plan = Object.assign(PlanComponent, {
   Compact: PlanCompact,
-}) as PlanComponentType;
+});

@@ -23,7 +23,7 @@ import { db } from "@/lib/db";
  * mutations share one shape.
  */
 async function assertValid(promise: Promise<unknown>): Promise<void> {
-  const result = (await promise) as unknown as ValidationResult;
+  const result = (await promise) as ValidationResult;
   if (result && !result.is_valid) {
     throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
   }

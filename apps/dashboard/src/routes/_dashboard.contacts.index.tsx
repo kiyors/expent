@@ -261,7 +261,7 @@ function MergeSuggestionsBanner({
   mergeMutation,
 }: {
   suggestions: { contacts: Contact[]; reason: string }[];
-  mergeMutation: UseMutationResult<Contact, Error, { primary_id: string; secondary_id: string }, unknown>;
+  mergeMutation: UseMutationResult<Contact, Error, { primary_id: string; secondary_id: string }>;
 }) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = React.useState<{

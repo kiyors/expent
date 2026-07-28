@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_dashboard/")({
 
 function DashboardContent() {
   const navigate = useNavigate();
-  const searchParams = useSearch({ from: "/_dashboard/" }) as { tab?: string };
+  const searchParams = useSearch({ from: "/_dashboard/" });
   const queryClient = useQueryClient();
   const [_isPending, startTransition] = useTransition();
 
@@ -121,7 +121,7 @@ function DashboardContent() {
           label: "Description",
         },
         {
-          key: "contact_name" as keyof TransactionWithDetail,
+          key: "contact_name",
           label: "Contact",
         },
         {
@@ -384,7 +384,7 @@ function DashboardContent() {
                     <DataTable<TransactionWithDetail>
                       id="dashboard-recent-transactions"
                       columns={txnColumns}
-                      data={(transactions as TransactionWithDetail[])?.slice(0, 5) ?? []}
+                      data={transactions?.slice(0, 5) ?? []}
                       rowIdKey="id"
                       defaultSort={{ by: "date", direction: "desc" }}
                       emptyMessage="No transactions found."
