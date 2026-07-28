@@ -10,8 +10,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@expent/ui/components/sidebar";
-import { ChevronRightIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { ChevronRightIcon } from "lucide-react";
 
 export function NavMain({
   items,

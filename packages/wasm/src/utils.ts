@@ -15,6 +15,7 @@ import type {
   TxnPattern,
   Wallet,
 } from "@expent/types";
+
 import * as wasm from "../pkg/wasm";
 
 export function loadExpentWasm() {

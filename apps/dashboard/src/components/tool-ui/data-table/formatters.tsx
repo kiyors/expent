@@ -1,4 +1,5 @@
 import type * as React from "react";
+
 import { resolveSafeNavigationHref } from "../shared/media";
 import { Badge, cn, Tooltip, TooltipContent, TooltipTrigger } from "./_adapter";
 

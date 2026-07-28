@@ -26,23 +26,23 @@ edition = "2024"
 version = "0.2.0"
 
 [workspace.dependencies]
-auth       = { path = "crates/auth", version = "0.2.0" }
-budgets    = { path = "crates/budgets", version = "0.2.0" }
+auth = { path = "crates/auth", version = "0.2.0" }
+budgets = { path = "crates/budgets", version = "0.2.0" }
 categories = { path = "crates/categories", version = "0.2.0" }
-contacts   = { path = "crates/contacts", version = "0.2.0" }
-db         = { path = "crates/db", version = "0.2.0" }
+contacts = { path = "crates/contacts", version = "0.2.0" }
+db = { path = "crates/db", version = "0.2.0" }
 
-expent_core    = { path = "crates/expent_core", version = "0.2.0" }
-groups         = { path = "crates/groups", version = "0.2.0" }
-jobs           = { path = "crates/jobs", version = "0.2.0" }
-migration      = { path = "crates/migration", version = "0.2.0" }
-ocr            = { path = "crates/ocr", version = "0.2.0" }
+expent_core = { path = "crates/expent_core", version = "0.2.0" }
+groups = { path = "crates/groups", version = "0.2.0" }
+jobs = { path = "crates/jobs", version = "0.2.0" }
+migration = { path = "crates/migration", version = "0.2.0" }
+ocr = { path = "crates/ocr", version = "0.2.0" }
 reconciliation = { path = "crates/reconciliation", version = "0.2.0" }
-subscriptions  = { path = "crates/subscriptions", version = "0.2.0" }
-transactions   = { path = "crates/transactions", version = "0.2.0" }
-upload         = { path = "crates/upload", version = "0.2.0" }
-users          = { path = "crates/users", version = "0.2.0" }
-wallets        = { path = "crates/wallets", version = "0.2.0" }
+subscriptions = { path = "crates/subscriptions", version = "0.2.0" }
+transactions = { path = "crates/transactions", version = "0.2.0" }
+upload = { path = "crates/upload", version = "0.2.0" }
+users = { path = "crates/users", version = "0.2.0" }
+wallets = { path = "crates/wallets", version = "0.2.0" }
 
 # External crates
 any_ascii = "0.3"
@@ -51,59 +51,55 @@ async-stream = "0.3"
 async-trait = "0.1"
 aws-config = "1.8"
 aws-sdk-s3 = "1.133"
-axum = { features = [ "multipart" ], version = "0.8" }
-better-auth = { features = [ "axum", "derive" ], version = "0.10.0" }
-chrono = { features = [ "serde" ], version = "0.4" }
+axum = { features = ["multipart"], version = "0.8" }
+better-auth = { features = ["axum", "derive"], version = "0.10.0" }
+chrono = { features = ["serde"], version = "0.4" }
 dashmap = "6.2"
 dotenvy = "0.15"
 futures = "0.3"
 governor = "0.10"
 lopdf = "0.38"
 mimalloc = "0.1"
-moka = { features = [ "future" ], version = "0.12" }
+moka = { features = ["future"], version = "0.12" }
 rand = "0.9"
 regex = "1.12"
-reqwest = { features = [ "json", "multipart" ], version = "0.13" }
+reqwest = { features = ["json", "multipart"], version = "0.13" }
 rphonetic = "3.0"
-rust_decimal = { features = [ "serde-with-str" ], version = "1.42" }
+rust_decimal = { features = ["serde-with-str"], version = "1.42" }
 rust_decimal_macros = "1.40"
 schemars = "1.2"
 sea-orm = { features = [
   "sqlx-postgres",
   "runtime-tokio-native-tls",
   "macros",
-  "sqlx-sqlite",              # Add this feature
+  "sqlx-sqlite", # Add this feature
 ], version = "1.1.20" }
-sea-orm-migration = { features = [
-  "runtime-tokio-native-tls",
-  "sqlx-postgres",
-  "sqlx-sqlite",
-], version = "1.1.20" }
-serde = { features = [ "derive" ], version = "1.0" }
+sea-orm-migration = { features = ["runtime-tokio-native-tls", "sqlx-postgres", "sqlx-sqlite"], version = "1.1.20" }
+serde = { features = ["derive"], version = "1.0" }
 serde_json = "1.0"
-sqlx = { features = [ "postgres", "runtime-tokio-native-tls" ], version = "0.8.6" }
-strum = { features = [ "derive" ], version = "0.28" }
+sqlx = { features = ["postgres", "runtime-tokio-native-tls"], version = "0.8.6" }
+strum = { features = ["derive"], version = "0.28" }
 thiserror = "2.0"
-tokio = { features = [ "full" ], version = "1.52" }
-tokio-util = { features = [ "rt" ], version = "0.7.13" }
-tower-http = { features = [ "compression-br", "compression-gzip", "cors", "fs", "trace" ], version = "0.6" }
+tokio = { features = ["full"], version = "1.52" }
+tokio-util = { features = ["rt"], version = "0.7.13" }
+tower-http = { features = ["compression-br", "compression-gzip", "cors", "fs", "trace"], version = "0.6" }
 tower_governor = "0.8.0"
 tracing = "0.1"
-tracing-subscriber = { features = [ "env-filter" ], version = "0.3" }
-ts-rs = { features = [ "chrono-impl", "serde-json-impl" ], version = "12.0.1" }
-uuid = { features = [ "v7", "serde" ], version = "1.23" }
-validator = { features = [ "derive" ], version = "0.20" }
+tracing-subscriber = { features = ["env-filter"], version = "0.3" }
+ts-rs = { features = ["chrono-impl", "serde-json-impl"], version = "12.0.1" }
+uuid = { features = ["v7", "serde"], version = "1.23" }
+validator = { features = ["derive"], version = "0.20" }
 
 [workspace.lints.rust]
 future-incompatible = { level = "warn", priority = -1 }
-nonstandard_style   = { level = "deny", priority = -2 }
-rust_2018_idioms    = { level = "warn", priority = -3 }
+nonstandard_style = { level = "deny", priority = -2 }
+rust_2018_idioms = { level = "warn", priority = -3 }
 
 [workspace.lints.clippy]
-all      = { level = "deny", priority = -1 }
+all = { level = "deny", priority = -1 }
 pedantic = { level = "warn", priority = -2 }
-perf     = { level = "deny", priority = -3 }
-style    = { level = "warn", priority = -4 }
+perf = { level = "deny", priority = -3 }
+style = { level = "warn", priority = -4 }
 
 [profile.release]
 lto = true

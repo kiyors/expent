@@ -1,46 +1,46 @@
 [package]
-name              = "expent_core"
+name = "expent_core"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-auth.workspace           = true
-budgets.workspace        = true
-categories.workspace     = true
-contacts.workspace       = true
-db.workspace             = true
-groups.workspace         = true
-jobs.workspace           = true
-ocr.workspace            = true
+auth.workspace = true
+budgets.workspace = true
+categories.workspace = true
+contacts.workspace = true
+db.workspace = true
+groups.workspace = true
+jobs.workspace = true
+ocr.workspace = true
 reconciliation.workspace = true
-subscriptions.workspace  = true
+subscriptions.workspace = true
 
-anyhow.workspace       = true
-aws-config.workspace   = true
-aws-sdk-s3.workspace   = true
-better-auth.workspace  = true
-sea-orm.workspace      = true
-tokio.workspace        = true
-tokio-util.workspace   = true
-tracing.workspace      = true
+anyhow.workspace = true
+aws-config.workspace = true
+aws-sdk-s3.workspace = true
+better-auth.workspace = true
+sea-orm.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
 transactions.workspace = true
-upload.workspace       = true
-users.workspace        = true
-wallets.workspace      = true
+upload.workspace = true
+users.workspace = true
+wallets.workspace = true
 
 
 [dev-dependencies]
-chrono.workspace       = true
-env_logger             = "0.11.10"
-migration              = { path = "../migration" }
-rstest                 = "0.26.1"
+chrono.workspace = true
+env_logger = "0.11.10"
+migration = { path = "../migration" }
+rstest = "0.26.1"
 rust_decimal.workspace = true
-tracing-test           = "0.2.6"
-uuid.workspace         = true
+tracing-test = "0.2.6"
+uuid.workspace = true
 
 [lints]
 workspace = true
 
 [lib]
 doctest = false
-test    = false
+test = false

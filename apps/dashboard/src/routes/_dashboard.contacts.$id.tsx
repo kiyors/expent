@@ -16,6 +16,7 @@ import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import { Separator } from "@expent/ui/components/separator";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
   CheckIcon,
@@ -28,10 +29,10 @@ import {
   WalletIcon,
 } from "lucide-react";
 import * as React from "react";
+
 import { DataTable } from "@/components/data-table/data-table";
 import { useContactDetail, useContacts } from "@/hooks/use-contacts";
 import type { Column } from "@/lib/data-table-types";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/contacts/$id")({
   component: ContactDetailPage,

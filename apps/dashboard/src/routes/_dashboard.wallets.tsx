@@ -29,6 +29,7 @@ import {
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   BanknoteIcon,
   Building2Icon,
@@ -40,11 +41,11 @@ import {
   Trash2Icon,
   WalletIcon,
 } from "lucide-react";
+import { m } from "motion/react";
 import * as React from "react";
+
 import { useTransactions } from "@/hooks/use-transactions";
 import { useWallets } from "@/hooks/use-wallets";
-import { m } from "motion/react";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/wallets")({
   component: WalletsPage,

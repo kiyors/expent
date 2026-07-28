@@ -1,6 +1,7 @@
 import type { Category, CreateCategoryRequest } from "@expent/types";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
+
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";

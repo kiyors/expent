@@ -1,24 +1,24 @@
 [package]
-name              = "jobs"
+name = "jobs"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 db.workspace = true
 
-anyhow.workspace      = true
+anyhow.workspace = true
 async-trait.workspace = true
-chrono.workspace      = true
-futures.workspace     = true
-sea-orm.workspace     = true
-serde.workspace       = true
-serde_json.workspace  = true
-sqlx.workspace        = true
-tokio.workspace       = true
-tokio-util.workspace  = true
-tracing.workspace     = true
-uuid.workspace        = true
+chrono.workspace = true
+futures.workspace = true
+sea-orm.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+uuid.workspace = true
 
 [lib]
 doctest = false
-test    = false
+test = false

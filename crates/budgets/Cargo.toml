@@ -1,20 +1,20 @@
 [package]
-name              = "budgets"
+name = "budgets"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-chrono.workspace              = true
-db.workspace                  = true
-rust_decimal.workspace        = true
+chrono.workspace = true
+db.workspace = true
+rust_decimal.workspace = true
 rust_decimal_macros.workspace = true
-sea-orm.workspace             = true
-serde.workspace               = true
-ts-rs.workspace               = true
-uuid.workspace                = true
+sea-orm.workspace = true
+serde.workspace = true
+ts-rs.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
-migration       = { path = "../migration" }
+migration = { path = "../migration" }
 tokio.workspace = true
 
 [lints]

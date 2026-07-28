@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
 import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";
 
 export function IncomeExpenseChart() {

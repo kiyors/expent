@@ -7,9 +7,9 @@
     "build:dashboard": "dotenv -- turbo build --filter @expent/dashboard",
     "clean": "cargo clean && pnpm -r --if-present clean && rm -rf .turbo .venv .pytest_cache .ruff_cache",
     "dev": "dotenv -- turbo dev",
-    "check": "biome check --no-errors-on-unmatched --files-ignore-unknown=true",
-    "lint": "biome lint --write --no-errors-on-unmatched",
-    "fmt": "biome format --write",
+    "check": "oxlint -c .oxlintrc.json --type-aware --type-check . && oxfmt --check",
+    "lint": "oxlint -c .oxlintrc.json --type-aware --fix .",
+    "fmt": "oxfmt",
     "typecheck": "dotenv -- turbo typecheck",
     "type-generate": "cargo types",
     "build:wasm": "pnpm --filter @expent/wasm build",
@@ -32,13 +32,14 @@
     "skills:install": "pnpm dlx skills experimental_install"
   },
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
     "dotenv-cli": "^11.0.0",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "turbo": "^2.9.14",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=24"
-  }
+  },
+  "packageManager": "pnpm@11.17.0"
 }

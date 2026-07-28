@@ -1,4 +1,5 @@
 import { SidebarInset, SidebarProvider } from "@expent/ui/components/sidebar";
+
 import { AppNavbar } from "@/components/layout/app-navbar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 

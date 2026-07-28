@@ -9,9 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "@expent/ui/components/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@expent/ui/components/sidebar";
-import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon } from "lucide-react";
 import * as React from "react";
+
 import { signOut, useSession } from "@/lib/auth-client";
 
 export function NavUser() {

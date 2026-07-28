@@ -13,6 +13,7 @@ import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import * as React from "react";
+
 import { useWallets } from "@/hooks/use-wallets";
 
 interface CreateWalletDialogProps {

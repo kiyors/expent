@@ -14,9 +14,9 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@expent/ui/components/sidebar";
-
 import { cn } from "@expent/ui/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
   AlarmClockIcon,
   ChevronRightIcon,
@@ -31,9 +31,9 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
-import { useLocation, useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 import { startTransition, useState } from "react";
+
 import { LogoIcon } from "@/components/ui-elements/logo";
 import { api } from "@/lib/api-client";
 

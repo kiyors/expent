@@ -31,12 +31,15 @@ The Expent mobile application is a universal app built with **Expo** and **React
 ## 3. Key Patterns
 
 ### Data Fetching
+
 The app uses a central Axios client configured with the `EXPO_PUBLIC_API_URL`. All requests include the `better-auth` session token retrieved from secure storage.
 
 ### Authentication
+
 Authentication is bridged to the Rust backend's `better-auth` implementation. The `useAuth` hook manages the user state and persists sessions using secure device storage.
 
 ### Responsive Design
+
 Using NativeWind, the app shares the same Tailwind utility-first approach as the dashboard, ensuring visual consistency. It uses a "Mobile-First" strategy, optimized for both iOS and Android.
 
 ---
@@ -44,6 +47,7 @@ Using NativeWind, the app shares the same Tailwind utility-first approach as the
 ## 4. Development Workflow
 
 ### Running the App
+
 Ensure you have the [Expo Go](https://expo.dev/go) app installed on your physical device or an emulator set up.
 
 ```bash
@@ -52,6 +56,8 @@ pnpm dev:app
 ```
 
 ### Environment Variables
+
 The app requires an `env.ts` or `.env` file containing:
+
 - `EXPO_PUBLIC_API_URL`: The URL of the `apps/api` gateway.
 - `EXPO_PUBLIC_APP_ENV`: `development` or `production`.

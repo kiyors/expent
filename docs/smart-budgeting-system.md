@@ -16,18 +16,18 @@ Managed via the `budgets` crate, surfaced as `expent_core::budgets` (target: `ex
 
 ### `budgets`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | `String` | Unique identifier (UUID v7). |
-| `user_id` | `String` | Owner of the budget. |
+| Column        | Type             | Description                                                  |
+| ------------- | ---------------- | ------------------------------------------------------------ |
+| `id`          | `String`         | Unique identifier (UUID v7).                                 |
+| `user_id`     | `String`         | Owner of the budget.                                         |
 | `category_id` | `Option<String>` | Specific category limit, or `null` for total spending limit. |
-| `amount` | `Decimal` | The defined spending limit. |
-| `period` | `BudgetPeriod` | Cycle type: `WEEKLY`, `MONTHLY`, `YEARLY`. |
+| `amount`      | `Decimal`        | The defined spending limit.                                  |
+| `period`      | `BudgetPeriod`   | Cycle type: `WEEKLY`, `MONTHLY`, `YEARLY`.                   |
 
 ### Enums Reference
 
-| Enum Name | Values | Used By |
-|-----------|--------|---------|
+| Enum Name      | Values                        | Used By          |
+| -------------- | ----------------------------- | ---------------- |
 | `BudgetPeriod` | `WEEKLY`, `MONTHLY`, `YEARLY` | `budgets.period` |
 
 ---
@@ -35,19 +35,24 @@ Managed via the `budgets` crate, surfaced as `expent_core::budgets` (target: `ex
 ## 3. API Reference (`/api/budgets`)
 
 ### `GET /api/budgets`
+
 - **Purpose**: List all active budgets for the authenticated user.
 
 ### `POST /api/budgets`
+
 - **Purpose**: Create a new spending limit.
 - **Payload**: `{ category_id?, amount, period }`.
 
 ### `PATCH /api/budgets/:id`
+
 - **Purpose**: Update an existing budget's limit or period.
 
 ### `DELETE /api/budgets/:id`
+
 - **Purpose**: Remove a budget tracking entry.
 
 ### `GET /api/budgets/health`
+
 - **Purpose**: Fetch calculated spending progress for all budgets.
 - **Response**: Array of `BudgetHealth` objects exported seamlessly to TypeScript via `ts-rs`:
   ```typescript
@@ -67,6 +72,7 @@ Managed via the `budgets` crate, surfaced as `expent_core::budgets` (target: `ex
 ## 4. Frontend Integration
 
 ### Dashboard Widgets
+
 - **Budget Health Widget**: A specialized card on the main overview that displays progress bars for the top 4 budgets.
 - **Visual Feedback**:
   - **Blue/Primary**: Safe (< 85% consumed).
@@ -74,6 +80,7 @@ Managed via the `budgets` crate, surfaced as `expent_core::budgets` (target: `ex
   - **Red**: Over-limit (> 100% consumed).
 
 ### Management UI
+
 - Found in **Settings > Budgets**.
 - Allows detailed management of limits and displays precise "Remaining" vs "Spent" breakdowns.
 

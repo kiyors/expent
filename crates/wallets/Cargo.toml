@@ -1,5 +1,5 @@
 [package]
-name              = "wallets"
+name = "wallets"
 edition.workspace = true
 version.workspace = true
 
@@ -7,16 +7,16 @@ version.workspace = true
 doctest = false
 
 [dependencies]
-chrono.workspace       = true
-db.workspace           = true
-moka.workspace         = true
+chrono.workspace = true
+db.workspace = true
+moka.workspace = true
 rust_decimal.workspace = true
-sea-orm.workspace      = true
-uuid.workspace         = true
+sea-orm.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
-sea-orm = { features = [ "mock" ], workspace = true }
-tokio   = { features = [ "full" ], workspace = true }
+sea-orm = { features = ["mock"], workspace = true }
+tokio = { features = ["full"], workspace = true }
 
 [lints]
 workspace = true

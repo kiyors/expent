@@ -19,6 +19,7 @@ import { useIsMobile } from "@expent/ui/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { UserIcon, WalletIcon } from "lucide-react";
 import * as React from "react";
+
 import { useContacts } from "@/hooks/use-contacts";
 import { useWallets } from "@/hooks/use-wallets";
 import { api } from "@/lib/api-client";

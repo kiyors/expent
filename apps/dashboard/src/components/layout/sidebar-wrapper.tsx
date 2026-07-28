@@ -1,5 +1,6 @@
-import { SidebarClient } from "@/components/layout/sidebar-client";
 import { useEffect, useState } from "react";
+
+import { SidebarClient } from "@/components/layout/sidebar-client";
 
 export function SidebarWrapper({ children }: { children: React.ReactNode }) {
   const [defaultOpen, setDefaultOpen] = useState(true);

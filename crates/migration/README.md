@@ -7,10 +7,13 @@ This crate handles database schema migrations using [SeaORM](https://www.sea-ql.
 Ensure your `DATABASE_URL` is set in the environment or `.env` file.
 
 ### Local SQLite Setup
+
 For a local SQLite database, use:
+
 ```sh
 DATABASE_URL="sqlite://expent.db?mode=rwc"
 ```
+
 The `?mode=rwc` flag tells SQLite to create the file if it doesn't exist.
 
 ## Running Migrations
@@ -55,6 +58,7 @@ When adding new columns, you must ensure that existing data is not lost and that
 If you add a new column and need to update all existing rows for every user (e.g., setting a default or calculating a value), create a new migration and use the `UPDATE` statement.
 
 - **Example Migration to Update All Rows:**
+
   ```rust
   // Inside your migration's `up` method
   manager
@@ -73,4 +77,3 @@ If you add a new column and need to update all existing rows for every user (e.g
   ```
 
 ## Advanced Commands
-

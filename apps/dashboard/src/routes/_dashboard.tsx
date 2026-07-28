@@ -1,8 +1,9 @@
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+
 import { CommandCenter } from "@/components/layout/command-center";
 import { GlobalModals } from "@/components/layout/global-modals";
 import { HotkeyHelp } from "@/components/layout/hotkey-help";
 import { SidebarWrapper } from "@/components/layout/sidebar-wrapper";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getSession } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/_dashboard")({

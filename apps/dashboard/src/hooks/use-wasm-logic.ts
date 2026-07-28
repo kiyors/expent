@@ -1,6 +1,7 @@
 import type { DetectedSubscription } from "@expent/types";
 import { useWasmWorker } from "@expent/wasm";
 import { useQuery } from "@tanstack/react-query";
+
 import { useTransactions } from "./use-transactions";
 
 /**

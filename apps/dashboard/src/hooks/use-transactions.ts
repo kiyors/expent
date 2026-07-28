@@ -10,9 +10,11 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { useWasmWorker, validateTransactionWasm } from "@expent/wasm";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
+
 import { useCategories } from "./use-categories";
 import { useWallets } from "./use-wallets";
 

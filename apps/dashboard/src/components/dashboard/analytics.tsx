@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expe
 import { BarChart3Icon, TrendingDownIcon, TrendingUpIcon, WalletIcon } from "lucide-react";
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
 import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";
 
 export function Analytics() {

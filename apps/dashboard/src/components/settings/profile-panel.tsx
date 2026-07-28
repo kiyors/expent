@@ -9,6 +9,7 @@ import { Label } from "@expent/ui/components/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, Loader2Icon, UploadIcon, UserIcon } from "lucide-react";
 import * as React from "react";
+
 import { api } from "@/lib/api-client";
 
 export function ProfilePanel({ user }: { user: User }) {

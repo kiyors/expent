@@ -3,10 +3,10 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { Label } from "@expent/ui/components/label";
 import { RadioGroup, RadioGroupItem } from "@expent/ui/components/radio-group";
 import { Separator } from "@expent/ui/components/separator";
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
-import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import * as React from "react";
 
 export const Route = createFileRoute("/_dashboard/settings/appearance")({
   component: SettingsAppearancePage,

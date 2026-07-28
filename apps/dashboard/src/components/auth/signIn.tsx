@@ -1,9 +1,10 @@
 import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@expent/ui/components/input-group";
-import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
+
 import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthShades } from "@/components/auth/auth-shades";
 import { SocialLogins } from "@/components/auth/auth-social";

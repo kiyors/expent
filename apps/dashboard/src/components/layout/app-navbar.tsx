@@ -9,9 +9,10 @@ import {
 import { Button } from "@expent/ui/components/button";
 import { Separator } from "@expent/ui/components/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@expent/ui/components/tooltip";
-import { BellIcon, SearchIcon, SendIcon } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
+import { BellIcon, SearchIcon, SendIcon } from "lucide-react";
 import * as React from "react";
+
 import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger";
 import { ModeToggle } from "@/components/ui-elements/mode-toggle";
 

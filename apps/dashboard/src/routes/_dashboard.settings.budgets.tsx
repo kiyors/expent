@@ -3,12 +3,13 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
 import { Separator } from "@expent/ui/components/separator";
 import { cn } from "@expent/ui/lib/utils";
+import { createFileRoute } from "@tanstack/react-router";
 import { PlusIcon, TargetIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
+
 import { CreateBudgetDialog } from "@/components/budgets/create-budget-dialog";
 import { useBudgets } from "@/hooks/use-budgets";
 import { formatCurrency } from "@/lib/format";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/settings/budgets")({
   component: SettingsBudgetsPage,

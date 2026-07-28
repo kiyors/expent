@@ -1,18 +1,18 @@
 [package]
-name              = "categories"
+name = "categories"
 edition.workspace = true
 version.workspace = true
 
 [dependencies]
-chrono.workspace  = true
-db.workspace      = true
-moka.workspace    = true
+chrono.workspace = true
+db.workspace = true
+moka.workspace = true
 sea-orm.workspace = true
-uuid.workspace    = true
+uuid.workspace = true
 
 [lints]
 workspace = true
 
 [lib]
 doctest = false
-test    = false
+test = false

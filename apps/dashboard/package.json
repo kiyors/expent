@@ -11,9 +11,9 @@
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "biome format",
-    "lint": "biome lint",
-    "check": "biome check"
+    "format": "oxfmt",
+    "lint": "oxlint",
+    "check": "oxlint && oxfmt --check"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.6.25",
@@ -49,7 +49,6 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/router-cli": "^1.132.0",
@@ -60,6 +59,8 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.1.1",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "rollup": "^4.62.3",
     "typescript": "catalog:",
     "vite": "^8.0.0",

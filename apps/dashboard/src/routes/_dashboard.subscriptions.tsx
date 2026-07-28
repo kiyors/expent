@@ -17,6 +17,7 @@ import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@expent/ui/components/tabs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   BellRingIcon,
   CalendarIcon,
@@ -28,10 +29,10 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
+
 import { useLocalSubscriptionDetection } from "@/hooks/use-wasm-logic";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/subscriptions")({
   component: SubscriptionsComponent,

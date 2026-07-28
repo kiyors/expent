@@ -1,36 +1,36 @@
 [package]
-name              = "ocr"
+name = "ocr"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 contacts.workspace = true
-db.workspace       = true
-upload.workspace   = true
-wallets.workspace  = true
+db.workspace = true
+upload.workspace = true
+wallets.workspace = true
 
-anyhow.workspace       = true
-async-trait.workspace  = true
-base64                 = "0.22"
-calamine               = "0.35"
-chrono.workspace       = true
-csv                    = "1.4"
-futures.workspace      = true
-lopdf.workspace        = true
-pdf-extract            = "0.10"
-rand.workspace         = true
-reqwest.workspace      = true
+anyhow.workspace = true
+async-trait.workspace = true
+base64 = "0.22"
+calamine = "0.35"
+chrono.workspace = true
+csv = "1.4"
+futures.workspace = true
+lopdf.workspace = true
+pdf-extract = "0.10"
+rand.workspace = true
+reqwest.workspace = true
 rust_decimal.workspace = true
-schemars.workspace     = true
-sea-orm.workspace      = true
-serde.workspace        = true
-serde_json.workspace   = true
-sqlx.workspace         = true
-tokio.workspace        = true
-tokio-util.workspace   = true
-tracing.workspace      = true
-uuid.workspace         = true
+schemars.workspace = true
+sea-orm.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+uuid.workspace = true
 
 [lib]
 doctest = false
-test    = false
+test = false

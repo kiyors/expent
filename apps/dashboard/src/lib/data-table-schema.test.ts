@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { parseSerializableDataTable, safeParseSerializableDataTable } from "./data-table-schema";
 
 describe("parseSerializableDataTable", () => {

@@ -5,11 +5,12 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Separator } from "@expent/ui/components/separator";
+import { createFileRoute } from "@tanstack/react-router";
 import { CameraIcon, LoaderIcon } from "lucide-react";
 import * as React from "react";
+
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/settings/profile")({
   component: SettingsProfilePage,

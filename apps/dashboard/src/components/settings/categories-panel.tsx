@@ -6,6 +6,7 @@ import { Input } from "@expent/ui/components/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
+
 import { api } from "@/lib/api-client";
 
 export function CategoriesPanel() {

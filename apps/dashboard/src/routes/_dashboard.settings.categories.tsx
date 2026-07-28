@@ -2,11 +2,12 @@ import type { Category } from "@expent/types";
 import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { Separator } from "@expent/ui/components/separator";
+import { createFileRoute } from "@tanstack/react-router";
 import { LockIcon, PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
+
 import { COLOR_PALETTE, CreateCategoryDialog, ICON_MAP } from "@/components/categories/create-category-dialog";
 import { useCategories } from "@/hooks/use-categories";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/settings/categories")({
   component: SettingsCategoriesPage,

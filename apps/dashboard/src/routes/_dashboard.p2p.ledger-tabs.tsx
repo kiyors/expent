@@ -14,6 +14,7 @@ import {
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
@@ -25,10 +26,10 @@ import {
   WalletIcon,
 } from "lucide-react";
 import * as React from "react";
+
 import { useContacts } from "@/hooks/use-contacts";
 import { useLedgerTabs } from "@/hooks/use-p2p";
 import { useWallets } from "@/hooks/use-wallets";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/p2p/ledger-tabs")({
   component: LedgerTabsPage,

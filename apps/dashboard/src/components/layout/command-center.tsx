@@ -10,6 +10,7 @@ import {
 } from "@expent/ui/components/command";
 import { cn } from "@expent/ui/lib/utils";
 import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
+import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -28,12 +29,11 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 import { useCallback } from "react";
+
 import { useContacts } from "@/hooks/use-contacts";
 import { useWallets } from "@/hooks/use-wallets";
-
 import { useGlobalStore } from "@/lib/store";
 
 export function CommandCenter() {

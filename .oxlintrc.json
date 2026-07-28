@@ -1,0 +1,105 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "react-hooks", "jsx-a11y", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "env": {
+    "builtin": true
+  },
+  "settings": {
+    "react": {
+      "version": "19.2.7"
+    },
+    "tailwindcss": {
+      "callees": ["clsx", "cva", "cn"]
+    }
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    ".turbo/",
+    ".vinxi/",
+    ".nitro/",
+    ".agents/",
+    "build/",
+    ".tanstack/",
+    ".coverage/",
+    "nix/store/",
+    ".pnpm-store/",
+    "packages/types/",
+    "packages/wasm/pkg/",
+    "generated/",
+    "generated.ts",
+    "pnpm-lock.yaml",
+    "src/routeTree.gen.ts",
+    ".output/"
+  ],
+  "rules": {
+    "prefer-arrow-callback": "error",
+    "no-unsafe-finally": "warn",
+    "@typescript-eslint/no-unused-vars": "error",
+    "no-unused-vars": "error",
+    "no-eval": "error",
+    "prefer-const": "error",
+    "eqeqeq": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-namespace": "error",
+    "no-var": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/react-in-jsx-scope": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-extra-non-null-assertion": "error",
+    "no-shadow-restricted-names": "error",
+    "@typescript-eslint/no-unsafe-declaration-merging": "error",
+    "getter-return": "error",
+    "no-debugger": "warn",
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": {
+          "camelCase": true,
+          "pascalCase": true
+        },
+        "ignore": [
+          "\\.config\\.ts$",
+          "\\.d\\.ts$",
+          "llms.*\\.txt\\.ts$",
+          "rss\\.xml\\.ts$",
+          "agent\\.md\\.ts$",
+          ".*\\.astro$",
+          "\\[.*\\]\\.webp\\.ts$",
+          "case-studies",
+          "\\.md$",
+          "\\.mdx$",
+          "routeTree\\.gen\\.ts$"
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.mdx", "*.md", "*.astro"],
+      "rules": {
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "import/no-unassigned-import": "off"
+      }
+    },
+    {
+      "files": ["**/label.tsx"],
+      "rules": {
+        "jsx-a11y/label-has-associated-control": "off"
+      }
+    },
+    {
+      "files": ["**/field.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    }
+  ]
+}

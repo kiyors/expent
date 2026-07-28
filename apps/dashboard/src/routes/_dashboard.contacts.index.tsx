@@ -16,6 +16,7 @@ import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import { useFuzzySearch } from "@expent/wasm";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   AlertCircleIcon,
   ChevronRightIcon,
@@ -28,8 +29,8 @@ import {
 } from "lucide-react";
 import { m } from "motion/react";
 import * as React from "react";
+
 import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/contacts/")({
   component: ContactsPage,

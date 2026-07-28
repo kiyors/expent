@@ -1,15 +1,15 @@
 [package]
-name              = "migration"
+name = "migration"
 version.workspace = true
 edition.workspace = true
-publish           = false
+publish = false
 
 [lib]
 doctest = false
-name    = "migration"
-path    = "src/lib.rs"
-test    = false
+name = "migration"
+path = "src/lib.rs"
+test = false
 
 [dependencies]
-async-std                   = { features = [ "attributes", "tokio1" ], version = "1" }
+async-std = { features = ["attributes", "tokio1"], version = "1" }
 sea-orm-migration.workspace = true

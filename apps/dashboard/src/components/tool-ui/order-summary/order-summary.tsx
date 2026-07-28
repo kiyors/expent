@@ -1,6 +1,8 @@
 import { CheckCircle, Package } from "lucide-react";
 import type { ReactElement } from "react";
+
 import { formatCurrency } from "@/lib/format";
+
 import { cn, Separator } from "./_adapter";
 import type { OrderDecision, OrderItem, OrderSummaryProps, OrderSummaryVariant, Pricing } from "./schema";
 

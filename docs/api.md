@@ -13,8 +13,9 @@ This document covers the structure and available endpoints of the Expent API gat
 ### Application State (`AppState`)
 
 The API maintains a lean state, delegating complexity to the core:
-| Field | Type | Description |
-|-------|------|-------------|
+
+| Field  | Type                | Description                                             |
+| ------ | ------------------- | ------------------------------------------------------- |
 | `core` | `expent_core::Core` | Unified instance managing DB, Auth, S3, and Native OCR. |
 
 ---

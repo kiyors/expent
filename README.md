@@ -54,16 +54,16 @@ Expent is an intelligent expense management platform built with Rust, TypeScript
 
 ## Environment Variables
 
-| Variable               | Description                             |
-| :--------------------- | :-------------------------------------- |
-| `DATABASE_URL`         | PostgreSQL connection string            |
-| `AUTH_SECRET`          | 32+ character secret for authentication |
-| `S3_ENDPOINT`          | S3-compatible API endpoint              |
-| `S3_ACCESS_KEY_ID`     | Access key for storage                  |
-| `S3_SECRET_ACCESS_KEY` | Secret key for storage                  |
-| `S3_BUCKET_NAME`       | Name of the bucket for uploads          |
-| `GOOGLE_API_KEY`        | Google Gemini API Key for OCR           |
-| `GEMINI_MODEL`          | Gemini model version (e.g. `gemini-2.0-flash-exp`) |
+| Variable               | Description                                        |
+| :--------------------- | :------------------------------------------------- |
+| `DATABASE_URL`         | PostgreSQL connection string                       |
+| `AUTH_SECRET`          | 32+ character secret for authentication            |
+| `S3_ENDPOINT`          | S3-compatible API endpoint                         |
+| `S3_ACCESS_KEY_ID`     | Access key for storage                             |
+| `S3_SECRET_ACCESS_KEY` | Secret key for storage                             |
+| `S3_BUCKET_NAME`       | Name of the bucket for uploads                     |
+| `GOOGLE_API_KEY`       | Google Gemini API Key for OCR                      |
+| `GEMINI_MODEL`         | Gemini model version (e.g. `gemini-2.0-flash-exp`) |
 
 <!-- BEGIN:nextjs-agent-rules -->
 

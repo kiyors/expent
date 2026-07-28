@@ -43,6 +43,7 @@ import {
   WifiIcon,
 } from "lucide-react";
 import * as React from "react";
+
 import { useCategories } from "@/hooks/use-categories";
 
 export const ICON_MAP: Record<string, React.ElementType> = {

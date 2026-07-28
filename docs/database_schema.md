@@ -14,6 +14,7 @@ Unlike standard implementations where business logic might bleed into the databa
 - **`crates/expent_core` (The Brain)**: The central hub for all business logic ("Bank Code"). It orchestrates all other crates (`db`, `auth`, `upload`, `ocr`) and exposes granular service modules.
 
 > **Naming note:** `expent_core::services::<x>` paths in this doc describe the **target** layout. The working path today is `expent_core::<x>` (the facade re-exporting the domain crates). See `docs/core.md` for the convention.
+
 - **`apps/api` (The Interface)**: A thin routing layer that delegates all complex operations to `expent_core`.
 
 ### Unified Orchestration (`Core` struct)

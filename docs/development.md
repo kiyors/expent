@@ -5,6 +5,7 @@ This document provides technical instructions for setting up the Expent monorepo
 ## 1. Prerequisites
 
 Ensure you have the following installed:
+
 - **Node.js**: v24+ ([pnpm](https://pnpm.io/) is required)
 - **Rust**: Latest stable (via [rustup](https://rustup.rs/))
 - **PostgreSQL**: Local or cloud instance.
@@ -15,6 +16,7 @@ Ensure you have the following installed:
 ## 2. Local Setup
 
 ### Step 1: Install Dependencies
+
 ```bash
 # Node.js workspace
 pnpm install
@@ -45,7 +47,9 @@ Expent uses [`sops`](https://github.com/getsops/sops) combined with `age` for en
    ```
 
 ### Step 3: Database Migrations
+
 Initialize the schema and seed system data:
+
 ```bash
 cargo run -p migration -- up
 ```
@@ -55,6 +59,7 @@ cargo run -p migration -- up
 ## 3. Development Workflow
 
 ### Running Services
+
 The project uses [Turborepo](https://turbo.build/) to manage parallel execution.
 
 ```bash
@@ -67,6 +72,7 @@ pnpm dev:app
 ```
 
 ### Formatting & Linting
+
 Expent enforces strict styling via Biome (JS/TS) and Cargo Fmt (Rust).
 
 ```bash
@@ -90,9 +96,9 @@ pnpm check
 
 ## 5. Helpful Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm clean` | Wipe all build artifacts, node_modules, and caches. |
-| `cargo test -p db` | Regenerate TypeScript types for the frontend. |
-| `cargo run -p migration -- fresh` | Reset the database to a clean state. |
-| `pnpm build` | Production release check for the entire stack. |
+| Command                           | Description                                         |
+| --------------------------------- | --------------------------------------------------- |
+| `pnpm clean`                      | Wipe all build artifacts, node_modules, and caches. |
+| `cargo test -p db`                | Regenerate TypeScript types for the frontend.       |
+| `cargo run -p migration -- fresh` | Reset the database to a clean state.                |
+| `pnpm build`                      | Production release check for the entire stack.      |

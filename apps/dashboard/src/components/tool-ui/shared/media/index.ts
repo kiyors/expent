@@ -9,8 +9,5 @@ export {
 } from "./aspect-ratio";
 export { formatDuration, formatFileSize } from "./format-utils";
 export { OVERLAY_GRADIENT } from "./overlay-gradient";
-export {
-  openSafeNavigationHref,
-  resolveSafeNavigationHref,
-} from "./safe-navigation";
+export { openSafeNavigationHref, resolveSafeNavigationHref } from "./safe-navigation";
 export { sanitizeHref } from "./sanitize-href";

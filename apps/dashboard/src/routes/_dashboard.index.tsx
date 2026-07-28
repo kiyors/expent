@@ -1,5 +1,3 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { Suspense, useCallback, useMemo, useState, useTransition } from "react";
 import type { P2pRequestWithSender, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
@@ -15,6 +13,7 @@ import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@expent/ui/components/tabs";
 import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import {
   ActivityIcon,
   CreditCardIcon,
@@ -26,11 +25,13 @@ import {
   Trash2Icon,
   WalletIcon,
 } from "lucide-react";
+import { Suspense, useCallback, useMemo, useState, useTransition } from "react";
+
 import { Analytics } from "@/components/dashboard/analytics";
-import { Overview } from "@/components/dashboard/overview";
-import { IncomeExpenseChart } from "@/components/dashboard/income-expense-chart";
-import { CategoryChart } from "@/components/dashboard/category-chart";
 import { BudgetHealthWidget } from "@/components/dashboard/budget-health";
+import { CategoryChart } from "@/components/dashboard/category-chart";
+import { IncomeExpenseChart } from "@/components/dashboard/income-expense-chart";
+import { Overview } from "@/components/dashboard/overview";
 import { DataTable } from "@/components/data-table/data-table";
 import { ApprovalCard } from "@/components/tool-ui/approval-card";
 import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
@@ -248,7 +249,8 @@ function DashboardContent() {
                     ? {
                         label: "vs income",
                         value: `${(
-                          (parseFloat(summary.monthly_spend) / parseFloat(summary.monthly_income)) * 100
+                          (parseFloat(summary.monthly_spend) / parseFloat(summary.monthly_income)) *
+                          100
                         ).toFixed(0)}%`,
                         inverse: true,
                       }

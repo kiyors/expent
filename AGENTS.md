@@ -15,16 +15,16 @@
 
 ## File-Scoped Commands
 
-| Task            | Command                                   |
-| --------------- | ----------------------------------------- |
-| Typecheck       | `pnpm tsc --noEmit path/to/file.ts`       |
-| Lint (JS)       | `pnpm lint`                               |
-| Format (JS)     | `pnpm fmt`                                |
-| Lint (Rust)     | `cargo clippy --fix -p <crate> -- <file>` |
-| Format (Rust)   | `cargo fmt`                               |
-| Test (Rust)     | `cargo test -p expent_core --lib`         |
-| Test (JS/TS)    | `pnpm vitest run path/to/file.test.ts`    |
-| Format (All)    | `pnpm fmt-all`                            |
+| Task          | Command                                   |
+| ------------- | ----------------------------------------- |
+| Typecheck     | `pnpm tsc --noEmit path/to/file.ts`       |
+| Lint (JS)     | `pnpm lint`                               |
+| Format (JS)   | `pnpm fmt`                                |
+| Lint (Rust)   | `cargo clippy --fix -p <crate> -- <file>` |
+| Format (Rust) | `cargo fmt`                               |
+| Test (Rust)   | `cargo test -p expent_core --lib`         |
+| Test (JS/TS)  | `pnpm vitest run path/to/file.test.ts`    |
+| Format (All)  | `pnpm fmt-all`                            |
 
 ## Documentation
 
@@ -33,14 +33,17 @@
 - `docs/core.md`: Deep dive into the Centralized Hub Architecture.
 
 <!-- intent-skills:start -->
+
 ## Skill Loading
 
 Before editing files for a substantial task:
+
 - Run `pnpm dlx @tanstack/intent@latest list` from the workspace root to see available local skills.
 - If a listed skill matches the task, run `pnpm dlx @tanstack/intent@latest load <package>#<skill>` before changing files.
 - Use the loaded `SKILL.md` guidance while making the change.
 - Monorepos: when working across packages, run the skill check from the workspace root and prefer the local skill for the package being changed.
 - Multiple matches: prefer the most specific local skill for the package or concern you are changing; load additional skills only when the task spans multiple packages or concerns.
+
 <!-- intent-skills:end -->
 
 # Skill mappings - when working in these areas, load the linked skill file into context.
@@ -100,6 +103,7 @@ When generating code or reviewing PRs, you must actively apply the loaded skills
 ### 5. Backend, Database & OCR
 
 - **Rust Core:** TDD Red-Green-Refactor is mandatory. Use `#[rstest]` fixtures (`rust-best-practices`).
+- **Rust Performance:** Avoid heap allocations in hot loops (use `&str` over `String`), use `HashMap::entry` API to avoid double lookups, use `rayon` for parallelizing iterators (`par_lines`/`par_iter`), and prefer `Vec::swap_remove` over `remove` when order doesn't matter.
 - **Transactions:** Atomic operations MUST use `db.transaction`. Always adjust wallet balances.
 - **Rust OCR:** Background job processing natively integrated in `crates/ocr` using Postgres LISTEN/NOTIFY and graceful shutdown tokens.
 - **Database:** Pure entities go in `crates/db/src/entities/`. No business logic here. Design via `database-schema-designer`.

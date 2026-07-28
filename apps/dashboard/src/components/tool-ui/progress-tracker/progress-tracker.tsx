@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { AlertCircle, Check, Loader2, Timer, X } from "lucide-react";
+
 import { cn } from "./_adapter";
 import type { ProgressStep, ProgressTrackerChoice, ProgressTrackerProps } from "./schema";
 

@@ -1,7 +1,9 @@
 ## 2026-05-11 - [Incomplete IDOR Validation in OCR API]
+
 **Vulnerability:** IDOR (Insecure Direct Object Reference)
 **Learning:** The `process_image_ocr_handler` implemented a security check for the primary S3 `key` but missed the same check for the optional `raw_key`. Since the background worker uses `raw_key` for high-resolution retries, an attacker could provide another user's `raw_key` and eventually receive the OCR results for it.
 **Prevention:** When a payload contains multiple references to sensitive resources (like S3 keys), ensure that ALL references are validated for ownership against the authenticated session user.
+
 - Found and fixed a Critical IDOR vulnerability in `crates/groups/src/p2p/`.
 - **Pattern Identified:** Endpoints interacting with P2P requests and Ledger Tabs (e.g., `accept_p2p_request`, `reject_p2p_request`, `register_repayment`) implicitly trusted the `request_id` or `tab_id` provided by the authenticated user without verifying if the user was a party to the transaction.
 - **Fix Applied:** Enforced explicit ownership/authorization checks before performing state-mutating actions:

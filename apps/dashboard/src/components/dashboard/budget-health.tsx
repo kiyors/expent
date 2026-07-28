@@ -2,9 +2,10 @@ import { Button } from "@expent/ui/components/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
 import { cn } from "@expent/ui/lib/utils";
 import { calculateSpendingVelocityWasm } from "@expent/wasm";
-import { TargetIcon } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { TargetIcon } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
+
 import { useBudgets } from "@/hooks/use-budgets";
 
 interface VelocityDisplay {

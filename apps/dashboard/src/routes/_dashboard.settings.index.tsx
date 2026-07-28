@@ -1,7 +1,7 @@
-import { BellIcon, ChevronRightIcon, MonitorIcon, PaletteIcon, TagIcon, UserCogIcon, WrenchIcon } from "lucide-react";
-import { m, type Variants } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
+import { BellIcon, ChevronRightIcon, MonitorIcon, PaletteIcon, TagIcon, UserCogIcon, WrenchIcon } from "lucide-react";
+import { m, type Variants } from "motion/react";
 
 export const Route = createFileRoute("/_dashboard/settings/")({
   component: SettingsIndexPage,
