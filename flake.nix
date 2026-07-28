@@ -67,6 +67,7 @@
         { pkgs, system }: {
           pre-commit-check = inputs.git-hooks-nix.lib.${system}.run {
             src = ./.;
+            package = pkgs.prek;
             hooks = {
               encrypt-env = {
                 enable = true;
@@ -74,10 +75,36 @@
                 entry = "bash -c 'if [ -f .env ]; then hash=$(${pkgs.coreutils}/bin/sha256sum .env | cut -d\" \" -f1); if [ ! -f .env.sha256 ] || [ \"$(cat .env.sha256 2>/dev/null)\" != \"$hash\" ]; then cp .env secrets.env && ${pkgs.sops}/bin/sops -e -i secrets.env && git add secrets.env && echo \"$hash\" > .env.sha256; fi; fi'";
                 pass_filenames = false;
               };
-              fmt-all = {
+              forbid-env-files = {
                 enable = true;
-                name = "Run pnpm fmt-all";
-                entry = "bash -c 'pnpm fmt-all'";
+                name = "Prevent committing environment files";
+                entry = toString (
+                  pkgs.writeShellScript "forbid-env-files" ''
+                    echo "Refusing to commit environment file(s):" >&2
+                    printf '  - %s\n' "$@" >&2
+                    echo "Commit a .env.example, .env.sample, or .env.template file instead." >&2
+                    exit 1
+                  ''
+                );
+                files = "(^|/)\\.env($|\\.)";
+                excludes = [ "(^|/)\\.env.*\\.(example|sample|template|sha256)$" ];
+              };
+              oxfmt = {
+                enable = true;
+                name = "Check formatting with oxfmt";
+                entry = "bash -c 'pnpm exec oxfmt --check'";
+                pass_filenames = false;
+              };
+              oxlint = {
+                enable = true;
+                name = "Lint with oxlint";
+                entry = "bash -c 'pnpm exec oxlint -c .oxlintrc.json --type-aware .'";
+                pass_filenames = false;
+              };
+              cargo-fmt = {
+                enable = true;
+                name = "Check Rust formatting";
+                entry = "bash -c 'cargo fmt --check'";
                 pass_filenames = false;
               };
 
@@ -111,13 +138,14 @@
                 # Node.js
                 nodejs
                 pnpm
-                biome
+                oxfmt
+                oxlint
 
                 # Utilities
                 just
-                taplo
                 sops
                 age
+                prek
               ]
               ++ lib.optionals stdenv.isDarwin [
                 libiconv
@@ -150,8 +178,6 @@
               echo "  rust:   $(cargo --version)"
               echo "  node:   $(node --version)"
               echo "  pnpm:   $(pnpm --version)"
-
-              ${inputs.self.checks.${system}.pre-commit-check.shellHook}
 
               # Auto-decrypt secrets.env on clone or if secrets.env is newer than .env (like after git pull)
               if [ -f secrets.env ] && { [ ! -f .env ] || [ secrets.env -nt .env ]; }; then
