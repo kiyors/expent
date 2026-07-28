@@ -6,7 +6,7 @@
     "dev": "cargo run",
     "check": "bacon check",
     "test": "bacon test",
-    "clean": "rm -rf .turbo",
+    "cleanup": "rm -rf node_modules .turbo target",
     "build": "cargo build --release"
   }
 }

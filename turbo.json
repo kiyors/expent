@@ -75,6 +75,9 @@
         "EXPO_PUBLIC_API_URL",
         "EXPO_PUBLIC_APP_ENV"
       ]
+    },
+    "cleanup": {
+      "cache": false
     }
   }
 }

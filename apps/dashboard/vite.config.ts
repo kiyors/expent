@@ -16,6 +16,7 @@ const config = defineConfig({
   },
   build: {
     target: "esnext",
+    outDir: "build",
   },
 });
 

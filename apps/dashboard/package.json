@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "format": "oxfmt",
     "lint": "oxlint",
-    "check": "oxlint && oxfmt --check"
+    "check": "oxlint && oxfmt --check",
+    "cleanup": "rm -rf node_modules .turbo dist .tanstack .vite build"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.6.25",
@@ -63,7 +64,6 @@
     "oxlint": "catalog:",
     "typescript": "catalog:",
     "vite": "^8.1.5",
-    "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.10"
   }
