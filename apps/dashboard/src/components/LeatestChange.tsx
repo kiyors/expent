@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label */
 import { Button } from "@expent/ui/components/button";
 import { cn } from "@expent/ui/lib/utils";
 import { XIcon } from "lucide-react";
@@ -32,6 +33,7 @@ export function LatestChange() {
         className="w-max px-0 font-light text-xs"
         size="sm"
         variant="link"
+        // eslint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label
         // biome-ignore lint/a11y/useAnchorContent: Button injects children into the rendered <a> via base-ui render prop
         render={<a href={latestChange.readMore.href} />}
         nativeButton={false}

@@ -221,9 +221,9 @@ interface ProgressBarProps {
 
 const ProgressBar = memo(({ progress, isCelebrating }: ProgressBarProps) => {
   return (
-    <div
+    <progress
       className="bg-muted relative mb-3 h-1.5 overflow-hidden rounded-full"
-      role="progressbar"
+
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={progress}
@@ -248,7 +248,7 @@ const ProgressBar = memo(({ progress, isCelebrating }: ProgressBarProps) => {
           }}
         />
       )}
-    </div>
+    </progress>
   );
 });
 

@@ -31,7 +31,7 @@ function ApprovalCardReceipt({ id, title, choice, actionLabel, className }: Appr
   const displayLabel = actionLabel ?? (isApproved ? "Approved" : "Denied");
 
   return (
-    <div
+    <output
       className={cn(
         "flex w-full min-w-64 max-w-md flex-col",
         "text-foreground",
@@ -41,7 +41,6 @@ function ApprovalCardReceipt({ id, title, choice, actionLabel, className }: Appr
       data-slot="approval-card"
       data-tool-ui-id={id}
       data-receipt="true"
-      role="status"
       aria-label={displayLabel}
     >
       <div className={cn("bg-card/60 flex w-full items-center gap-3 rounded-2xl border px-4 py-3 shadow-xs")}>
@@ -58,7 +57,7 @@ function ApprovalCardReceipt({ id, title, choice, actionLabel, className }: Appr
           <span className="text-muted-foreground text-sm">{title}</span>
         </div>
       </div>
-    </div>
+    </output>
   );
 }
 
@@ -124,11 +123,11 @@ export function ApprovalCard({
       {choice ? (
         <ApprovalCardReceipt id={id} title={title} choice={choice} className={className} />
       ) : (
-        <article
+        <dialog
           className={cn("flex w-full min-w-64 max-w-md flex-col gap-3", "text-foreground", className)}
+          /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
           data-slot="approval-card"
           data-tool-ui-id={id}
-          role="dialog"
           aria-labelledby={`${id}-title`}
           aria-describedby={description ? `${id}-description` : undefined}
           onKeyDown={handleKeyDown}
@@ -174,7 +173,7 @@ export function ApprovalCard({
           <div className="@container/actions">
             <ActionButtons actions={actions} onAction={handleAction} />
           </div>
-        </article>
+        </dialog>
       )}
     </div>
   );

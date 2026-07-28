@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label */
 import { Button } from "@expent/ui/components/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@expent/ui/components/empty";
 import { HomeIcon } from "lucide-react";
@@ -15,6 +16,7 @@ export function NotFoundPage() {
         </EmptyHeader>
         <EmptyContent>
           <div className="flex gap-2">
+            {/* eslint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label */}
             {/* biome-ignore lint/a11y/useAnchorContent: Button injects children into the rendered <a> via base-ui render prop */}
             <Button render={<a href="/" />} nativeButton={false}>
               <HomeIcon data-icon="inline-start" />

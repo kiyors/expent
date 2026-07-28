@@ -173,7 +173,7 @@ function ProgressTrackerReceipt({
   const ReceiptIcon = receiptState.icon;
 
   return (
-    <div
+    <output
       className={cn(
         "isolate flex w-full max-w-md min-w-80 flex-col",
         "text-foreground select-none",
@@ -183,7 +183,6 @@ function ProgressTrackerReceipt({
       data-slot="progress-tracker"
       data-tool-ui-id={id}
       data-receipt="true"
-      role="status"
       aria-label={choice.summary}
     >
       <div className="bg-card/60 flex w-full flex-col gap-4 rounded-2xl border p-5 shadow-xs">
@@ -210,15 +209,15 @@ function ProgressTrackerReceipt({
               <div className="relative z-10">
                 <StepIndicator status={step.status} />
               </div>
-              <div className="flex flex-1 flex-col gap-0.5">
+              <output className="flex flex-1 flex-col gap-0.5">
                 <span className="text-sm leading-6 font-medium">{step.label}</span>
                 {step.description && <span className="text-muted-foreground text-sm">{step.description}</span>}
-              </div>
+              </output>
             </li>
           ))}
         </ol>
       </div>
-    </div>
+    </output>
   );
 }
 
@@ -227,11 +226,10 @@ function ProgressTrackerLive({ id, steps, elapsedTime, className }: ProgressTrac
   const currentStepId = getCurrentStepId(steps);
 
   return (
-    <article
+    <output
       className={cn("isolate flex w-full max-w-md min-w-80 flex-col gap-3", "text-foreground select-none", className)}
       data-slot="progress-tracker"
       data-tool-ui-id={id}
-      role="status"
       aria-live="polite"
       aria-busy={hasInProgress}
     >
@@ -303,7 +301,7 @@ function ProgressTrackerLive({ id, steps, elapsedTime, className }: ProgressTrac
           })}
         </ol>
       </div>
-    </article>
+    </output>
   );
 }
 

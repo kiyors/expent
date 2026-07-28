@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/prefer-tag-over-role */
 // biome-ignore-all lint/a11y/useSemanticElements: virtualised data-table — divs with role attributes preserve assistive-tech semantics without breaking the scroller / column-resize handles.
 
 import * as React from "react";
@@ -47,7 +48,7 @@ function getAlignmentClass(align?: "left" | "right" | "center"): string | undefi
 
 // Generic React context type for an unbounded row generic; callers re-cast via
 // `useDataTable<T>()` to recover the concrete row type at the use-site.
-const DataTableContext = React.createContext<DataTableContextValue<RowData> | undefined>(undefined);
+const DataTableContext = React.createContext<DataTableContextValue | undefined>(undefined);
 
 export function useDataTable<T extends object = RowData>() {
   const context = React.use(DataTableContext) as DataTableContextValue<T> | undefined;
@@ -142,7 +143,7 @@ function DataTableProvider<T extends object = RowData>({
   };
 
   return (
-    <DataTableContext.Provider value={contextValue as unknown as DataTableContextValue<RowData>}>
+    <DataTableContext.Provider value={contextValue as unknown as DataTableContextValue}>
       {children}
     </DataTableContext.Provider>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label */
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ export function NavProjects({
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label */}
             {/* biome-ignore lint/a11y/useAnchorContent: SidebarMenuButton injects children into the rendered <a> via base-ui render prop */}
             <SidebarMenuButton render={<a href={item.url} />}>
               {item.icon}

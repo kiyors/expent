@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 export function sanitizeHref(href?: string): string | undefined {
   if (!href) return undefined;
   const candidate = href.trim();
@@ -11,6 +12,7 @@ export function sanitizeHref(href?: string): string | undefined {
     candidate.startsWith("#")
   ) {
     if (candidate.startsWith("//")) return undefined;
+    // eslint-disable-next-line no-control-regex
     // biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally rejecting URLs containing control characters for sanitization.
     if (/[\u0000-\u001F\u007F]/.test(candidate)) return undefined;
     return candidate;

@@ -435,11 +435,10 @@ export function PreferencesPanelReceipt({
   const hasErrors = error && Object.keys(error).length > 0;
 
   return (
-    <article
+    <output
       data-slot="preferences-panel"
       data-tool-ui-id={id}
       data-receipt="true"
-      role="status"
       aria-label={hasErrors ? "Preferences with errors" : "Confirmed preferences"}
       className={cn("@container/preferences-panel flex w-full max-w-md min-w-80 flex-col", className)}
     >
@@ -459,7 +458,7 @@ export function PreferencesPanelReceipt({
           ))}
         </div>
       </div>
-    </article>
+    </output>
   );
 }
 
@@ -557,10 +556,9 @@ function PreferencesPanelRoot({
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: not a real <form> — no submit/native validation; role=form gives AT a labelled landmark
-    <article
+    <form
       data-slot="preferences-panel"
       data-tool-ui-id={id}
-      role="form"
       className={cn(
         "text-foreground @container/preferences-panel flex w-full max-w-md min-w-80 flex-col gap-3",
         className,
@@ -599,7 +597,7 @@ function PreferencesPanelRoot({
           onBeforeAction={onBeforeAction ? (actionId) => onBeforeAction(actionId, currentValue) : undefined}
         />
       </div>
-    </article>
+    </form>
   );
 }
 
