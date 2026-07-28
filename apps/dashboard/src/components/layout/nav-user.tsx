@@ -78,10 +78,10 @@ export function NavUser() {
               <DropdownMenuItem
                 onClick={() => {
                   React.startTransition(() => {
-                    const reactWithExperimental = React as any;
+                    const reactWithExperimental = React as unknown as { addTransitionType?: (type: string) => void };
                     if (typeof reactWithExperimental.addTransitionType === "function")
                       reactWithExperimental.addTransitionType("nav-forward");
-                    navigateFn({ to: "/settings/profile" });
+                    void navigateFn({ to: "/settings/profile" });
                   });
                 }}
                 className="cursor-pointer"
@@ -92,10 +92,10 @@ export function NavUser() {
               <DropdownMenuItem
                 onClick={() => {
                   React.startTransition(() => {
-                    const reactWithExperimental = React as any;
+                    const reactWithExperimental = React as unknown as { addTransitionType?: (type: string) => void };
                     if (typeof reactWithExperimental.addTransitionType === "function")
                       reactWithExperimental.addTransitionType("nav-forward");
-                    navigateFn({ to: "/settings/account" });
+                    void navigateFn({ to: "/settings/account" });
                   });
                 }}
                 className="cursor-pointer"
@@ -106,10 +106,10 @@ export function NavUser() {
               <DropdownMenuItem
                 onClick={() => {
                   React.startTransition(() => {
-                    const reactWithExperimental = React as any;
+                    const reactWithExperimental = React as unknown as { addTransitionType?: (type: string) => void };
                     if (typeof reactWithExperimental.addTransitionType === "function")
                       reactWithExperimental.addTransitionType("nav-forward");
-                    navigateFn({ to: "/settings/notifications" });
+                    void navigateFn({ to: "/settings/notifications" });
                   });
                 }}
                 className="cursor-pointer"

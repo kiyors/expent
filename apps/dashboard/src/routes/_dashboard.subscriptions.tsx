@@ -70,8 +70,8 @@ function SubscriptionsComponent() {
         keywords: sub.detection_keywords,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
-      queryClient.invalidateQueries({ queryKey: ["subscriptions-detect"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscriptions-detect"] });
       toast.success("Subscription tracked!");
     },
   });
@@ -79,7 +79,7 @@ function SubscriptionsComponent() {
   const stopTrackingMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/api/subscriptions/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
       toast.success("Stopped tracking");
     },
   });

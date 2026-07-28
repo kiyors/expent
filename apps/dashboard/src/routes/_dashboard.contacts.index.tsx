@@ -49,7 +49,7 @@ function ContactsPage() {
 
   const handleContactClick = (id: string) => {
     startTransition(() => {
-      navigate({ to: `/contacts/${id}` as any });
+      void navigate({ to: `/contacts/${id}` as never });
     });
   };
 

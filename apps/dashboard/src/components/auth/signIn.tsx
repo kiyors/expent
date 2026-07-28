@@ -22,7 +22,7 @@ export function SignIn() {
   useEffect(() => {
     if (!isSessionPending && session) {
       startTransition(() => {
-        navigate({ to: "/" });
+        void navigate({ to: "/" });
       });
     }
   }, [session, isSessionPending, navigate]);
@@ -99,11 +99,11 @@ export function SignIn() {
           <p className="text-muted-foreground text-sm">
             By clicking continue, you agree to our{" "}
             {/* biome-ignore lint/a11y/useValidAnchor: placeholder pending T&C content URL */}
-            <a className="underline underline-offset-4 hover:text-primary" href="#">
+            <a className="underline underline-offset-4 hover:text-primary" href="/terms">
               Terms of Service
             </a>{" "}
             and {/* biome-ignore lint/a11y/useValidAnchor: placeholder pending privacy-policy content URL */}
-            <a className="underline underline-offset-4 hover:text-primary" href="#">
+            <a className="underline underline-offset-4 hover:text-primary" href="/privacy">
               Privacy Policy
             </a>
             .

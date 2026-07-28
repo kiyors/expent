@@ -3,7 +3,7 @@ import { cn } from "@expent/ui/lib/utils";
 import * as React from "react";
 
 function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }: SliderPrimitive.Root.Props) {
-  const _values = React.useMemo(
+  const resolvedValues = React.useMemo(
     () => (Array.isArray(value) ? value : Array.isArray(defaultValue) ? defaultValue : [min, max]),
     [value, defaultValue, min, max],
   );
@@ -29,7 +29,7 @@ function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }
             className="bg-primary select-none data-horizontal:h-full data-vertical:w-full"
           />
         </SliderPrimitive.Track>
-        {Array.from({ length: _values.length }, (_, index) => (
+        {Array.from({ length: resolvedValues.length }, (_, index) => (
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             // biome-ignore lint/suspicious/noArrayIndexKey: thumb count derives from values length; thumbs are positional and do not reorder

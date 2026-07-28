@@ -36,14 +36,14 @@ export function useFuzzySearch<T>(
         fields: selector(item),
       }));
 
-      const batchResults = await advancedFuzzySearchWasm(query, searchableItems, threshold);
+      const batchResults = advancedFuzzySearchWasm(query, searchableItems, threshold);
 
       const filtered = batchResults.map((res) => items[res.index]);
 
       setFilteredResults(filtered);
     }
 
-    performSearch();
+    void performSearch();
   }, [items, query, selector, threshold]);
 
   return results;

@@ -22,7 +22,7 @@ export function ProfilePanel({ user }: { user: User }) {
     mutationFn: (data: { name?: string; username?: string | null; image?: string | null }) =>
       api.put("/api/users/profile", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] }); // Better Auth usually stores session in cache
+      void queryClient.invalidateQueries({ queryKey: ["session"] }); // Better Auth usually stores session in cache
       toast.success("Profile updated");
     },
     onError: (error: Error) => toast.error(error.message),

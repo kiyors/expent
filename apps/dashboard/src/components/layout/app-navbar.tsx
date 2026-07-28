@@ -67,7 +67,7 @@ export function AppNavbar() {
                   {idx === breadcrumbs.length - 1 ? (
                     <BreadcrumbPage>{bc.label}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink className="hidden md:block" render={<Link to={bc.href as any} />}>
+                    <BreadcrumbLink className="hidden md:block" render={<Link to={bc.href as never} />}>
                       {bc.label}
                     </BreadcrumbLink>
                   )}

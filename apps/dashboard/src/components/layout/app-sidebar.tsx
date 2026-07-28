@@ -134,22 +134,22 @@ function SidebarNavItemComponent({ item, pathname }: { item: SidebarNavItem; pat
       // type surface yet; the runtime check lets us no-op cleanly when it's
       // absent. Both `as any` casts below sit behind the same justification.
       // biome-ignore lint/suspicious/noExplicitAny: experimental React API not yet typed.
-      const reactWithExperimental = React as any;
+      const reactWithExperimental = React as unknown as { addTransitionType?: (type: string) => void };
       if (typeof reactWithExperimental.addTransitionType === "function") {
         reactWithExperimental.addTransitionType("nav-forward");
       }
-      navigateFn({ to: url });
+      void navigateFn({ to: url });
     });
   };
 
   const prefetch = (url: string) => {
     if (url === "/") {
-      queryClient.prefetchQuery({
+      void queryClient.prefetchQuery({
         queryKey: ["transaction-summary"],
         queryFn: () => api.get("/api/transactions/summary"),
       });
     } else if (url === "/transactions") {
-      queryClient.prefetchQuery({
+      void queryClient.prefetchQuery({
         queryKey: ["transactions", { limit: 15, offset: 0 }],
         queryFn: () => api.get("/api/transactions?limit=15&offset=0"),
       });
@@ -205,11 +205,11 @@ export function AppSidebar() {
     startTransition(() => {
       // Same experimental `addTransitionType` as in `navigate` above.
       // biome-ignore lint/suspicious/noExplicitAny: experimental React API not yet typed.
-      const reactWithExperimental = React as any;
+      const reactWithExperimental = React as unknown as { addTransitionType?: (type: string) => void };
       if (typeof reactWithExperimental.addTransitionType === "function") {
         reactWithExperimental.addTransitionType("nav-back");
       }
-      navigateFn({ to: "/" });
+      void navigateFn({ to: "/" });
     });
   };
 

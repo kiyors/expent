@@ -300,6 +300,7 @@ function PlanRoot({
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [todos]);
 
   useEffect(() => {
@@ -314,6 +315,7 @@ function PlanRoot({
       const timer = setTimeout(() => setIsCelebrating(false), 1000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [progress]);
 
   const todoList = (

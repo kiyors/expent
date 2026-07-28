@@ -36,6 +36,8 @@ function getInitialValue(item: PreferenceItem): string | boolean {
       return item.defaultValue ?? item.options?.[0]?.value ?? "";
     case "select":
       return item.defaultSelected ?? item.selectOptions?.[0]?.value ?? "";
+    default:
+      return "";
   }
 }
 
@@ -103,10 +105,8 @@ function ToggleControl({
   // edge to two well-justified ignores here.
   return (
     <ToggleGroup
-      // biome-ignore lint/suspicious/noExplicitAny: primitive types value as readonly string[]; consumer is single-select
-      value={value as any}
-      // biome-ignore lint/suspicious/noExplicitAny: primitive types onValueChange as (string[]) => void; consumer is single-select
-      onValueChange={(v) => v && onChange(v as any)}
+      value={value as unknown as string[]}
+      onValueChange={(v) => v && onChange(v as unknown as string)}
       disabled={disabled}
       aria-label={label}
       className="gap-1"

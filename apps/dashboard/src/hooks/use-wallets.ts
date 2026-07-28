@@ -17,10 +17,7 @@ export function useWallets() {
   const createMutation = useMutation({
     mutationFn: async (data: CreateWalletRequest) => {
       // 0. Shared WASM Validation
-      const result = (await validateWalletWasm(
-        data.name,
-        data.initial_balance.toString(),
-      )) as unknown as ValidationResult;
+      const result = (await validateWalletWasm(data.name, data.initial_balance)) as unknown as ValidationResult;
       if (!result.is_valid) {
         throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
       }

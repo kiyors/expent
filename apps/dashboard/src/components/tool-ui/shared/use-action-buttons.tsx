@@ -52,13 +52,13 @@ export function useActionButtons(options: UseActionButtonsOptions): UseActionBut
   const executionLockRef = useRef<ActionExecutionLock>(createActionExecutionLock());
 
   useEffect(() => {
-    if (!confirmingActionId) return;
+    if (!confirmingActionId) return undefined;
     const id = setTimeout(() => setConfirmingActionId(null), confirmTimeout);
     return () => clearTimeout(id);
   }, [confirmingActionId, confirmTimeout]);
 
   useEffect(() => {
-    if (!confirmingActionId) return;
+    if (!confirmingActionId) return undefined;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setConfirmingActionId(null);

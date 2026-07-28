@@ -96,7 +96,7 @@ export function ApprovalCard({
     (event: React.KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onCancel?.();
+        void onCancel?.();
       }
     },
     [onCancel],

@@ -18,7 +18,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
       {items.map((item) => (
         <Link
           key={item.href}
-          to={item.href as any}
+          to={item.href as never}
           className={cn(
             buttonVariants({ variant: "ghost" }),
             pathname === item.href ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline",

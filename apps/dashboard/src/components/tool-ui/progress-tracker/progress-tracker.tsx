@@ -78,6 +78,11 @@ function getReceiptState(outcome: ProgressTrackerChoice["outcome"]): {
         toneClassName: "text-muted-foreground",
         icon: X,
       };
+    default:
+      return {
+        toneClassName: "text-muted-foreground",
+        icon: X,
+      };
   }
 }
 

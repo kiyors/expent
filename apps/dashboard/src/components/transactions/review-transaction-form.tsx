@@ -44,7 +44,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
   React.useEffect(() => {
     if (processedOcr.doc_type === "GPAY") {
       const d = processedOcr.data;
-      setAmount(d.amount?.toString() || "");
+      setAmount(d.amount || "");
       setDirection(d.direction === "IN" ? "IN" : "OUT");
       setCounterparty(d.counterparty_name || "");
       setUpiId(d.counterparty_upi_id || "");
@@ -58,7 +58,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
       setDescription(`${d.bank_name} Statement: ${d.statement_period}`);
     } else {
       const d = processedOcr.data;
-      setAmount(d.amount?.toString() || "");
+      setAmount(d.amount || "");
       setDirection("OUT");
       setCounterparty(d.vendor || "");
       setDescription(d.vendor ? `Purchase at ${d.vendor}` : "Generic Receipt");
@@ -294,7 +294,7 @@ export function ReviewTransactionForm({ processedOcr, onConfirm, onCancel, isSub
                         })}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" aria-label="Transaction details options">
                       <div className="flex gap-2">
                         <Select
                           value={tx.category_id || "none"}

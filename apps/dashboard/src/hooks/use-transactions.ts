@@ -25,10 +25,10 @@ export function useTransactions(params: PaginationParams = {}) {
   // Use TanStack DB for the live query
   const query = useLiveQuery(
     (q) => {
-      let query = q.from({ transactions: db.transactions }).orderBy(({ transactions }) => transactions.date, "desc");
-      if (params.limit) query = query.limit(params.limit);
-      if (params.offset) query = query.offset(params.offset);
-      return query;
+      let builder = q.from({ transactions: db.transactions }).orderBy(({ transactions }) => transactions.date, "desc");
+      if (params.limit) builder = builder.limit(params.limit);
+      if (params.offset) builder = builder.offset(params.offset);
+      return builder;
     },
     [params.limit, params.offset, session.data],
   );
@@ -77,8 +77,8 @@ export function useTransactions(params: PaginationParams = {}) {
       db.transactions.update(id, (draft) => {
         Object.assign(draft, updatedTxn);
       });
-      queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
+      void queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      void queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
       toast.success("Transaction updated");
     },
   });
@@ -104,8 +104,8 @@ export function useTransactions(params: PaginationParams = {}) {
       toast.error(err.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
+      void queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      void queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
       toast.success("Transaction deleted");
     },
   });

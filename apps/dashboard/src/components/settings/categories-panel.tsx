@@ -21,7 +21,7 @@ export function CategoriesPanel() {
   const createMutation = useMutation({
     mutationFn: (name: string) => api.post("/api/categories", { name }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
       setNewName("");
       toast.success("Category added");
     },
@@ -31,7 +31,7 @@ export function CategoriesPanel() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/api/categories/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category deleted");
     },
     onError: (error: Error) => toast.error(error.message),

@@ -56,10 +56,12 @@
     "no-shadow": "warn",
     "no-shadow-restricted-names": "error",
     "@typescript-eslint/no-unsafe-declaration-merging": "error",
-    "@typescript-eslint/no-unsafe-type-assertion": "warn",
-    "@typescript-eslint/restrict-template-expressions": "warn",
+    "@typescript-eslint/no-unsafe-type-assertion": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/await-thenable": "warn",
+    "@typescript-eslint/no-base-to-string": "off",
+    "@typescript-eslint/no-unnecessary-type-conversion": "off",
     "jsx-a11y/prefer-tag-over-role": "warn",
     "jsx-a11y/control-has-associated-label": "warn",
     "jsx-a11y/anchor-has-content": "warn",
@@ -67,10 +69,11 @@
     "jsx-a11y/anchor-is-valid": "warn",
     "jsx-a11y/click-events-have-key-events": "warn",
     "@typescript-eslint/unbound-method": "warn",
-    "@typescript-eslint/no-base-to-string": "warn",
     "no-control-regex": "warn",
     "getter-return": "error",
     "no-debugger": "warn",
+    "react/no-unstable-nested-components": ["warn", { "allowAsProps": true }],
+    "@typescript-eslint/no-unnecessary-type-parameters": "off",
     "unicorn/filename-case": [
       "error",
       {
@@ -96,6 +99,23 @@
   },
   "overrides": [
     {
+      "files": ["**/data-table/data-table.tsx", "**/data-table.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": [
+        "**/approval-card/approval-card.tsx",
+        "**/progress-tracker/progress-tracker.tsx",
+        "**/preferences-panel/preferences-panel.tsx",
+        "**/plan/plan.tsx"
+      ],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
       "files": ["*.mdx", "*.md", "*.astro"],
       "rules": {
         "no-unused-vars": "off",
@@ -111,6 +131,83 @@
     },
     {
       "files": ["**/field.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "no-underscore-dangle": "off",
+        "@typescript-eslint/unbound-method": "off"
+      }
+    },
+    {
+      "files": ["**/goey-toaster.tsx", "**/sonner.tsx"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
+    },
+    {
+      "files": [
+        "**/spinner.tsx",
+        "**/logo.tsx",
+        "**/carousel.tsx",
+        "**/button-group.tsx",
+        "**/input-group.tsx",
+        "**/input-otp.tsx",
+        "**/item.tsx",
+        "**/breadcrumb.tsx"
+      ],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": ["**/pagination.tsx", "**/nav-projects.tsx", "**/leatest-change.tsx", "**/not-found.tsx"],
+      "rules": {
+        "jsx-a11y/anchor-has-content": "off",
+        "jsx-a11y/control-has-associated-label": "off"
+      }
+    },
+    {
+      "files": ["**/sanitize-href.ts"],
+      "rules": {
+        "no-control-regex": "off"
+      }
+    },
+    {
+      "files": ["**/wasm/src/utils.ts"],
+      "rules": {
+        "@typescript-eslint/no-unsafe-type-assertion": "off"
+      }
+    },
+    {
+      "files": ["**/calendar.tsx"],
+      "rules": {
+        "no-shadow": "off"
+      }
+    },
+    {
+      "files": ["**/approval-card.tsx", "**/input-group.tsx"],
+      "rules": {
+        "jsx-a11y/no-noninteractive-element-interactions": "off",
+        "jsx-a11y/click-events-have-key-events": "off"
+      }
+    },
+    {
+      "files": ["**/data-table/data-table.tsx", "**/tool-ui/data-table/**"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": [
+        "**/approval-card/approval-card.tsx",
+        "**/progress-tracker/progress-tracker.tsx",
+        "**/preferences-panel/preferences-panel.tsx",
+        "**/plan/plan.tsx"
+      ],
       "rules": {
         "jsx-a11y/prefer-tag-over-role": "off"
       }

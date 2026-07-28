@@ -102,8 +102,8 @@ export function ManualTransactionDialog({ open, onOpenChange }: ManualTransactio
         category_id: values.categoryId !== "none" ? values.categoryId : null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["wallets"] });
       onOpenChange(false);
       reset();
       toast.success("Transaction added!");

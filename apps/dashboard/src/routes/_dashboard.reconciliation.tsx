@@ -49,8 +49,8 @@ function ReconciliationPage() {
     try {
       await api.post("/api/transactions/from-ocr", finalData);
       setProcessedOcr(null);
-      queryClient.invalidateQueries({ queryKey: ["reconciliation"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["reconciliation"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
       toast.success("Statement imported! Matching will run in the background.");
     } catch (error) {
       console.error(error);
@@ -64,7 +64,7 @@ function ReconciliationPage() {
     if (!unmatchedRows || !transactions) return;
     setIsAutoMatching(true);
     try {
-      const results = await matchStatementBatchWasm(unmatchedRows, transactions);
+      const results = matchStatementBatchWasm(unmatchedRows, transactions);
       if (results.length === 0) {
         toast.info("No high-confidence matches found.");
         return;

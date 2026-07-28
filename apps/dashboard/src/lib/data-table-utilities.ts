@@ -56,8 +56,8 @@ export function sortData<T, K extends Extract<keyof T, string>>(
     }
 
     // Fallback: locale-aware string compare with numeric collation
-    const aStr = String(aVal);
-    const bStr = String(bVal);
+    const aStr = String(typeof aVal === "object" && aVal !== null ? JSON.stringify(aVal) : aVal);
+    const bStr = String(typeof bVal === "object" && bVal !== null ? JSON.stringify(bVal) : bVal);
     const comparison = collator.compare(aStr, bStr);
     return direction === "asc" ? comparison : -comparison;
   });
@@ -88,7 +88,7 @@ export function getRowIdentifier(
     return candidate.map((v) => (v === null ? "null" : String(v))).join(", ");
   }
 
-  return String(candidate).trim();
+  return String(typeof candidate === "object" && candidate !== null ? JSON.stringify(candidate) : candidate).trim();
 }
 
 function stableStringify(value: unknown): string {
@@ -104,7 +104,7 @@ function stableStringify(value: unknown): string {
     const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b));
     return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${stableStringify(item)}`).join(",")}}`;
   }
-  return JSON.stringify(String(value));
+  return JSON.stringify(String(typeof value === "object" && value !== null ? JSON.stringify(value) : value));
 }
 
 function hashString(value: string): string {

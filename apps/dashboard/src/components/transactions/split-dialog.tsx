@@ -45,7 +45,7 @@ export function SplitDialog({ open, onOpenChange, transactionId, totalAmount }: 
         })),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["p2p-pending"] });
+      void queryClient.invalidateQueries({ queryKey: ["p2p-pending"] });
       onOpenChange(false);
       toast.success("Splits created successfully!");
     },

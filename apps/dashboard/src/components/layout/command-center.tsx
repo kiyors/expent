@@ -80,7 +80,7 @@ export function CommandCenter() {
   // Toggle Command Palette
   useHotkey({ key: "K", mod: true }, (e) => {
     e.preventDefault();
-    setOpen((open) => !open);
+    setOpen((prev) => !prev);
   });
 
   // Global Quick Shortcuts
@@ -108,49 +108,49 @@ export function CommandCenter() {
   useHotkeySequence(["G", "D"], () => {
     if (!open) {
       startTransition(() => {
-        push("/");
+        void push("/");
       });
     }
   });
   useHotkeySequence(["G", "T"], () => {
     if (!open) {
       startTransition(() => {
-        push("/transactions");
+        void push("/transactions");
       });
     }
   });
   useHotkeySequence(["G", "W"], () => {
     if (!open) {
       startTransition(() => {
-        push("/wallets");
+        void push("/wallets");
       });
     }
   });
   useHotkeySequence(["G", "C"], () => {
     if (!open) {
       startTransition(() => {
-        push("/contacts");
+        void push("/contacts");
       });
     }
   });
   useHotkeySequence(["G", "S"], () => {
     if (!open) {
       startTransition(() => {
-        push("/settings");
+        void push("/settings");
       });
     }
   });
   useHotkeySequence(["G", "R"], () => {
     if (!open) {
       startTransition(() => {
-        push("/reconciliation");
+        void push("/reconciliation");
       });
     }
   });
   useHotkeySequence(["G", "L"], () => {
     if (!open) {
       startTransition(() => {
-        push("/p2p/ledger-tabs");
+        void push("/p2p/ledger-tabs");
       });
     }
   });
@@ -160,7 +160,7 @@ export function CommandCenter() {
     e.preventDefault();
     if (!open) {
       startTransition(() => {
-        push("/settings");
+        void push("/settings");
       });
     }
   });

@@ -29,7 +29,7 @@ export function BudgetHealthWidget() {
 
       const velocityPromises = health.map(async (b) => {
         try {
-          const vel = await calculateSpendingVelocityWasm(b.spent_amount, b.limit_amount, b.period);
+          const vel = calculateSpendingVelocityWasm(b.spent_amount, b.limit_amount, b.period);
           return { id: b.budget_id, vel };
         } catch (e) {
           console.error(`Velocity computation failed for ${b.budget_id}`, e);
@@ -52,7 +52,7 @@ export function BudgetHealthWidget() {
       setVelocities(newVelocities);
     }
 
-    computeProjections();
+    void computeProjections();
   }, [health]);
 
   if (isLoading) {

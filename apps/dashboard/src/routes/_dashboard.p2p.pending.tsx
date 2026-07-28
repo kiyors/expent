@@ -19,7 +19,7 @@ function PendingPage() {
   const rejectMutation = useMutation({
     mutationFn: (requestId: string) => api.post(`/api/p2p/reject/${requestId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["p2p-pending"] });
+      void queryClient.invalidateQueries({ queryKey: ["p2p-pending"] });
       toast.success("Request rejected");
     },
     onError: (error: Error) => toast.error(error.message),

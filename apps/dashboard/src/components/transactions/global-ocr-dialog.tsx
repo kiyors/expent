@@ -25,8 +25,8 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
     setIsSaving(true);
     try {
       await api.post("/api/transactions/from-ocr", finalData);
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["wallets"] });
       toast.success("Transaction saved!");
       onOpenChange(false);
       reset();
@@ -68,7 +68,7 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
               className="absolute inset-0 opacity-0 cursor-pointer z-10"
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) handleUpload(f);
+                if (f) void handleUpload(f);
               }}
             />
             <div className="bg-primary/5 size-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">

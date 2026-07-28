@@ -46,7 +46,7 @@ export function SecurityPanel() {
   const revokeSessionMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/api/auth/sessions/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["active-sessions"] });
+      void queryClient.invalidateQueries({ queryKey: ["active-sessions"] });
       toast.success("Session revoked");
     },
   });

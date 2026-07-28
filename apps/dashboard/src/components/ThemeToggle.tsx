@@ -42,7 +42,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     if (mode !== "auto") {
-      return;
+      return undefined;
     }
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");

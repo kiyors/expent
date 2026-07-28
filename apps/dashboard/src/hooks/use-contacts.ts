@@ -126,9 +126,9 @@ export function useMergeContacts() {
   const mergeMutation = useMutation({
     mutationFn: (data: MergeContactsRequest) => api.post<Contact, MergeContactsRequest>("/api/contacts/merge", data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      queryClient.invalidateQueries({ queryKey: ["contacts-suggestions"] });
-      queryClient.invalidateQueries({ queryKey: ["contact-detail", variables.primary_id] });
+      void queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      void queryClient.invalidateQueries({ queryKey: ["contacts-suggestions"] });
+      void queryClient.invalidateQueries({ queryKey: ["contact-detail", variables.primary_id] });
       toast.success("Contacts merged successfully");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -164,7 +164,7 @@ export function useContactDetail(id: string) {
       return api.post<ContactIdentifier, AddIdentifierRequest>(`/api/contacts/${id}/identifiers`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contact-detail", id] });
+      void queryClient.invalidateQueries({ queryKey: ["contact-detail", id] });
       toast.success("Identifier added");
     },
     onError: (error: Error) => toast.error(error.message),

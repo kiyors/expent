@@ -105,7 +105,7 @@ function ContactDetailPage() {
               deleteMutation.mutate(id, {
                 onSuccess: () => {
                   startTransition(() => {
-                    navigate({ to: "/contacts" });
+                    void navigate({ to: "/contacts" });
                   });
                 },
               });
@@ -184,7 +184,7 @@ function ContactDetailPage() {
               {identifiers.length === 0 ? (
                 <p className="text-xs text-muted-foreground italic">No identifiers added yet.</p>
               ) : (
-                identifiers.map((id: ContactIdentifier) => <IdentifierChip key={id.id} identifier={id} />)
+                identifiers.map((ident: ContactIdentifier) => <IdentifierChip key={ident.id} identifier={ident} />)
               )}
             </CardContent>
           </Card>
@@ -243,7 +243,7 @@ function IdentifierChip({ identifier }: { identifier: ContactIdentifier }) {
   const [copied, setCopied] = React.useState(false);
 
   const copy = () => {
-    navigator.clipboard.writeText(identifier.value);
+    void navigator.clipboard.writeText(identifier.value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success("Copied to clipboard");

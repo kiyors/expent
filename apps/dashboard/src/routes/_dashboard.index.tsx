@@ -67,7 +67,7 @@ function DashboardContent() {
     (value: string) => {
       startTransition(() => {
         const tab = value === "overview" ? undefined : value;
-        navigate({ to: "/", search: { tab } });
+        void navigate({ to: "/", search: { tab } });
       });
     },
     [navigate],
@@ -180,8 +180,8 @@ function DashboardContent() {
     try {
       const result = await api.post<{ contact_created: boolean }>("/api/transactions/from-ocr", finalData);
       setProcessedOcr(null);
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["wallets"] });
       toast.success("Transaction saved successfully!");
       if (result.contact_created) {
         toast.success("New contact auto-created from receipt!");

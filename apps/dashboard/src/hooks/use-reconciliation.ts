@@ -23,8 +23,8 @@ export function useReconciliation() {
         confidence,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reconciliation"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["reconciliation"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 

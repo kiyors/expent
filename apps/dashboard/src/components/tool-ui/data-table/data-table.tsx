@@ -39,8 +39,7 @@ function getAlignmentClass(align?: "left" | "right" | "center"): string | undefi
 
 // Generic React context type for an unbounded row generic; callers re-cast via
 // `useDataTable<T>()` to recover the concrete row type at the use-site.
-// biome-ignore lint/suspicious/noExplicitAny: erased generic in shared context
-const DataTableContext = React.createContext<DataTableContextValue<any> | undefined>(undefined);
+const DataTableContext = React.createContext<DataTableContextValue<unknown> | undefined>(undefined);
 
 export function useDataTable<T extends object = RowData>() {
   const context = React.use(DataTableContext) as DataTableContextValue<T> | undefined;
@@ -145,10 +144,10 @@ interface DataTableLayoutProps {
 function DataTableLayout({ layout, emptyMessage, maxHeight, className }: DataTableLayoutProps) {
   const { columns, data, rowIdKey, sortBy, sortDirection, id } = useDataTable();
   const rowKeys = React.useMemo(
-    () => createDataTableRowKeys(data as Array<Record<string, unknown>>, rowIdKey ? String(rowIdKey) : undefined),
+    () => createDataTableRowKeys(data as Array<Record<string, unknown>>, rowIdKey),
     [data, rowIdKey],
   );
-  const mobileDescriptionId = React.useMemo(() => getDataTableMobileDescriptionId(String(id ?? "data-table")), [id]);
+  const mobileDescriptionId = React.useMemo(() => getDataTableMobileDescriptionId(id ?? "data-table"), [id]);
 
   const sortAnnouncement = React.useMemo(() => {
     const col = columns.find((c) => c.key === sortBy);
@@ -177,7 +176,7 @@ function DataTableLayout({ layout, emptyMessage, maxHeight, className }: DataTab
               {columns.length > 0 && (
                 <colgroup>
                   {columns.map((col) => (
-                    <col key={String(col.key)} style={col.width ? { width: col.width } : undefined} />
+                    <col key={col.key} style={col.width ? { width: col.width } : undefined} />
                   ))}
                 </colgroup>
               )}
@@ -435,7 +434,7 @@ function DataTableHead({ column, columnIndex = 0, totalColumns = 1 }: DataTableH
 function DataTableBody() {
   const { data, rowIdKey } = useDataTable<DataTableRowData>();
   const rowKeys = React.useMemo(
-    () => createDataTableRowKeys(data as Array<Record<string, unknown>>, rowIdKey ? String(rowIdKey) : undefined),
+    () => createDataTableRowKeys(data as Array<Record<string, unknown>>, rowIdKey),
     [data, rowIdKey],
   );
   const hasWarnedRowKeyRef = React.useRef(false);
@@ -552,7 +551,7 @@ function DataTableAccordionCard({ row, index, rowKey, isFirst = false }: DataTab
 
   const headingId = `row-${stableRowId}-heading`;
   const detailsId = `row-${stableRowId}-details`;
-  const remainingPrimaryDataIds = remainingPrimaryColumns.map((col) => `row-${stableRowId}-${String(col.key)}`);
+  const remainingPrimaryDataIds = remainingPrimaryColumns.map((col) => `row-${stableRowId}-${col.key}`);
 
   const primaryValue = primaryColumn ? String(row[primaryColumn.key] ?? "") : "";
   const rowLabel = `Row ${index + 1}: ${primaryValue}`;
@@ -635,7 +634,7 @@ function DataTableAccordionCard({ row, index, rowKey, isFirst = false }: DataTab
             >
               {secondary.map((col) => (
                 <div key={col.key} className="flex items-start justify-between gap-4" role="listitem">
-                  <dt className="text-muted-foreground shrink-0" id={`row-${stableRowId}-${String(col.key)}-label`}>
+                  <dt className="text-muted-foreground shrink-0" id={`row-${stableRowId}-${col.key}-label`}>
                     {col.label}
                   </dt>
                   <dd
@@ -645,7 +644,7 @@ function DataTableAccordionCard({ row, index, rowKey, isFirst = false }: DataTab
                       col.align === "center" && "text-center",
                     )}
                     role="cell"
-                    aria-labelledby={`row-${stableRowId}-${String(col.key)}-label`}
+                    aria-labelledby={`row-${stableRowId}-${col.key}-label`}
                   >
                     {renderFormattedValue({
                       value: row[col.key],
@@ -704,7 +703,7 @@ function SimpleCard({
 
       {otherColumns.map((col) => (
         <div key={col.key} className="flex items-start justify-between gap-4" role="group">
-          <span className="text-muted-foreground" id={`row-${stableRowId}-${String(col.key)}-label`}>
+          <span className="text-muted-foreground" id={`row-${stableRowId}-${col.key}-label`}>
             {col.label}:
           </span>
           <span
@@ -714,7 +713,7 @@ function SimpleCard({
               col.align === "center" && "text-center",
             )}
             role="cell"
-            aria-labelledby={`row-${stableRowId}-${String(col.key)}-label`}
+            aria-labelledby={`row-${stableRowId}-${col.key}-label`}
           >
             {renderFormattedValue({
               value: row[col.key],

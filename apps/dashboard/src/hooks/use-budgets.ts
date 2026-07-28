@@ -22,7 +22,7 @@ export function useBudgets() {
   const createMutation = useMutation({
     mutationFn: async (data: CreateBudgetRequest) => {
       // 0. Shared WASM Validation
-      const result = (await validateBudgetWasm(data.amount.toString())) as unknown as ValidationResult;
+      const result = (await validateBudgetWasm(data.amount)) as unknown as ValidationResult;
       if (!result.is_valid) {
         throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
       }
@@ -30,7 +30,7 @@ export function useBudgets() {
     },
     onSuccess: (newBudget) => {
       db.budgets.insert(newBudget);
-      queryClient.invalidateQueries({ queryKey: ["budgets", "health"] });
+      void queryClient.invalidateQueries({ queryKey: ["budgets", "health"] });
     },
   });
 
@@ -38,7 +38,7 @@ export function useBudgets() {
     mutationFn: async ({ id, data }: { id: string; data: UpdateBudgetRequest }) => {
       // 0. Shared WASM Validation
       if (data.amount) {
-        const result = (await validateBudgetWasm(data.amount.toString())) as unknown as ValidationResult;
+        const result = (await validateBudgetWasm(data.amount)) as unknown as ValidationResult;
         if (!result.is_valid) {
           throw new Error(result.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
         }
@@ -64,7 +64,7 @@ export function useBudgets() {
       db.budgets.update(id, (draft) => {
         Object.assign(draft, updatedBudget);
       });
-      queryClient.invalidateQueries({ queryKey: ["budgets", "health"] });
+      void queryClient.invalidateQueries({ queryKey: ["budgets", "health"] });
     },
   });
 
@@ -81,7 +81,7 @@ export function useBudgets() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["budgets", "health"] });
+      void queryClient.invalidateQueries({ queryKey: ["budgets", "health"] });
     },
   });
 

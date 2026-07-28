@@ -130,8 +130,8 @@ export function useOcrUpload() {
 
         const result = await waitForJobCompletion(job_id);
 
-        queryClient.invalidateQueries({ queryKey: ["wallets"] });
-        queryClient.invalidateQueries({ queryKey: ["contacts"] });
+        void queryClient.invalidateQueries({ queryKey: ["wallets"] });
+        void queryClient.invalidateQueries({ queryKey: ["contacts"] });
 
         setUploadSteps((prev) => prev.map((s) => (s.id === "3" ? { ...s, status: "completed" } : s)));
 
@@ -147,7 +147,7 @@ export function useOcrUpload() {
         return null;
       }
     },
-    [queryClient.invalidateQueries, waitForJobCompletion],
+    [queryClient, waitForJobCompletion],
   );
 
   const reset = useCallback(() => {

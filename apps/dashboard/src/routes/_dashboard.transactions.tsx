@@ -125,8 +125,8 @@ function TransactionsPage() {
     try {
       const result = await api.post<OcrTransactionResponse>("/api/transactions/from-ocr", finalData);
       setProcessedOcr(null);
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["contacts"] });
       toast.success("Transaction saved!");
       if (result.contact_created) {
         toast.success("New contact auto-created!");
@@ -187,7 +187,7 @@ function TransactionsPage() {
           return (
             <TransactionViewer
               item={row.original}
-              onUpdate={(id, data) => updateMutation.mutate({ id, data })}
+              onUpdate={(id, updateData) => updateMutation.mutate({ id, data: updateData })}
               open={editingTxnId === row.original.id}
               onOpenChange={(open) => !open && setEditingTxnId(null)}
             />
@@ -384,7 +384,7 @@ function TransactionsPage() {
                   if (files && files.length > 0) {
                     // Process them sequentially for now, or we could map them to a queue
                     Array.from(files).forEach((file) => {
-                      handleUpload(file);
+                      void handleUpload(file);
                     });
                   }
                 }}
