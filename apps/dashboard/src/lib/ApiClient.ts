@@ -1,5 +1,8 @@
 // Use absolute URL for both client and server since TanStack Start dev server doesn't have a proxy for the Rust backend
-const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:7878";
+// On server, use 127.0.0.1 to avoid Node 18+ IPv6 fetch failures
+const API_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== "undefined" ? "http://localhost:7878" : "http://127.0.0.1:7878");
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);

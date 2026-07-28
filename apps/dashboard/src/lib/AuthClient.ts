@@ -7,7 +7,11 @@ import { createAuthClient } from "better-auth/react";
  * Pointing to the Rust server's /api/auth endpoints.
  */
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
+  // Use absolute URL to the Rust backend (7878) for both client and server.
+  // On server, use 127.0.0.1 instead of localhost to prevent Node 18+ IPv6 fetch failures.
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    (typeof window !== "undefined" ? "http://localhost:7878" : "http://127.0.0.1:7878"),
   plugins: [passkeyClient(), usernameClient()],
 });
 

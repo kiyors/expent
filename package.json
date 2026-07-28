@@ -36,7 +36,7 @@
     "dotenv-cli": "^11.0.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
-    "turbo": "^2.9.14",
+    "turbo": "^2.10.7",
     "typescript": "catalog:"
   },
   "engines": {
