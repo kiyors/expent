@@ -32,7 +32,7 @@
     "skills:install": "pnpm dlx skills experimental_install"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.15",
+    "@biomejs/biome": "catalog:",
     "dotenv-cli": "^11.0.0",
     "turbo": "^2.9.14",
     "typescript": "catalog:"
@@ -40,11 +40,5 @@
   "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=24"
-  },
-  "resolutions": {
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:"
   }
 }

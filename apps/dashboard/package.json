@@ -39,6 +39,7 @@
     "@tanstack/react-table": "latest",
     "@tanstack/react-virtual": "^3.14.8",
     "better-auth": "^1.5.3",
+    "lucide-react": "catalog:",
     "mupdf": "^1.27.0",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -48,7 +49,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.5",
+    "@biomejs/biome": "catalog:",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/router-cli": "^1.132.0",
@@ -59,8 +60,11 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.1.1",
+    "rollup": "^4.62.3",
     "typescript": "catalog:",
     "vite": "^8.0.0",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.10"
   }
 }

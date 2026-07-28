@@ -1,10 +1,7 @@
-import init, { detect_subscription_patterns, generate_dashboard_summary } from "../pkg/wasm";
+import { detect_subscription_patterns, generate_dashboard_summary } from "../pkg/wasm";
 
-self.onmessage = async (e: MessageEvent) => {
+self.onmessage = (e: MessageEvent) => {
   const { type, payload } = e.data;
-
-  // Initialize WASM in the worker
-  await init();
 
   let result: unknown;
   switch (type) {
