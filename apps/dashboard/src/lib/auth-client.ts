@@ -7,7 +7,7 @@ import { createAuthClient } from "better-auth/react";
  * Pointing to the Rust server's /api/auth endpoints.
  */
 export const authClient = createAuthClient({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7878"}/api/auth`,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
   plugins: [passkeyClient(), usernameClient()],
 });
 

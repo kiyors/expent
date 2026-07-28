@@ -9,167 +9,482 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
-import { Route as DemoTableRouteImport } from './routes/demo/table'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
+import { Route as DashboardReconciliationRouteImport } from './routes/_dashboard.reconciliation'
+import { Route as DashboardSettingsRouteImport } from './routes/_dashboard.settings'
+import { Route as DashboardSubscriptionsRouteImport } from './routes/_dashboard.subscriptions'
+import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard.transactions'
+import { Route as DashboardWalletsRouteImport } from './routes/_dashboard.wallets'
+import { Route as DashboardContactsIndexRouteImport } from './routes/_dashboard.contacts.index'
+import { Route as DashboardContactsIdRouteImport } from './routes/_dashboard.contacts.$id'
+import { Route as DashboardP2pIndexRouteImport } from './routes/_dashboard.p2p.index'
+import { Route as DashboardP2pLedgerTabsRouteImport } from './routes/_dashboard.p2p.ledger-tabs'
+import { Route as DashboardP2pPendingRouteImport } from './routes/_dashboard.p2p.pending'
+import { Route as DashboardP2pSharedLedgersRouteImport } from './routes/_dashboard.p2p.shared-ledgers'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/_dashboard.settings.index'
+import { Route as DashboardSettingsAccountRouteImport } from './routes/_dashboard.settings.account'
+import { Route as DashboardSettingsAppearanceRouteImport } from './routes/_dashboard.settings.appearance'
+import { Route as DashboardSettingsBudgetsRouteImport } from './routes/_dashboard.settings.budgets'
+import { Route as DashboardSettingsCategoriesRouteImport } from './routes/_dashboard.settings.categories'
+import { Route as DashboardSettingsDisplayRouteImport } from './routes/_dashboard.settings.display'
+import { Route as DashboardSettingsNotificationsRouteImport } from './routes/_dashboard.settings.notifications'
+import { Route as DashboardSettingsProfileRouteImport } from './routes/_dashboard.settings.profile'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
-import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
 
-const IndexRoute = IndexRouteImport.update({
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => DashboardRoute,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
+const DashboardReconciliationRoute = DashboardReconciliationRouteImport.update({
+  id: '/reconciliation',
+  path: '/reconciliation',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const DemoBetterAuthRoute = DemoBetterAuthRouteImport.update({
-  id: '/demo/better-auth',
-  path: '/demo/better-auth',
-  getParentRoute: () => rootRouteImport,
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const DemoTableRoute = DemoTableRouteImport.update({
-  id: '/demo/table',
-  path: '/demo/table',
-  getParentRoute: () => rootRouteImport,
+const DashboardSubscriptionsRoute = DashboardSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
+const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardWalletsRoute = DashboardWalletsRouteImport.update({
+  id: '/wallets',
+  path: '/wallets',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardContactsIndexRoute = DashboardContactsIndexRouteImport.update({
+  id: '/contacts/',
+  path: '/contacts/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardContactsIdRoute = DashboardContactsIdRouteImport.update({
+  id: '/contacts/$id',
+  path: '/contacts/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardP2pIndexRoute = DashboardP2pIndexRouteImport.update({
+  id: '/p2p/',
+  path: '/p2p/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardP2pLedgerTabsRoute = DashboardP2pLedgerTabsRouteImport.update({
+  id: '/p2p/ledger-tabs',
+  path: '/p2p/ledger-tabs',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardP2pPendingRoute = DashboardP2pPendingRouteImport.update({
+  id: '/p2p/pending',
+  path: '/p2p/pending',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardP2pSharedLedgersRoute =
+  DashboardP2pSharedLedgersRouteImport.update({
+    id: '/p2p/shared-ledgers',
+    path: '/p2p/shared-ledgers',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardSettingsRoute,
+} as any)
+const DashboardSettingsAccountRoute =
+  DashboardSettingsAccountRouteImport.update({
+    id: '/account',
+    path: '/account',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsAppearanceRoute =
+  DashboardSettingsAppearanceRouteImport.update({
+    id: '/appearance',
+    path: '/appearance',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsBudgetsRoute =
+  DashboardSettingsBudgetsRouteImport.update({
+    id: '/budgets',
+    path: '/budgets',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsCategoriesRoute =
+  DashboardSettingsCategoriesRouteImport.update({
+    id: '/categories',
+    path: '/categories',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsDisplayRoute =
+  DashboardSettingsDisplayRouteImport.update({
+    id: '/display',
+    path: '/display',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsNotificationsRoute =
+  DashboardSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsProfileRoute =
+  DashboardSettingsProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
-  id: '/demo/form/address',
-  path: '/demo/form/address',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoFormSimpleRoute = DemoFormSimpleRouteImport.update({
-  id: '/demo/form/simple',
-  path: '/demo/form/simple',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/': typeof DashboardIndexRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/reconciliation': typeof DashboardReconciliationRoute
+  '/settings': typeof DashboardSettingsRouteWithChildren
+  '/subscriptions': typeof DashboardSubscriptionsRoute
+  '/transactions': typeof DashboardTransactionsRoute
+  '/wallets': typeof DashboardWalletsRoute
+  '/contacts/$id': typeof DashboardContactsIdRoute
+  '/p2p/ledger-tabs': typeof DashboardP2pLedgerTabsRoute
+  '/p2p/pending': typeof DashboardP2pPendingRoute
+  '/p2p/shared-ledgers': typeof DashboardP2pSharedLedgersRoute
+  '/settings/account': typeof DashboardSettingsAccountRoute
+  '/settings/appearance': typeof DashboardSettingsAppearanceRoute
+  '/settings/budgets': typeof DashboardSettingsBudgetsRoute
+  '/settings/categories': typeof DashboardSettingsCategoriesRoute
+  '/settings/display': typeof DashboardSettingsDisplayRoute
+  '/settings/notifications': typeof DashboardSettingsNotificationsRoute
+  '/settings/profile': typeof DashboardSettingsProfileRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/contacts/': typeof DashboardContactsIndexRoute
+  '/p2p/': typeof DashboardP2pIndexRoute
+  '/settings/': typeof DashboardSettingsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/reconciliation': typeof DashboardReconciliationRoute
+  '/subscriptions': typeof DashboardSubscriptionsRoute
+  '/transactions': typeof DashboardTransactionsRoute
+  '/wallets': typeof DashboardWalletsRoute
+  '/': typeof DashboardIndexRoute
+  '/contacts/$id': typeof DashboardContactsIdRoute
+  '/p2p/ledger-tabs': typeof DashboardP2pLedgerTabsRoute
+  '/p2p/pending': typeof DashboardP2pPendingRoute
+  '/p2p/shared-ledgers': typeof DashboardP2pSharedLedgersRoute
+  '/settings/account': typeof DashboardSettingsAccountRoute
+  '/settings/appearance': typeof DashboardSettingsAppearanceRoute
+  '/settings/budgets': typeof DashboardSettingsBudgetsRoute
+  '/settings/categories': typeof DashboardSettingsCategoriesRoute
+  '/settings/display': typeof DashboardSettingsDisplayRoute
+  '/settings/notifications': typeof DashboardSettingsNotificationsRoute
+  '/settings/profile': typeof DashboardSettingsProfileRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/contacts': typeof DashboardContactsIndexRoute
+  '/p2p': typeof DashboardP2pIndexRoute
+  '/settings': typeof DashboardSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/better-auth': typeof DemoBetterAuthRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/_dashboard': typeof DashboardRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/_dashboard/reconciliation': typeof DashboardReconciliationRoute
+  '/_dashboard/settings': typeof DashboardSettingsRouteWithChildren
+  '/_dashboard/subscriptions': typeof DashboardSubscriptionsRoute
+  '/_dashboard/transactions': typeof DashboardTransactionsRoute
+  '/_dashboard/wallets': typeof DashboardWalletsRoute
+  '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/contacts/$id': typeof DashboardContactsIdRoute
+  '/_dashboard/p2p/ledger-tabs': typeof DashboardP2pLedgerTabsRoute
+  '/_dashboard/p2p/pending': typeof DashboardP2pPendingRoute
+  '/_dashboard/p2p/shared-ledgers': typeof DashboardP2pSharedLedgersRoute
+  '/_dashboard/settings/account': typeof DashboardSettingsAccountRoute
+  '/_dashboard/settings/appearance': typeof DashboardSettingsAppearanceRoute
+  '/_dashboard/settings/budgets': typeof DashboardSettingsBudgetsRoute
+  '/_dashboard/settings/categories': typeof DashboardSettingsCategoriesRoute
+  '/_dashboard/settings/display': typeof DashboardSettingsDisplayRoute
+  '/_dashboard/settings/notifications': typeof DashboardSettingsNotificationsRoute
+  '/_dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/_dashboard/contacts/': typeof DashboardContactsIndexRoute
+  '/_dashboard/p2p/': typeof DashboardP2pIndexRoute
+  '/_dashboard/settings/': typeof DashboardSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/table'
-    | '/demo/tanstack-query'
+    | '/sign-in'
+    | '/sign-up'
+    | '/reconciliation'
+    | '/settings'
+    | '/subscriptions'
+    | '/transactions'
+    | '/wallets'
+    | '/contacts/$id'
+    | '/p2p/ledger-tabs'
+    | '/p2p/pending'
+    | '/p2p/shared-ledgers'
+    | '/settings/account'
+    | '/settings/appearance'
+    | '/settings/budgets'
+    | '/settings/categories'
+    | '/settings/display'
+    | '/settings/notifications'
+    | '/settings/profile'
     | '/api/auth/$'
-    | '/demo/form/address'
-    | '/demo/form/simple'
+    | '/contacts/'
+    | '/p2p/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/sign-in'
+    | '/sign-up'
+    | '/reconciliation'
+    | '/subscriptions'
+    | '/transactions'
+    | '/wallets'
     | '/'
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/table'
-    | '/demo/tanstack-query'
+    | '/contacts/$id'
+    | '/p2p/ledger-tabs'
+    | '/p2p/pending'
+    | '/p2p/shared-ledgers'
+    | '/settings/account'
+    | '/settings/appearance'
+    | '/settings/budgets'
+    | '/settings/categories'
+    | '/settings/display'
+    | '/settings/notifications'
+    | '/settings/profile'
     | '/api/auth/$'
-    | '/demo/form/address'
-    | '/demo/form/simple'
+    | '/contacts'
+    | '/p2p'
+    | '/settings'
   id:
     | '__root__'
-    | '/'
-    | '/about'
-    | '/demo/better-auth'
-    | '/demo/table'
-    | '/demo/tanstack-query'
+    | '/_dashboard'
+    | '/sign-in'
+    | '/sign-up'
+    | '/_dashboard/reconciliation'
+    | '/_dashboard/settings'
+    | '/_dashboard/subscriptions'
+    | '/_dashboard/transactions'
+    | '/_dashboard/wallets'
+    | '/_dashboard/'
+    | '/_dashboard/contacts/$id'
+    | '/_dashboard/p2p/ledger-tabs'
+    | '/_dashboard/p2p/pending'
+    | '/_dashboard/p2p/shared-ledgers'
+    | '/_dashboard/settings/account'
+    | '/_dashboard/settings/appearance'
+    | '/_dashboard/settings/budgets'
+    | '/_dashboard/settings/categories'
+    | '/_dashboard/settings/display'
+    | '/_dashboard/settings/notifications'
+    | '/_dashboard/settings/profile'
     | '/api/auth/$'
-    | '/demo/form/address'
-    | '/demo/form/simple'
+    | '/_dashboard/contacts/'
+    | '/_dashboard/p2p/'
+    | '/_dashboard/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  DemoBetterAuthRoute: typeof DemoBetterAuthRoute
-  DemoTableRoute: typeof DemoTableRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
-  DemoFormSimpleRoute: typeof DemoFormSimpleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_dashboard/reconciliation': {
+      id: '/_dashboard/reconciliation'
+      path: '/reconciliation'
+      fullPath: '/reconciliation'
+      preLoaderRoute: typeof DashboardReconciliationRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/demo/better-auth': {
-      id: '/demo/better-auth'
-      path: '/demo/better-auth'
-      fullPath: '/demo/better-auth'
-      preLoaderRoute: typeof DemoBetterAuthRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_dashboard/settings': {
+      id: '/_dashboard/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/demo/table': {
-      id: '/demo/table'
-      path: '/demo/table'
-      fullPath: '/demo/table'
-      preLoaderRoute: typeof DemoTableRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_dashboard/subscriptions': {
+      id: '/_dashboard/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof DashboardSubscriptionsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_dashboard/transactions': {
+      id: '/_dashboard/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof DashboardTransactionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/wallets': {
+      id: '/_dashboard/wallets'
+      path: '/wallets'
+      fullPath: '/wallets'
+      preLoaderRoute: typeof DashboardWalletsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/contacts/': {
+      id: '/_dashboard/contacts/'
+      path: '/contacts'
+      fullPath: '/contacts/'
+      preLoaderRoute: typeof DashboardContactsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/contacts/$id': {
+      id: '/_dashboard/contacts/$id'
+      path: '/contacts/$id'
+      fullPath: '/contacts/$id'
+      preLoaderRoute: typeof DashboardContactsIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/p2p/': {
+      id: '/_dashboard/p2p/'
+      path: '/p2p'
+      fullPath: '/p2p/'
+      preLoaderRoute: typeof DashboardP2pIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/p2p/ledger-tabs': {
+      id: '/_dashboard/p2p/ledger-tabs'
+      path: '/p2p/ledger-tabs'
+      fullPath: '/p2p/ledger-tabs'
+      preLoaderRoute: typeof DashboardP2pLedgerTabsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/p2p/pending': {
+      id: '/_dashboard/p2p/pending'
+      path: '/p2p/pending'
+      fullPath: '/p2p/pending'
+      preLoaderRoute: typeof DashboardP2pPendingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/p2p/shared-ledgers': {
+      id: '/_dashboard/p2p/shared-ledgers'
+      path: '/p2p/shared-ledgers'
+      fullPath: '/p2p/shared-ledgers'
+      preLoaderRoute: typeof DashboardP2pSharedLedgersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/settings/': {
+      id: '/_dashboard/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/account': {
+      id: '/_dashboard/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof DashboardSettingsAccountRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/appearance': {
+      id: '/_dashboard/settings/appearance'
+      path: '/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof DashboardSettingsAppearanceRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/budgets': {
+      id: '/_dashboard/settings/budgets'
+      path: '/budgets'
+      fullPath: '/settings/budgets'
+      preLoaderRoute: typeof DashboardSettingsBudgetsRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/categories': {
+      id: '/_dashboard/settings/categories'
+      path: '/categories'
+      fullPath: '/settings/categories'
+      preLoaderRoute: typeof DashboardSettingsCategoriesRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/display': {
+      id: '/_dashboard/settings/display'
+      path: '/display'
+      fullPath: '/settings/display'
+      preLoaderRoute: typeof DashboardSettingsDisplayRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/notifications': {
+      id: '/_dashboard/settings/notifications'
+      path: '/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof DashboardSettingsNotificationsRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/_dashboard/settings/profile': {
+      id: '/_dashboard/settings/profile'
+      path: '/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof DashboardSettingsProfileRouteImport
+      parentRoute: typeof DashboardSettingsRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -178,32 +493,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/form/simple': {
-      id: '/demo/form/simple'
-      path: '/demo/form/simple'
-      fullPath: '/demo/form/simple'
-      preLoaderRoute: typeof DemoFormSimpleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
+interface DashboardSettingsRouteChildren {
+  DashboardSettingsAccountRoute: typeof DashboardSettingsAccountRoute
+  DashboardSettingsAppearanceRoute: typeof DashboardSettingsAppearanceRoute
+  DashboardSettingsBudgetsRoute: typeof DashboardSettingsBudgetsRoute
+  DashboardSettingsCategoriesRoute: typeof DashboardSettingsCategoriesRoute
+  DashboardSettingsDisplayRoute: typeof DashboardSettingsDisplayRoute
+  DashboardSettingsNotificationsRoute: typeof DashboardSettingsNotificationsRoute
+  DashboardSettingsProfileRoute: typeof DashboardSettingsProfileRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+}
+
+const DashboardSettingsRouteChildren: DashboardSettingsRouteChildren = {
+  DashboardSettingsAccountRoute: DashboardSettingsAccountRoute,
+  DashboardSettingsAppearanceRoute: DashboardSettingsAppearanceRoute,
+  DashboardSettingsBudgetsRoute: DashboardSettingsBudgetsRoute,
+  DashboardSettingsCategoriesRoute: DashboardSettingsCategoriesRoute,
+  DashboardSettingsDisplayRoute: DashboardSettingsDisplayRoute,
+  DashboardSettingsNotificationsRoute: DashboardSettingsNotificationsRoute,
+  DashboardSettingsProfileRoute: DashboardSettingsProfileRoute,
+  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+}
+
+const DashboardSettingsRouteWithChildren =
+  DashboardSettingsRoute._addFileChildren(DashboardSettingsRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardReconciliationRoute: typeof DashboardReconciliationRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRouteWithChildren
+  DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
+  DashboardTransactionsRoute: typeof DashboardTransactionsRoute
+  DashboardWalletsRoute: typeof DashboardWalletsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardContactsIdRoute: typeof DashboardContactsIdRoute
+  DashboardP2pLedgerTabsRoute: typeof DashboardP2pLedgerTabsRoute
+  DashboardP2pPendingRoute: typeof DashboardP2pPendingRoute
+  DashboardP2pSharedLedgersRoute: typeof DashboardP2pSharedLedgersRoute
+  DashboardContactsIndexRoute: typeof DashboardContactsIndexRoute
+  DashboardP2pIndexRoute: typeof DashboardP2pIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardReconciliationRoute: DashboardReconciliationRoute,
+  DashboardSettingsRoute: DashboardSettingsRouteWithChildren,
+  DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,
+  DashboardTransactionsRoute: DashboardTransactionsRoute,
+  DashboardWalletsRoute: DashboardWalletsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardContactsIdRoute: DashboardContactsIdRoute,
+  DashboardP2pLedgerTabsRoute: DashboardP2pLedgerTabsRoute,
+  DashboardP2pPendingRoute: DashboardP2pPendingRoute,
+  DashboardP2pSharedLedgersRoute: DashboardP2pSharedLedgersRoute,
+  DashboardContactsIndexRoute: DashboardContactsIndexRoute,
+  DashboardP2pIndexRoute: DashboardP2pIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  DemoBetterAuthRoute: DemoBetterAuthRoute,
-  DemoTableRoute: DemoTableRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
-  DemoFormSimpleRoute: DemoFormSimpleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

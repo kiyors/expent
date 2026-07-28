@@ -36,8 +36,14 @@
     "turbo": "^2.9.14",
     "typescript": "6.0.3"
   },
-  "packageManager": "pnpm@11.5.3",
+  "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=24"
+  },
+  "resolutions": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   }
 }

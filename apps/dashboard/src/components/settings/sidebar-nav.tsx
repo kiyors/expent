@@ -2,8 +2,7 @@
 
 import { buttonVariants } from "@expent/ui/components/button";
 import { cn } from "@expent/ui/lib/utils";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "@tanstack/react-router";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {
@@ -14,15 +13,14 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
-  const pathname = usePathname();
+  const pathname = useLocation().pathname;
 
   return (
     <nav className={cn("flex gap-x-2 lg:flex-col lg:gap-x-0 lg:gap-y-1", className)} {...props}>
       {items.map((item) => (
         <Link
           key={item.href}
-          href={item.href}
-          transitionTypes={["fade-in"]}
+          to={item.href as any}
           className={cn(
             buttonVariants({ variant: "ghost" }),
             pathname === item.href ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline",

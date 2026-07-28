@@ -5,7 +5,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@expent/ui/components/sidebar";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import type * as React from "react";
 
 export function NavSecondary({
@@ -24,7 +24,7 @@ export function NavSecondary({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton size="sm" render={<Link href={item.url} />}>
+              <SidebarMenuButton size="sm" render={<Link to={item.url as any} />}>
                 {item.icon}
                 <span>{item.title}</span>
               </SidebarMenuButton>

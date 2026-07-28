@@ -316,10 +316,8 @@ function AlertConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex-1">
-          <BellRingIcon className="h-3.5 w-3.5 mr-2" /> Alerts
-        </Button>
+      <DialogTrigger render={<Button variant="outline" size="sm" className="flex-1" />}>
+        <BellRingIcon className="h-3.5 w-3.5 mr-2" /> Alerts
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

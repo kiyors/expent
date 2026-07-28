@@ -47,11 +47,16 @@ import { useGlobalStore } from "@/lib/store";
 
 export const Route = createFileRoute("/_dashboard/")({
   component: DashboardPage,
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => {
+    return {
+      tab: typeof search.tab === "string" ? search.tab : undefined,
+    };
+  },
 });
 
 function DashboardContent() {
-  const navigate = useNavigate({ from: Route.id });
-  const searchParams = useSearch({ from: Route.id }) as { tab?: string };
+  const navigate = useNavigate();
+  const searchParams = useSearch({ from: "/_dashboard/" }) as { tab?: string };
   const queryClient = useQueryClient();
   const [_isPending, startTransition] = useTransition();
 
@@ -61,7 +66,7 @@ function DashboardContent() {
     (value: string) => {
       startTransition(() => {
         const tab = value === "overview" ? undefined : value;
-        navigate({ search: (prev: any) => ({ ...prev, tab }) });
+        navigate({ to: "/", search: { tab } });
       });
     },
     [navigate],

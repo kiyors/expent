@@ -12,8 +12,7 @@ import { Button } from "@expent/ui/components/button";
 import { Separator } from "@expent/ui/components/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@expent/ui/components/tooltip";
 import { BellIcon, SearchIcon, SendIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "@tanstack/react-router";
 import * as React from "react";
 import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger";
 import { ModeToggle } from "@/components/ui-elements/mode-toggle";
@@ -46,7 +45,7 @@ const generateBreadcrumbs = (path: string) => {
 };
 
 export function AppNavbar() {
-  const pathname = usePathname();
+  const pathname = useLocation().pathname;
   const breadcrumbs = generateBreadcrumbs(pathname);
 
   return (
@@ -60,7 +59,7 @@ export function AppNavbar() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={<Link href="/" />}>Dashboard</BreadcrumbLink>
+              <BreadcrumbLink render={<Link to="/" />}>Dashboard</BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumbs.map((bc, idx) => (
               <React.Fragment key={bc.href}>
@@ -69,7 +68,7 @@ export function AppNavbar() {
                   {idx === breadcrumbs.length - 1 ? (
                     <BreadcrumbPage>{bc.label}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink className="hidden md:block" render={<Link href={bc.href} />}>
+                    <BreadcrumbLink className="hidden md:block" render={<Link to={bc.href as any} />}>
                       {bc.label}
                     </BreadcrumbLink>
                   )}

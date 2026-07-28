@@ -5,7 +5,7 @@ import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/component
 import { cn } from "@expent/ui/lib/utils";
 import { calculateSpendingVelocityWasm } from "@expent/wasm";
 import { TargetIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useTransition } from "react";
 import { useBudgets } from "@/hooks/use-budgets";
 
@@ -17,7 +17,8 @@ interface VelocityDisplay {
 
 export function BudgetHealthWidget() {
   const { health, isLoading } = useBudgets();
-  const { push } = useRouter();
+  const navigate = useNavigate();
+  const push = (url: string) => navigate({ to: url });
   const [_isPending, startTransition] = useTransition();
   const [velocities, setVelocities] = useState<Record<string, VelocityDisplay>>({});
 

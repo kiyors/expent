@@ -33,7 +33,7 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 import { startTransition, useState } from "react";
 import { LogoIcon } from "@/components/ui-elements/logo";
@@ -125,7 +125,7 @@ const navSections: SidebarSection[] = [
 import { NavUser } from "@/components/layout/nav-user";
 
 function SidebarNavItemComponent({ item, pathname }: { item: SidebarNavItem; pathname: string }) {
-  const router = useRouter();
+  const navigateFn = useNavigate();
   const queryClient = useQueryClient();
   const isItemActive = item.isActive || pathname === item.url || item.items?.some((i) => pathname.startsWith(i.url));
   const [isOpen, setIsOpen] = useState(isItemActive);
@@ -140,7 +140,7 @@ function SidebarNavItemComponent({ item, pathname }: { item: SidebarNavItem; pat
       if (typeof reactWithExperimental.addTransitionType === "function") {
         reactWithExperimental.addTransitionType("nav-forward");
       }
-      router.push(url);
+      navigateFn({ to: url });
     });
   };
 
@@ -200,8 +200,8 @@ function SidebarNavItemComponent({ item, pathname }: { item: SidebarNavItem; pat
 }
 
 export function AppSidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
+  const pathname = useLocation().pathname;
+  const navigateFn = useNavigate();
 
   const navigateHome = () => {
     startTransition(() => {
@@ -211,7 +211,7 @@ export function AppSidebar() {
       if (typeof reactWithExperimental.addTransitionType === "function") {
         reactWithExperimental.addTransitionType("nav-back");
       }
-      router.push("/");
+      navigateFn({ to: "/" });
     });
   };
 

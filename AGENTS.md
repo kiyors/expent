@@ -2,11 +2,11 @@
 
 ## Tech Stack & Structure
 
-- **Frontend**: `apps/dashboard` (Next.js), `apps/app` (Expo)
+- **Frontend**: `apps/dashboard` (TanStack Start / React Router), `apps/app` (Expo)
 - **Backend**: `apps/api` (Rust Axum)
 - **Central Hub**: `crates/expent_core` (Orchestrates DB, Auth, Upload, OCR)
 - **Shared**: `packages/types` (Shared TS/Rust types), `packages/ui` (Shared UI)
-- **Testing**: `rstest` (Rust Backend & API), `vitest` (Next.js Headless Logic). No UI E2E.
+- **Testing**: `rstest` (Rust Backend & API), `vitest` (Frontend Headless Logic). No UI E2E.
 
 ## Package Managers
 
@@ -50,7 +50,7 @@ skills:
   load: "better-auth/skills"
 - task: "Building or debugging Expo native UI, API routes, and deployments"
   load: "expo/skills"
-- task: "Managing Next.js frontend, Vercel deployments, and React best practices"
+- task: "Managing TanStack Start frontend, deployments, and React best practices"
   load: "vercel-labs/agent-skills"
 - task: "Frontend UI, UX polish, and building web components"
   load: "anthropics/skills"
@@ -68,11 +68,11 @@ When generating code or reviewing PRs, you must actively apply the loaded skills
 - **Flows:** Use `email-and-password-best-practices` and `two-factor-authentication-best-practices`.
 - **Multi-tenant:** Structure orgs according to `organization-best-practices`.
 
-### 2. Next.js & Web Ecosystem (`vercel-labs`)
+### 2. Frontend Ecosystem (`tanstack`)
 
-- **Architecture:** Use App Router conventions (`next-best-practices`).
-- **React Patterns:** Write modern, concurrent React (`vercel-react-best-practices`).
-- **Transitions:** Implement fluid navigation (`vercel-react-view-transitions`).
+- **Architecture:** Use TanStack Router and TanStack Start file-based routing conventions.
+- **Data Fetching:** Use TanStack Query (via loaders and hooks).
+- **Styling:** Tailwind CSS v4 in Vite setup.
 
 ### 3. Expo & React Native Ecosystem
 

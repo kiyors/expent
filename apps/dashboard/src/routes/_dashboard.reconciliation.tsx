@@ -87,8 +87,6 @@ function ReconciliationPage() {
     }
   };
 
-  const _showResults = unmatchedRows && unmatchedRows.length > 0;
-
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       <div className="flex items-center justify-between">

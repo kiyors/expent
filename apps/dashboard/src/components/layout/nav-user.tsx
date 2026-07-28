@@ -12,14 +12,14 @@ import {
 } from "@expent/ui/components/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@expent/ui/components/sidebar";
 import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const session = useSession();
-  const router = useRouter();
+  const navigateFn = useNavigate();
 
   const user = session.data?.user ?? {
     name: "User",
@@ -79,8 +79,10 @@ export function NavUser() {
               <DropdownMenuItem
                 onClick={() => {
                   React.startTransition(() => {
-                    if (typeof React.addTransitionType === "function") React.addTransitionType("nav-forward");
-                    router.push("/settings/profile");
+                    const reactWithExperimental = React as any;
+                    if (typeof reactWithExperimental.addTransitionType === "function")
+                      reactWithExperimental.addTransitionType("nav-forward");
+                    navigateFn({ to: "/settings/profile" });
                   });
                 }}
                 className="cursor-pointer"
@@ -91,8 +93,10 @@ export function NavUser() {
               <DropdownMenuItem
                 onClick={() => {
                   React.startTransition(() => {
-                    if (typeof React.addTransitionType === "function") React.addTransitionType("nav-forward");
-                    router.push("/settings/account");
+                    const reactWithExperimental = React as any;
+                    if (typeof reactWithExperimental.addTransitionType === "function")
+                      reactWithExperimental.addTransitionType("nav-forward");
+                    navigateFn({ to: "/settings/account" });
                   });
                 }}
                 className="cursor-pointer"
@@ -103,8 +107,10 @@ export function NavUser() {
               <DropdownMenuItem
                 onClick={() => {
                   React.startTransition(() => {
-                    if (typeof React.addTransitionType === "function") React.addTransitionType("nav-forward");
-                    router.push("/settings/notifications");
+                    const reactWithExperimental = React as any;
+                    if (typeof reactWithExperimental.addTransitionType === "function")
+                      reactWithExperimental.addTransitionType("nav-forward");
+                    navigateFn({ to: "/settings/notifications" });
                   });
                 }}
                 className="cursor-pointer"

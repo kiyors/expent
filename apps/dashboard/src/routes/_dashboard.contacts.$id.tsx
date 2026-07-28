@@ -122,10 +122,8 @@ function ContactDetailPage() {
               <CardTitle className="text-sm font-medium flex items-center justify-between">
                 Identifiers
                 <Dialog open={isAddIdDialogOpen} onOpenChange={setIsAddIdDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon-xs" aria-label="Add identifier">
-                      <PlusIcon className="h-3.5 w-3.5" />
-                    </Button>
+                  <DialogTrigger render={<Button variant="ghost" size="icon-xs" aria-label="Add identifier" />}>
+                    <PlusIcon className="h-3.5 w-3.5" />
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>

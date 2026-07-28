@@ -4,8 +4,7 @@ import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@expent/ui/components/input-group";
 import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon, UserIcon } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useTransition } from "react";
 import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthShades } from "@/components/auth/auth-shades";
@@ -19,17 +18,17 @@ export function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { data: session, isPending: isSessionPending } = useSession();
   const [_isTransitionPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (!isSessionPending && session) {
       startTransition(() => {
-        router.push("/");
+        navigate({ to: "/" });
       });
     }
-  }, [session, isSessionPending, router]);
+  }, [session, isSessionPending, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +55,7 @@ export function SignUp() {
   return (
     <div className="relative flex min-h-screen flex-col justify-center px-8">
       <AuthShades variant="flipped" />
-      <Button className="absolute top-7 left-5" variant="ghost" render={<Link href="/" />} nativeButton={false}>
+      <Button className="absolute top-7 left-5" variant="ghost" render={<Link to="/" />} nativeButton={false}>
         <ChevronLeftIcon data-icon="inline-start" />
         Home
       </Button>
@@ -147,7 +146,7 @@ export function SignUp() {
 
           <p className="text-muted-foreground text-sm">
             Already have an account?{" "}
-            <Link className="font-semibold text-primary underline underline-offset-4" href="/sign-in">
+            <Link className="font-semibold text-primary underline underline-offset-4" to="/sign-in">
               Sign in
             </Link>
           </p>

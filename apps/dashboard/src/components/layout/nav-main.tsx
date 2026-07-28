@@ -13,7 +13,7 @@ import {
   SidebarMenuSubItem,
 } from "@expent/ui/components/sidebar";
 import { ChevronRightIcon } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 export function NavMain({
   items,
@@ -35,7 +35,7 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} defaultOpen={item.isActive} render={<SidebarMenuItem />}>
-            <SidebarMenuButton tooltip={item.title} render={<Link href={item.url} />}>
+            <SidebarMenuButton tooltip={item.title} render={<Link to={item.url as any} />}>
               {item.icon}
               <span>{item.title}</span>
             </SidebarMenuButton>
@@ -49,7 +49,7 @@ export function NavMain({
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton render={<Link href={subItem.url} />}>
+                        <SidebarMenuSubButton render={<Link to={subItem.url as any} />}>
                           <span>{subItem.title}</span>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

@@ -30,8 +30,9 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import * as React from "react";
+import { useCallback } from "react";
 import { useContacts } from "@/hooks/use-contacts";
 import { useWallets } from "@/hooks/use-wallets";
 
@@ -39,7 +40,8 @@ import { useGlobalStore } from "@/lib/store";
 
 export function CommandCenter() {
   const [open, setOpen] = React.useState(false);
-  const { push } = useRouter();
+  const navigate = useNavigate();
+  const push = useCallback((url: string) => navigate({ to: url }), [navigate]);
   const { setTransactionModalOpen, setOCRModalOpen, setCategoryModalOpen, setHotkeyHelpOpen } = useGlobalStore();
   const [_isTransitionPending, startTransition] = React.useTransition();
 
@@ -299,7 +301,7 @@ export function CommandCenter() {
             <CommandItem
               key={nav.href}
               value={nav.label}
-              onSelect={() => runCommand(() => startTransition(() => push(nav.href)))}
+              onSelect={() => runCommand(() => React.startTransition(() => push(nav.href)))}
               className="flex items-center gap-4 p-3 rounded-xl mb-1 transition-all group"
             >
               <div className="size-10 rounded-lg bg-muted/50 flex items-center justify-center group-data-selected:bg-background transition-colors">
@@ -323,7 +325,7 @@ export function CommandCenter() {
               <CommandItem
                 key={wallet.id}
                 value={wallet.name}
-                onSelect={() => runCommand(() => startTransition(() => push("/wallets")))}
+                onSelect={() => runCommand(() => React.startTransition(() => push("/wallets")))}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-all group"
               >
                 <div className="size-8 rounded-lg bg-muted/30 flex items-center justify-center group-data-selected:bg-background/50 transition-colors">
@@ -347,7 +349,7 @@ export function CommandCenter() {
               <CommandItem
                 key={contact.id}
                 value={contact.name}
-                onSelect={() => runCommand(() => startTransition(() => push(`/contacts/${contact.id}`)))}
+                onSelect={() => runCommand(() => React.startTransition(() => push(`/contacts/${contact.id}`)))}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-all group"
               >
                 <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center group-data-selected:bg-primary/20 transition-colors">
@@ -366,7 +368,7 @@ export function CommandCenter() {
             <CommandItem
               key={item.href}
               value={item.label}
-              onSelect={() => runCommand(() => startTransition(() => push(item.href)))}
+              onSelect={() => runCommand(() => React.startTransition(() => push(item.href)))}
               className="flex items-center gap-4 px-3 py-2 rounded-xl mb-1 transition-all group"
             >
               <div className="size-8 rounded-lg bg-muted/50 flex items-center justify-center group-data-selected:bg-background transition-colors">

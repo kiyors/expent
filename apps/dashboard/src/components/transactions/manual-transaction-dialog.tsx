@@ -33,10 +33,6 @@ const getCategoryIcon = (iconName: string | null | undefined) => {
   return ICON_MAP[iconName as keyof typeof ICON_MAP] || TagIcon;
 };
 
-const _getCategoryColor = (colorHex: string | null | undefined) => {
-  return colorHex || "#64748b";
-};
-
 const transactionSchema = z.object({
   amount: z.string().min(1, "Amount is required"),
   description: z.string().min(1, "Description is required"),

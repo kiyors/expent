@@ -74,10 +74,8 @@ function LedgerTabsPage() {
           <p className="text-muted-foreground text-sm">Track money lent to or borrowed from others over time.</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 size-4" /> New Tab
-            </Button>
+          <DialogTrigger render={<Button />}>
+            <PlusIcon className="mr-2 size-4" /> New Tab
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -281,10 +279,8 @@ function RepaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 text-xs" variant="secondary">
-          Register Repayment
-        </Button>
+      <DialogTrigger render={<Button size="sm" className="h-8 text-xs" variant="secondary" />}>
+        Register Repayment
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

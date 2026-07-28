@@ -30,7 +30,6 @@ async function assertValid(promise: Promise<unknown>): Promise<void> {
 
 export function useContacts() {
   const session = useSession();
-  const _queryClient = useQueryClient();
 
   const query = useLiveQuery((q) => q.from({ contacts: db.contacts }), [session.data]);
 

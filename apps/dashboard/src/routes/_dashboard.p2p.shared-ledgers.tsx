@@ -47,10 +47,8 @@ function InviteDialog({ groupId, groupName }: { groupId: string; groupName: stri
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" className="size-8 p-0" aria-label="Invite member">
-          <UserPlusIcon className="size-4" />
-        </Button>
+      <DialogTrigger render={<Button size="sm" variant="ghost" className="size-8 p-0" aria-label="Invite member" />}>
+        <UserPlusIcon className="size-4" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -93,10 +91,8 @@ function MembersDialog({ groupId, groupName }: { groupId: string; groupName: str
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="shadow-none" aria-label="View members">
-          <UsersIcon className="mr-2 size-4" /> Members
-        </Button>
+      <DialogTrigger render={<Button variant="outline" size="sm" className="shadow-none" aria-label="View members" />}>
+        <UsersIcon className="mr-2 size-4" /> Members
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
@@ -191,10 +187,8 @@ function GroupDetails({ group }: { group: Group }) {
         </h3>
         <div className="flex gap-2">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8" aria-label="Information">
-                <InfoIcon className="size-4 text-muted-foreground" />
-              </Button>
+            <TooltipTrigger render={<Button variant="ghost" size="icon" className="size-8" aria-label="Information" />}>
+              <InfoIcon className="size-4 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Transactions shared directly with this group</p>
@@ -308,10 +302,8 @@ function SharedLedgersComponent() {
           <p className="text-muted-foreground text-sm">Track shared expenses with friends and family.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 size-4" /> New Ledger
-            </Button>
+          <DialogTrigger render={<Button />}>
+            <PlusIcon className="mr-2 size-4" /> New Ledger
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

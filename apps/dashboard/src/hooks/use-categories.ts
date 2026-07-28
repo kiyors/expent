@@ -1,12 +1,11 @@
 import type { Category, CreateCategoryRequest } from "@expent/types";
 import { useLiveQuery } from "@tanstack/react-db";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 import { db } from "@/lib/db";
 
 export function useCategories() {
-  const _queryClient = useQueryClient();
   const session = useSession();
 
   const query = useLiveQuery((q) => q.from({ categories: db.categories }), [session.data]);

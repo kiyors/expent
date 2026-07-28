@@ -1,6 +1,6 @@
 "use client";
 
-import type { Category } from "@expent/types/db/Category";
+import type { Category } from "@expent/types";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";
 import { toast } from "@expent/ui/components/goey-toaster";
