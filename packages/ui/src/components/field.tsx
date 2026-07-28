@@ -1,5 +1,3 @@
-"use client";
-
 import { Label } from "@expent/ui/components/label";
 import { Separator } from "@expent/ui/components/separator";
 

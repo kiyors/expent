@@ -1,4 +1,3 @@
-"use client";
 import { m } from "motion/react";
 
 export function FloatingPaths({ position }: { position: number }) {

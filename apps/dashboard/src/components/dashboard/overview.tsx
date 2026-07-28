@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useLocalSummary, useTransactionSummary } from "@/hooks/use-transactions";

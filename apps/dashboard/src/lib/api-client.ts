@@ -1,8 +1,8 @@
 import { authClient } from "./auth-client";
 
-// No need for NEXT_PUBLIC_API_BASE_URL for client requests if using rewrites
+// No need for VITE_API_BASE_URL for client requests if using rewrites
 // For server-side requests (if any), it still needs an absolute URL.
-const API_URL = typeof window === "undefined" ? process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7878" : "";
+const API_URL = typeof window === "undefined" ? import.meta.env.VITE_API_BASE_URL || "http://localhost:7878" : "";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const session = await authClient.getSession();

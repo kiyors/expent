@@ -1,5 +1,3 @@
-"use client";
-
 import { AlertCircle, Check } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { ActionButtons } from "../shared/action-buttons";

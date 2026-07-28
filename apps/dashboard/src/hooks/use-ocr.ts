@@ -1,5 +1,3 @@
-"use client";
-
 import type { OcrJob, OcrJobResponse, ProcessImageOcrRequest, TypedProcessedOcr } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { useQueryClient } from "@tanstack/react-query";

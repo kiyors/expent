@@ -1,5 +1,3 @@
-"use client";
-
 import { Badge } from "@expent/ui/components/badge";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";

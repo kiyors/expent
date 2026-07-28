@@ -1,5 +1,3 @@
-"use client";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@expent/ui/components/avatar";
 import {
   DropdownMenu,

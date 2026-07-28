@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@expent/ui/components/input-group";

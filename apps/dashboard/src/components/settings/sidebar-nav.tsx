@@ -1,5 +1,3 @@
-"use client";
-
 import { buttonVariants } from "@expent/ui/components/button";
 import { cn } from "@expent/ui/lib/utils";
 import { Link, useLocation } from "@tanstack/react-router";

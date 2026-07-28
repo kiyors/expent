@@ -1,5 +1,3 @@
-"use client";
-
 import { Button, buttonVariants } from "@expent/ui/components/button";
 import { cn } from "@expent/ui/lib/utils";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";

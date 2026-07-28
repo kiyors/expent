@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 
 export function useSignatureReset(signature: string, onSignatureChange: () => void) {

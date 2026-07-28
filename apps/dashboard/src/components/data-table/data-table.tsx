@@ -1,5 +1,4 @@
 // biome-ignore-all lint/a11y/useSemanticElements: virtualised data-table — divs with role attributes preserve assistive-tech semantics without breaking the scroller / column-resize handles.
-"use client";
 
 import * as React from "react";
 import type {

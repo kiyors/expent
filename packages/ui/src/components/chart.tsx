@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@expent/ui/lib/utils";
 import * as React from "react";
 import type { TooltipValueType } from "recharts";

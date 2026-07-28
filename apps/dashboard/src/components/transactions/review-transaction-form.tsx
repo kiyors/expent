@@ -1,5 +1,3 @@
-"use client";
-
 import type { BankTransaction, TypedProcessedOcr } from "@expent/types";
 import { Button } from "@expent/ui/components/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";

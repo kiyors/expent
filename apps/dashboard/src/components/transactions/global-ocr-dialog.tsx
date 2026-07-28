@@ -1,5 +1,3 @@
-"use client";
-
 import type { TypedProcessedOcr } from "@expent/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@expent/ui/components/dialog";
 import { toast } from "@expent/ui/components/goey-toaster";

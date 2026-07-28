@@ -1,5 +1,3 @@
-"use client";
-
 import { Toaster } from "@expent/ui/components/goey-toaster";
 import { TooltipProvider } from "@expent/ui/components/tooltip";
 import { HotkeysProvider } from "@tanstack/react-hotkeys";

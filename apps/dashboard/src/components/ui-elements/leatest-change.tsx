@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@expent/ui/components/button";
 import { cn } from "@expent/ui/lib/utils";
 import { XIcon } from "lucide-react";

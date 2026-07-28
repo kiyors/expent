@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { FloatingPaths } from "@/components/ui-elements/floating-paths";
 import { Logo } from "@/components/ui-elements/logo";

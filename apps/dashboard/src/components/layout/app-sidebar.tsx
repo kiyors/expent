@@ -1,5 +1,3 @@
-"use client";
-
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@expent/ui/components/collapsible";
 import {
   Sidebar,

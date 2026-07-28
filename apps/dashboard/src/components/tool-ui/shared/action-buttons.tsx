@@ -1,5 +1,3 @@
-"use client";
-
 import { Spinner } from "@expent/ui/components/spinner";
 import { Button, cn } from "./_adapter";
 import type { Action } from "./schema";

@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@expent/ui/lib/utils";
 import * as ResizablePrimitive from "react-resizable-panels";
 

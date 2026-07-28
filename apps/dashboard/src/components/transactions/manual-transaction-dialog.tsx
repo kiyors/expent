@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@expent/ui/components/button";
 import {
   Dialog,

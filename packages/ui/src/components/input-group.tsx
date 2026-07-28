@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@expent/ui/components/button";
 import { Input } from "@expent/ui/components/input";
 import { Textarea } from "@expent/ui/components/textarea";

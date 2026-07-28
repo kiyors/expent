@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";
 import { BarChart3Icon, TrendingDownIcon, TrendingUpIcon, WalletIcon } from "lucide-react";
 import * as React from "react";

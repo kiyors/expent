@@ -1,5 +1,3 @@
-"use client";
-
 import type { WalletType } from "@expent/types";
 import { Button } from "@expent/ui/components/button";
 import {

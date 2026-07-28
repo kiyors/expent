@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useMemo, useRef, useState } from "react";
 
 export type UseControllableStateOptions<T> = {

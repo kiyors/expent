@@ -1,5 +1,3 @@
-"use client";
-
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu";
 import { cn } from "@expent/ui/lib/utils";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";

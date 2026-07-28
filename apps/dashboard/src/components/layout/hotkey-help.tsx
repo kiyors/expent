@@ -1,5 +1,3 @@
-"use client";
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@expent/ui/components/dialog";
 import { useGlobalStore } from "@/lib/store";
 

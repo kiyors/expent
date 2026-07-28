@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@expent/ui/components/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@expent/ui/components/progress";
 import { cn } from "@expent/ui/lib/utils";

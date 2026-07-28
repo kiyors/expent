@@ -1,5 +1,3 @@
-"use client";
-
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
 import { GlobalOCRDialog } from "@/components/transactions/global-ocr-dialog";
 import { ManualTransactionDialog } from "@/components/transactions/manual-transaction-dialog";
