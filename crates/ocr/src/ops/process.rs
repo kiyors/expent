@@ -133,7 +133,9 @@ pub async fn process_job(
                         && (bytes.contains(&b',') || bytes.contains(&b'\t'))
                         && bytes.iter().take(100).all(|&b| b.is_ascii() || b > 127)
                     {
-                        if !filename.to_lowercase().ends_with(".csv") {
+                        if filename.len() < 4
+                            || !filename[filename.len() - 4..].eq_ignore_ascii_case(".csv")
+                        {
                             filename.push_str(".csv");
                         }
                         "text/csv"

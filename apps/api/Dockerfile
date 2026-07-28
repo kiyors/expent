@@ -1,16 +1,21 @@
-FROM rust:1.91.1-slim AS builder
-
+FROM rust:1.91.1-slim AS chef
 WORKDIR /app
-
 # Install dependencies needed for compiling
 RUN apt-get update && apt-get install -y perl make pkg-config libssl-dev gcc && rm -rf /var/lib/apt/lists/*
+# Install cargo-chef
+RUN cargo install cargo-chef --locked
 
-# Copy the entire workspace to resolve crates/* properly
+FROM chef AS planner
 COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
-# Build the server binary using docker cache mounts to radically speed up rebuilds
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+# Build application
+COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/app/target \
     cargo build --release --bin server && \
     cp target/release/server /tmp/server
 

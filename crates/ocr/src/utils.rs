@@ -19,16 +19,23 @@ pub fn split_pdf(data: &[u8]) -> Result<Vec<Vec<u8>>, anyhow::Error> {
 }
 
 pub fn get_media_type(filename: &str) -> &'static str {
-    let ext = filename.split('.').next_back().unwrap_or("").to_lowercase();
-    match ext.as_str() {
-        "pdf" => "application/pdf",
-        "csv" => "text/csv",
-        "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "xls" => "application/vnd.ms-excel",
-        "webp" => "image/webp",
-        "png" => "image/png",
-        "jpg" | "jpeg" => "image/jpeg",
-        _ => "image/png",
+    let ext = filename.split('.').next_back().unwrap_or("");
+    if ext.eq_ignore_ascii_case("pdf") {
+        "application/pdf"
+    } else if ext.eq_ignore_ascii_case("csv") {
+        "text/csv"
+    } else if ext.eq_ignore_ascii_case("xlsx") {
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    } else if ext.eq_ignore_ascii_case("xls") {
+        "application/vnd.ms-excel"
+    } else if ext.eq_ignore_ascii_case("webp") {
+        "image/webp"
+    } else if ext.eq_ignore_ascii_case("png") {
+        "image/png"
+    } else if ext.eq_ignore_ascii_case("jpg") || ext.eq_ignore_ascii_case("jpeg") {
+        "image/jpeg"
+    } else {
+        "image/png"
     }
 }
 

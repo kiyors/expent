@@ -86,11 +86,9 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
         }
 
         // Ensure 'type' is present if 'properties' is present
-        if obj.contains_key("properties") && !obj.contains_key("type") {
-            obj.insert(
-                "type".to_string(),
-                serde_json::Value::String("object".to_string()),
-            );
+        if obj.contains_key("properties") {
+            obj.entry("type".to_string())
+                .or_insert_with(|| serde_json::Value::String("object".to_string()));
         }
     }
     schema

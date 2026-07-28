@@ -1,5 +1,6 @@
 use db::AppError;
 use db::entities;
+use rayon::prelude::*;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -76,7 +77,6 @@ pub async fn get_merge_suggestions(
         })
         .collect();
 
-    use rayon::prelude::*;
     let similarity_threshold = get_similarity_threshold();
 
     let suggestions: Vec<MergeSuggestion> = cached_contacts
@@ -88,10 +88,11 @@ pub async fn get_merge_suggestions(
                 let mut match_reason: Option<String> = None;
 
                 // 1. Check exact phone match
-                if let (Some(p1), Some(p2)) = (&c1.contact.phone, &c2.contact.phone) {
-                    if !p1.trim().is_empty() && p1 == p2 {
-                        match_reason = Some("Same phone number".to_string());
-                    }
+                if let (Some(p1), Some(p2)) = (&c1.contact.phone, &c2.contact.phone)
+                    && !p1.trim().is_empty()
+                    && p1 == p2
+                {
+                    match_reason = Some("Same phone number".to_string());
                 }
 
                 // 2. Check identifier overlap (UPI, Bank Acc)

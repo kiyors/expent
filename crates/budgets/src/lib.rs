@@ -176,7 +176,7 @@ impl BudgetsManager {
             .map(|p| (*p, get_period_bounds(*p)))
             .collect();
 
-        let mut spent_by_key: HashMap<(BudgetPeriod, Option<String>), Decimal> = HashMap::new();
+        let mut spent_by_key: HashMap<(BudgetPeriod, Option<&str>), Decimal> = HashMap::new();
         for txn in &txns {
             for (period, (start_date, end_date)) in &period_bounds {
                 if txn.date < *start_date || txn.date >= *end_date {
@@ -185,7 +185,7 @@ impl BudgetsManager {
                 *spent_by_key.entry((*period, None)).or_default() += txn.amount;
                 if let Some(cat) = &txn.category_id {
                     *spent_by_key
-                        .entry((*period, Some(cat.clone())))
+                        .entry((*period, Some(cat.as_str())))
                         .or_default() += txn.amount;
                 }
             }
@@ -193,7 +193,7 @@ impl BudgetsManager {
 
         for budget in budgets {
             let spent = spent_by_key
-                .get(&(budget.period, budget.category_id.clone()))
+                .get(&(budget.period, budget.category_id.as_deref()))
                 .copied()
                 .unwrap_or(Decimal::ZERO);
 

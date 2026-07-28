@@ -1,4 +1,4 @@
-pub mod bridge;
+pub mod services;
 
 pub use db::AppError;
 pub use db::GPayExtraction;
@@ -11,7 +11,7 @@ pub use db::SplitDetail;
 pub use db::TransactionWithDetail;
 
 pub mod ocr {
-    pub use crate::bridge::*;
+    pub use crate::services::ocr::*;
     pub use ::ocr::*;
 }
 
@@ -107,9 +107,9 @@ impl OcrProcessor for Core {
         let user_id = user_id.to_string();
         let contacts = self.contacts.clone();
         let wallets = self.wallets.clone();
-        Box::pin(
-            async move { bridge::process_ocr(db, contacts, wallets, &user_id, processed).await },
-        )
+        Box::pin(async move {
+            services::ocr::process_ocr(db, contacts, wallets, &user_id, processed).await
+        })
     }
 
     fn enrich_ocr<'a>(
@@ -123,9 +123,9 @@ impl OcrProcessor for Core {
         let user_id = user_id.to_string();
         let contacts = self.contacts.clone();
         let wallets = self.wallets.clone();
-        Box::pin(
-            async move { bridge::enrich_ocr(db, contacts, wallets, &user_id, processed).await },
-        )
+        Box::pin(async move {
+            services::ocr::enrich_ocr(db, contacts, wallets, &user_id, processed).await
+        })
     }
 }
 
