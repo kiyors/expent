@@ -7,10 +7,10 @@ export type {
   DataTableSerializableProps,
   RowData,
   RowPrimitive,
-} from "@/lib/data-table-types";
-export { parseNumericLike, sortData } from "@/lib/data-table-utilities";
-export { DataTable, useDataTable } from "./data-table";
-export type { FormatConfig } from "./formatters";
+} from "@/lib/DataTableTypes";
+export { parseNumericLike, sortData } from "@/lib/DataTableUtilities";
+export { DataTable, useDataTable } from "./DataTable";
+export type { FormatConfig } from "./Formatters";
 export {
   ArrayValue,
   BadgeValue,
@@ -23,4 +23,4 @@ export {
   PercentValue,
   renderFormattedValue,
   StatusBadge,
-} from "./formatters";
+} from "./Formatters";

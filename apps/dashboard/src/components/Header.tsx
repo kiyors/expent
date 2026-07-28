@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import BetterAuthHeader from "@/components/auth/header-user";
+import BetterAuthHeader from "@/components/auth/HeaderUser";
 
 import ThemeToggle from "./ThemeToggle";
 

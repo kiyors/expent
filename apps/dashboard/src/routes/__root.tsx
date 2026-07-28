@@ -3,7 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
-import { Providers } from "../providers/providers";
+import { Providers } from "../providers/Providers";
 
 import appCss from "../styles.css?url";
 

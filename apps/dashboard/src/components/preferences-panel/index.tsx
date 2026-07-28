@@ -1,4 +1,4 @@
-export { PreferencesPanel, PreferencesPanelReceipt } from "./preferences-panel";
+export { PreferencesPanel, PreferencesPanelReceipt } from "./PreferencesPanel";
 export type {
   PreferenceItem,
   PreferenceSection,
@@ -7,4 +7,4 @@ export type {
   PreferencesValue,
   SerializablePreferencesPanel,
   SerializablePreferencesPanelReceipt,
-} from "./schema";
+} from "./Schema";

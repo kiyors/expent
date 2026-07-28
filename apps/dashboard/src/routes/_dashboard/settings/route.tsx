@@ -2,7 +2,7 @@ import { Separator } from "@expent/ui/components/separator";
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { BellIcon, MonitorIcon, PaletteIcon, TagIcon, UserCogIcon, WrenchIcon } from "lucide-react";
 
-import { SidebarNav } from "@/components/settings/sidebar-nav";
+import { SidebarNav } from "@/components/settings/SidebarNav";
 
 export const Route = createFileRoute("/_dashboard/settings")({
   component: SettingsLayout,

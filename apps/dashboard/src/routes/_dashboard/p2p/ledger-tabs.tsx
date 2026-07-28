@@ -27,9 +27,9 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { useContacts } from "@/hooks/use-contacts";
-import { useLedgerTabs } from "@/hooks/use-p2p";
-import { useWallets } from "@/hooks/use-wallets";
+import { useContacts } from "@/hooks/UseContacts";
+import { useLedgerTabs } from "@/hooks/UseP2p";
+import { useWallets } from "@/hooks/UseWallets";
 
 export const Route = createFileRoute("/_dashboard/p2p/ledger-tabs")({
   component: LedgerTabsPage,

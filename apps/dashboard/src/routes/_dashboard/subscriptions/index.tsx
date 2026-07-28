@@ -30,9 +30,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { useLocalSubscriptionDetection } from "@/hooks/use-wasm-logic";
-import { api } from "@/lib/api-client";
-import { useSession } from "@/lib/auth-client";
+import { useLocalSubscriptionDetection } from "@/hooks/UseWasmLogic";
+import { api } from "@/lib/ApiClient";
+import { useSession } from "@/lib/AuthClient";
 
 export const Route = createFileRoute("/_dashboard/subscriptions/")({
   component: SubscriptionsComponent,

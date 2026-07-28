@@ -21,9 +21,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ChevronRightIcon, InfoIcon, PlusIcon, ReceiptIcon, Trash2Icon, UserPlusIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 
-import { useGroupMembers, useGroups } from "@/hooks/use-p2p";
-import { api } from "@/lib/api-client";
-import { useSession } from "@/lib/auth-client";
+import { useGroupMembers, useGroups } from "@/hooks/UseP2p";
+import { api } from "@/lib/ApiClient";
+import { useSession } from "@/lib/AuthClient";
 
 export const Route = createFileRoute("/_dashboard/p2p/shared-ledgers")({
   component: SharedLedgersComponent,

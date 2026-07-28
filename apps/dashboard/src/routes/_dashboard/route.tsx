@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { CommandCenter } from "@/components/layout/command-center";
-import { GlobalModals } from "@/components/layout/global-modals";
-import { HotkeyHelp } from "@/components/layout/hotkey-help";
-import { SidebarWrapper } from "@/components/layout/sidebar-wrapper";
-import { getSession } from "@/lib/auth.functions";
+import { CommandCenter } from "@/components/layout/CommandCenter";
+import { GlobalModals } from "@/components/layout/GlobalModals";
+import { HotkeyHelp } from "@/components/layout/HotkeyHelp";
+import { SidebarWrapper } from "@/components/layout/SidebarWrapper";
+import { getSession } from "@/lib/Auth.functions";
 
 export const Route = createFileRoute("/_dashboard")({
   beforeLoad: async ({ location }) => {

@@ -30,7 +30,7 @@ import {
 import { m } from "motion/react";
 import * as React from "react";
 
-import { useContacts, useMergeContacts } from "@/hooks/use-contacts";
+import { useContacts, useMergeContacts } from "@/hooks/UseContacts";
 
 export const Route = createFileRoute("/_dashboard/contacts/")({
   component: ContactsPage,

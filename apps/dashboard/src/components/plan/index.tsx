@@ -1,2 +1,2 @@
-export { Plan, PlanCompact } from "./plan";
-export type { PlanProps, PlanTodo, PlanTodoStatus, SerializablePlan } from "./schema";
+export { Plan, PlanCompact } from "./Plan";
+export type { PlanProps, PlanTodo, PlanTodoStatus, SerializablePlan } from "./Schema";

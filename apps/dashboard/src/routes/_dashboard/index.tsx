@@ -28,23 +28,23 @@ import {
 import { Suspense, useCallback, useMemo, useState, useTransition } from "react";
 
 import { ApprovalCard } from "@/components/approval-card";
-import { Analytics } from "@/components/dashboard/analytics";
-import { BudgetHealthWidget } from "@/components/dashboard/budget-health";
-import { CategoryChart } from "@/components/dashboard/category-chart";
-import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
-import { IncomeExpenseChart } from "@/components/dashboard/income-expense-chart";
-import { Overview } from "@/components/dashboard/overview";
-import { DataTable } from "@/components/data-table/data-table";
+import { Analytics } from "@/components/dashboard/Analytics";
+import { BudgetHealthWidget } from "@/components/dashboard/BudgetHealth";
+import { CategoryChart } from "@/components/dashboard/CategoryChart";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { IncomeExpenseChart } from "@/components/dashboard/IncomeExpenseChart";
+import { Overview } from "@/components/dashboard/Overview";
+import { DataTable } from "@/components/data-table/DataTable";
 import { ProgressTracker } from "@/components/progress-tracker";
-import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
-import { SplitDialog } from "@/components/transactions/split-dialog";
-import { TransactionViewer } from "@/components/transactions/transaction-viewer";
-import { useOcrUpload } from "@/hooks/use-ocr";
-import { useP2P } from "@/hooks/use-p2p";
-import { useLocalSummary, useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
-import { api } from "@/lib/api-client";
-import type { Column } from "@/lib/data-table-types";
-import { useGlobalStore } from "@/lib/store";
+import { ReviewTransactionForm } from "@/components/transactions/ReviewTransactionForm";
+import { SplitDialog } from "@/components/transactions/SplitDialog";
+import { TransactionViewer } from "@/components/transactions/TransactionViewer";
+import { useOcrUpload } from "@/hooks/UseOcr";
+import { useP2P } from "@/hooks/UseP2p";
+import { useLocalSummary, useTransactionSummary, useTransactions } from "@/hooks/UseTransactions";
+import { api } from "@/lib/ApiClient";
+import type { Column } from "@/lib/DataTableTypes";
+import { useGlobalStore } from "@/lib/Store";
 
 export const Route = createFileRoute("/_dashboard/")({
   component: DashboardPage,

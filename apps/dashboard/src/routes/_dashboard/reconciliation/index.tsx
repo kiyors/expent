@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/
 import { toast } from "@expent/ui/components/goey-toaster";
 import { Input } from "@expent/ui/components/input";
 import { Label } from "@expent/ui/components/label";
-import { Progress } from "@expent/ui/components/progress";
+import { Progress } from "@expent/ui/components/Progress";
 import { matchStatementBatchWasm } from "@expent/wasm";
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -20,11 +20,11 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
-import { useOcrUpload } from "@/hooks/use-ocr";
-import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
-import { useTransactions } from "@/hooks/use-transactions";
-import { api } from "@/lib/api-client";
+import { ReviewTransactionForm } from "@/components/transactions/ReviewTransactionForm";
+import { useOcrUpload } from "@/hooks/UseOcr";
+import { useReconciliation, useRowMatches } from "@/hooks/UseReconciliation";
+import { useTransactions } from "@/hooks/UseTransactions";
+import { api } from "@/lib/ApiClient";
 
 export const Route = createFileRoute("/_dashboard/reconciliation/")({
   component: ReconciliationPage,

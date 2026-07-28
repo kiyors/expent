@@ -44,8 +44,8 @@ import {
 import { m } from "motion/react";
 import * as React from "react";
 
-import { useTransactions } from "@/hooks/use-transactions";
-import { useWallets } from "@/hooks/use-wallets";
+import { useTransactions } from "@/hooks/UseTransactions";
+import { useWallets } from "@/hooks/UseWallets";
 
 export const Route = createFileRoute("/_dashboard/wallets/")({
   component: WalletsPage,

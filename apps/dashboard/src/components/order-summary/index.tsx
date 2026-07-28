@@ -1,9 +1,5 @@
-export type {
-  OrderSummaryCompoundComponent,
-  OrderSummaryDisplayProps,
-  OrderSummaryReceiptProps,
-} from "./order-summary";
-export { OrderSummary } from "./order-summary";
+export type { OrderSummaryCompoundComponent, OrderSummaryDisplayProps, OrderSummaryReceiptProps } from "./OrderSummary";
+export { OrderSummary } from "./OrderSummary";
 export type {
   OrderDecision,
   OrderItem,
@@ -11,4 +7,4 @@ export type {
   OrderSummaryVariant,
   Pricing,
   SerializableOrderSummary,
-} from "./schema";
+} from "./Schema";

@@ -9,8 +9,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CameraIcon, LoaderIcon } from "lucide-react";
 import * as React from "react";
 
-import { api } from "@/lib/api-client";
-import { useSession } from "@/lib/auth-client";
+import { api } from "@/lib/ApiClient";
+import { useSession } from "@/lib/AuthClient";
 
 export const Route = createFileRoute("/_dashboard/settings/profile")({
   component: SettingsProfilePage,

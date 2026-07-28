@@ -6,8 +6,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LockIcon, PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
 
-import { COLOR_PALETTE, CreateCategoryDialog, ICON_MAP } from "@/components/categories/create-category-dialog";
-import { useCategories } from "@/hooks/use-categories";
+import { COLOR_PALETTE, CreateCategoryDialog, ICON_MAP } from "@/components/categories/CreateCategoryDialog";
+import { useCategories } from "@/hooks/UseCategories";
 
 export const Route = createFileRoute("/_dashboard/settings/categories")({
   component: SettingsCategoriesPage,

@@ -30,9 +30,9 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { DataTable } from "@/components/data-table/data-table";
-import { useContactDetail, useContacts } from "@/hooks/use-contacts";
-import type { Column } from "@/lib/data-table-types";
+import { DataTable } from "@/components/data-table/DataTable";
+import { useContactDetail, useContacts } from "@/hooks/UseContacts";
+import type { Column } from "@/lib/DataTableTypes";
 
 export const Route = createFileRoute("/_dashboard/contacts/$id")({
   component: ContactDetailPage,
