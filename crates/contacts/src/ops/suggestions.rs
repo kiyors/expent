@@ -76,56 +76,61 @@ pub async fn get_merge_suggestions(
         })
         .collect();
 
-    let mut suggestions: Vec<MergeSuggestion> = Vec::new();
+    use rayon::prelude::*;
     let similarity_threshold = get_similarity_threshold();
 
-    for (i, c1) in cached_contacts.iter().enumerate() {
-        for c2 in cached_contacts.iter().skip(i + 1) {
-            let mut match_reason: Option<String> = None;
+    let suggestions: Vec<MergeSuggestion> = cached_contacts
+        .par_iter()
+        .enumerate()
+        .flat_map_iter(|(i, c1)| {
+            let mut local_suggestions = Vec::new();
+            for c2 in cached_contacts.iter().skip(i + 1) {
+                let mut match_reason: Option<String> = None;
 
-            // 1. Check exact phone match
-            if let (Some(p1), Some(p2)) = (&c1.contact.phone, &c2.contact.phone)
-                && !p1.trim().is_empty()
-                && p1 == p2
-            {
-                match_reason = Some("Same phone number".to_string());
-            }
+                // 1. Check exact phone match
+                if let (Some(p1), Some(p2)) = (&c1.contact.phone, &c2.contact.phone) {
+                    if !p1.trim().is_empty() && p1 == p2 {
+                        match_reason = Some("Same phone number".to_string());
+                    }
+                }
 
-            // 2. Check identifier overlap (UPI, Bank Acc)
-            if match_reason.is_none() {
-                let empty_vec: Vec<entities::contact_identifiers::Model> = Vec::new();
-                let id1s = identifiers_map
-                    .get(c1.contact.id.as_str())
-                    .unwrap_or(&empty_vec);
-                let id2s = identifiers_map
-                    .get(c2.contact.id.as_str())
-                    .unwrap_or(&empty_vec);
+                // 2. Check identifier overlap (UPI, Bank Acc)
+                if match_reason.is_none() {
+                    let empty_vec: Vec<entities::contact_identifiers::Model> = Vec::new();
+                    let id1s = identifiers_map
+                        .get(c1.contact.id.as_str())
+                        .unwrap_or(&empty_vec);
+                    let id2s = identifiers_map
+                        .get(c2.contact.id.as_str())
+                        .unwrap_or(&empty_vec);
 
-                'outer: for id1 in id1s {
-                    for id2 in id2s {
-                        if id1.r#type == id2.r#type && id1.value == id2.value {
-                            match_reason = Some(format!("Shared {} identifier", id1.r#type));
-                            break 'outer;
+                    'outer: for id1 in id1s {
+                        for id2 in id2s {
+                            if id1.r#type == id2.r#type && id1.value == id2.value {
+                                match_reason = Some(format!("Shared {} identifier", id1.r#type));
+                                break 'outer;
+                            }
                         }
                     }
                 }
-            }
 
-            // 3. Check fuzzy name match
-            if match_reason.is_none()
-                && jaro_winkler(&c1.lower_name, &c2.lower_name) > similarity_threshold
-            {
-                match_reason = Some("Similar name".to_string());
-            }
+                // 3. Check fuzzy name match
+                if match_reason.is_none()
+                    && jaro_winkler(&c1.lower_name, &c2.lower_name) > similarity_threshold
+                {
+                    match_reason = Some("Similar name".to_string());
+                }
 
-            if let Some(reason) = match_reason {
-                suggestions.push(MergeSuggestion {
-                    contacts: vec![c1.contact.clone(), c2.contact.clone()],
-                    reason,
-                });
+                if let Some(reason) = match_reason {
+                    local_suggestions.push(MergeSuggestion {
+                        contacts: vec![c1.contact.clone(), c2.contact.clone()],
+                        reason,
+                    });
+                }
             }
-        }
-    }
+            local_suggestions
+        })
+        .collect();
 
     Ok(suggestions)
 }

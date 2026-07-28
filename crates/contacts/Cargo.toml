@@ -13,6 +13,7 @@ sea-orm.workspace = true
 serde.workspace = true
 strsim = "0.11.1"
 uuid.workspace = true
+rayon = "1.12.0"
 
 [lints]
 workspace = true

@@ -117,17 +117,14 @@ pub fn format_currency(amount: &str, currency_code: &str) -> Option<String> {
 /// matches — callers should keep their existing fallback.
 #[wasm_bindgen]
 pub fn detect_currency_from_text(text: &str) -> Option<String> {
-    let lower = text.to_lowercase();
-
     // 1) Look for ISO codes as whole tokens. We split on common boundary chars
     //    rather than using a regex to keep the wasm bundle small.
-    let tokens: Vec<&str> = lower
+    let tokens: Vec<&str> = text
         .split(|c: char| !c.is_ascii_alphanumeric())
         .filter(|t| !t.is_empty())
         .collect();
     for (code, _) in CURRENCIES {
-        let code_lower = code.to_ascii_lowercase();
-        if tokens.iter().any(|t| *t == code_lower) {
+        if tokens.iter().any(|t| t.eq_ignore_ascii_case(code)) {
             return Some((*code).to_string());
         }
     }
@@ -142,7 +139,10 @@ pub fn detect_currency_from_text(text: &str) -> Option<String> {
     }
 
     // 3) "Rs" / "Rs." prefix is a very common shorthand for INR in receipts.
-    if tokens.iter().any(|t| *t == "rs" || *t == "inr") {
+    if tokens
+        .iter()
+        .any(|t| t.eq_ignore_ascii_case("rs") || t.eq_ignore_ascii_case("inr"))
+    {
         return Some("INR".to_string());
     }
 

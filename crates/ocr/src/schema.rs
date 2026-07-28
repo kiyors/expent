@@ -68,9 +68,7 @@ fn clean_schema(mut schema: serde_json::Value) -> serde_json::Value {
                 // If the cleaned value is an object, merge our existing metadata into it
                 if let Some(cleaned_obj) = cleaned_val.as_object_mut() {
                     for (k, v) in obj.iter() {
-                        if !cleaned_obj.contains_key(k) {
-                            cleaned_obj.insert(k.clone(), v.clone());
-                        }
+                        cleaned_obj.entry(k.clone()).or_insert_with(|| v.clone());
                     }
                 }
                 return cleaned_val;

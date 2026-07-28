@@ -84,7 +84,7 @@ impl OcrService {
 
         // If only one extraction, proceed as normal
         if extractions.len() == 1 {
-            let extracted = extractions.remove(0);
+            let extracted = extractions.swap_remove(0);
             return self.format_extraction(extracted);
         }
 
@@ -102,7 +102,7 @@ impl OcrService {
 
         if generic_results.is_empty() {
             // Fallback to the first result if no generic data found (e.g. all bank statements)
-            return self.format_extraction(extractions.remove(0));
+            return self.format_extraction(extractions.swap_remove(0));
         }
 
         let merged = ops::merge::merge_ocr_results(generic_results);

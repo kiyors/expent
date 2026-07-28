@@ -70,7 +70,7 @@ STEP 3: FORMAT OUTPUT
     ) -> Result<UnifiedExtraction, anyhow::Error> {
         self.extract_batch(vec![(data.to_vec(), filename.to_string())])
             .await
-            .map(|mut v| v.remove(0))
+            .map(|mut v| v.swap_remove(0))
     }
 
     pub async fn extract_batch(

@@ -118,9 +118,9 @@ pub fn generate_dashboard_summary(
         weekly_trends_map.insert(key, (Decimal::ZERO, Decimal::ZERO));
     }
 
-    let mut cat_dist_map: HashMap<String, Decimal> = HashMap::new();
-    let mut contact_exp_map: HashMap<String, Decimal> = HashMap::new();
-    let mut contact_inc_map: HashMap<String, Decimal> = HashMap::new();
+    let mut cat_dist_map: HashMap<&str, Decimal> = HashMap::new();
+    let mut contact_exp_map: HashMap<&str, Decimal> = HashMap::new();
+    let mut contact_inc_map: HashMap<&str, Decimal> = HashMap::new();
 
     for tx in &txns {
         if tx.status.as_deref() == Some("CANCELLED") {
@@ -165,16 +165,16 @@ pub fn generate_dashboard_summary(
             if let Some(cat_id) = &tx.category_id
                 && let Some(cat_name) = cat_map.get(cat_id)
             {
-                *cat_dist_map.entry(cat_name.clone()).or_default() += amt;
+                *cat_dist_map.entry(cat_name.as_str()).or_default() += amt;
             }
             // Top expenses
             if let Some(name) = &tx.contact_name {
-                *contact_exp_map.entry(name.clone()).or_default() += amt;
+                *contact_exp_map.entry(name.as_str()).or_default() += amt;
             }
         } else if tx.direction == "IN" {
             // Top income
             if let Some(name) = &tx.contact_name {
-                *contact_inc_map.entry(name.clone()).or_default() += amt;
+                *contact_inc_map.entry(name.as_str()).or_default() += amt;
             }
         }
     }
@@ -224,20 +224,29 @@ pub fn generate_dashboard_summary(
 
     let mut category_distribution: Vec<NamedAmount> = cat_dist_map
         .into_iter()
-        .map(|(name, amount)| NamedAmount { name, amount })
+        .map(|(name, amount)| NamedAmount {
+            name: name.to_string(),
+            amount,
+        })
         .collect();
     category_distribution.sort_by_key(|b| std::cmp::Reverse(b.amount));
 
     let mut top_expenses: Vec<NamedAmount> = contact_exp_map
         .into_iter()
-        .map(|(name, amount)| NamedAmount { name, amount })
+        .map(|(name, amount)| NamedAmount {
+            name: name.to_string(),
+            amount,
+        })
         .collect();
     top_expenses.sort_by_key(|b| std::cmp::Reverse(b.amount));
     top_expenses.truncate(5);
 
     let mut top_income: Vec<NamedAmount> = contact_inc_map
         .into_iter()
-        .map(|(name, amount)| NamedAmount { name, amount })
+        .map(|(name, amount)| NamedAmount {
+            name: name.to_string(),
+            amount,
+        })
         .collect();
     top_income.sort_by_key(|b| std::cmp::Reverse(b.amount));
     top_income.truncate(5);
