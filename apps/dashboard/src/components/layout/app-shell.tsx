@@ -1,8 +1,8 @@
 import { SidebarInset, SidebarProvider } from "@expent/ui/components/sidebar";
 
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { AppNavbar } from "@/components/layout/app-navbar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { DashboardSkeleton } from "@/components/ui-elements/dashboard-skeleton";
 
 export function AppShell() {
   return (

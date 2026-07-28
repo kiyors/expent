@@ -1,7 +1,7 @@
 import type React from "react";
 
-import { FloatingPaths } from "@/components/ui-elements/floating-paths";
-import { Logo } from "@/components/ui-elements/logo";
+import { FloatingPaths } from "@/components/floating-paths";
+import { Logo } from "@/components/logo";
 
 interface AuthPageProps {
   children: React.ReactNode;

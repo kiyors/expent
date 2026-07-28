@@ -4,7 +4,7 @@ import { HotkeysProvider } from "@tanstack/react-hotkeys";
 import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
 import { useTheme } from "next-themes";
 
-import { ThemeProvider } from "@/components/ui-elements/theme-provider";
+import { ThemeProvider } from "./theme-provider";
 
 function AppToaster() {
   const { resolvedTheme } = useTheme();

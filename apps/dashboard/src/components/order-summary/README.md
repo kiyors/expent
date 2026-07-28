@@ -4,8 +4,8 @@ Implementation for the "order-summary" Tool UI surface.
 
 ## Files
 
-- public exports: components/tool-ui/order-summary/index.tsx
-- serializable schema + parse helpers: components/tool-ui/order-summary/schema.ts
+- public exports: components/order-summary/index.tsx
+- serializable schema + parse helpers: components/order-summary/schema.ts
 
 ## Companion assets
 

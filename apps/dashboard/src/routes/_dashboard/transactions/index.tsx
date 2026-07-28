@@ -50,7 +50,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
+import { ProgressTracker } from "@/components/progress-tracker";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
 import { SplitDialog } from "@/components/transactions/split-dialog";
 import { TransactionViewer } from "@/components/transactions/transaction-viewer";
@@ -58,7 +58,7 @@ import { useOcrUpload } from "@/hooks/use-ocr";
 import { useTransactionSummary, useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
 
-export const Route = createFileRoute("/_dashboard/transactions")({
+export const Route = createFileRoute("/_dashboard/transactions/")({
   component: TransactionsPage,
 });
 

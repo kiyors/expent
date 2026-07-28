@@ -4,7 +4,7 @@ import { Skeleton } from "@expent/ui/components/skeleton";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ApprovalCard } from "@/components/tool-ui/approval-card";
+import { ApprovalCard } from "@/components/approval-card";
 import { useP2P } from "@/hooks/use-p2p";
 import { api } from "@/lib/api-client";
 

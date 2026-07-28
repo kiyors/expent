@@ -1,7 +1,7 @@
 import type React from "react";
 
 import type { FormatConfig } from "@/components/data-table/formatters";
-import type { ToolUIId, ToolUIReceipt, ToolUIRole } from "@/components/tool-ui/shared/schema";
+import type { ToolUIId, ToolUIReceipt, ToolUIRole } from "@/components/shared/schema";
 
 /**
  * JSON primitive type that can be serialized.

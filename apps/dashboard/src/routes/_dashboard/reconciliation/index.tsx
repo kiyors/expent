@@ -26,7 +26,7 @@ import { useReconciliation, useRowMatches } from "@/hooks/use-reconciliation";
 import { useTransactions } from "@/hooks/use-transactions";
 import { api } from "@/lib/api-client";
 
-export const Route = createFileRoute("/_dashboard/reconciliation")({
+export const Route = createFileRoute("/_dashboard/reconciliation/")({
   component: ReconciliationPage,
 });
 

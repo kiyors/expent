@@ -34,7 +34,7 @@ import { useLocalSubscriptionDetection } from "@/hooks/use-wasm-logic";
 import { api } from "@/lib/api-client";
 import { useSession } from "@/lib/auth-client";
 
-export const Route = createFileRoute("/_dashboard/subscriptions")({
+export const Route = createFileRoute("/_dashboard/subscriptions/")({
   component: SubscriptionsComponent,
 });
 

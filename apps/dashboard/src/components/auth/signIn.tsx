@@ -8,7 +8,7 @@ import { useEffect, useState, useTransition } from "react";
 import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthShades } from "@/components/auth/auth-shades";
 import { SocialLogins } from "@/components/auth/auth-social";
-import { Logo } from "@/components/ui-elements/logo";
+import { Logo } from "@/components/logo";
 import { signIn, useSession } from "@/lib/auth-client";
 
 export function SignIn() {

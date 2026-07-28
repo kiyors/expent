@@ -27,18 +27,18 @@ import {
 } from "lucide-react";
 import { Suspense, useCallback, useMemo, useState, useTransition } from "react";
 
+import { ApprovalCard } from "@/components/approval-card";
 import { Analytics } from "@/components/dashboard/analytics";
 import { BudgetHealthWidget } from "@/components/dashboard/budget-health";
 import { CategoryChart } from "@/components/dashboard/category-chart";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { IncomeExpenseChart } from "@/components/dashboard/income-expense-chart";
 import { Overview } from "@/components/dashboard/overview";
 import { DataTable } from "@/components/data-table/data-table";
-import { ApprovalCard } from "@/components/tool-ui/approval-card";
-import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
+import { ProgressTracker } from "@/components/progress-tracker";
 import { ReviewTransactionForm } from "@/components/transactions/review-transaction-form";
 import { SplitDialog } from "@/components/transactions/split-dialog";
 import { TransactionViewer } from "@/components/transactions/transaction-viewer";
-import { DashboardSkeleton } from "@/components/ui-elements/dashboard-skeleton";
 import { useOcrUpload } from "@/hooks/use-ocr";
 import { useP2P } from "@/hooks/use-p2p";
 import { useLocalSummary, useTransactionSummary, useTransactions } from "@/hooks/use-transactions";

@@ -47,7 +47,7 @@ function getAlignmentClass(align?: "left" | "right" | "center"): string | undefi
 
 // Generic React context type for an unbounded row generic; callers re-cast via
 // `useDataTable<T>()` to recover the concrete row type at the use-site.
-const DataTableContext = React.createContext<DataTableContextValue<unknown> | undefined>(undefined);
+const DataTableContext = React.createContext<DataTableContextValue<RowData> | undefined>(undefined);
 
 export function useDataTable<T extends object = RowData>() {
   const context = React.use(DataTableContext) as DataTableContextValue<T> | undefined;
@@ -141,7 +141,11 @@ function DataTableProvider<T extends object = RowData>({
     cellRenderers,
   };
 
-  return <DataTableContext.Provider value={contextValue}>{children}</DataTableContext.Provider>;
+  return (
+    <DataTableContext.Provider value={contextValue as unknown as DataTableContextValue<RowData>}>
+      {children}
+    </DataTableContext.Provider>
+  );
 }
 
 interface DataTableLayoutProps {

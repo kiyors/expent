@@ -14,7 +14,7 @@ import { BellIcon, SearchIcon, SendIcon } from "lucide-react";
 import * as React from "react";
 
 import { CustomSidebarTrigger } from "@/components/layout/custom-sidebar-trigger";
-import { ModeToggle } from "@/components/ui-elements/mode-toggle";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const generateBreadcrumbs = (path: string) => {
   if (path === "/") return [{ label: "Overview", href: "/" }];

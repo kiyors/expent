@@ -4,8 +4,8 @@ Implementation for the "approval-card" Tool UI surface.
 
 ## Files
 
-- public exports: components/tool-ui/approval-card/index.tsx
-- serializable schema + parse helpers: components/tool-ui/approval-card/schema.ts
+- public exports: components/approval-card/index.tsx
+- serializable schema + parse helpers: components/approval-card/schema.ts
 
 ## Companion assets
 

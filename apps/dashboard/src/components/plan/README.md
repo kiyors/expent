@@ -4,8 +4,8 @@ Implementation for the "plan" Tool UI surface.
 
 ## Files
 
-- public exports: components/tool-ui/plan/index.tsx
-- serializable schema + parse helpers: components/tool-ui/plan/schema.ts
+- public exports: components/plan/index.tsx
+- serializable schema + parse helpers: components/plan/schema.ts
 
 ## Companion assets
 

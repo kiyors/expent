@@ -34,7 +34,7 @@ import {
 import * as React from "react";
 import { startTransition, useState } from "react";
 
-import { LogoIcon } from "@/components/ui-elements/logo";
+import { LogoIcon } from "@/components/logo";
 import { api } from "@/lib/api-client";
 
 export type SidebarNavItem = {

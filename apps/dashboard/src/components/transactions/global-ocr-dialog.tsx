@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CameraIcon, Loader2Icon, SparklesIcon } from "lucide-react";
 import * as React from "react";
 
-import { ProgressTracker } from "@/components/tool-ui/progress-tracker";
+import { ProgressTracker } from "@/components/progress-tracker";
 import { useOcrUpload } from "@/hooks/use-ocr";
 import { api } from "@/lib/api-client";
 

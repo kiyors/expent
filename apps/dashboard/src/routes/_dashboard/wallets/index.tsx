@@ -47,7 +47,7 @@ import * as React from "react";
 import { useTransactions } from "@/hooks/use-transactions";
 import { useWallets } from "@/hooks/use-wallets";
 
-export const Route = createFileRoute("/_dashboard/wallets")({
+export const Route = createFileRoute("/_dashboard/wallets/")({
   component: WalletsPage,
 });
 
