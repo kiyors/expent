@@ -16,6 +16,7 @@ import * as React from "react";
 
 import { useBudgets } from "@/hooks/UseBudgets";
 import { useCategories } from "@/hooks/UseCategories";
+import { useEntityForm } from "@/hooks/UseEntityForm";
 
 interface CreateBudgetDialogProps {
   open: boolean;
@@ -23,44 +24,44 @@ interface CreateBudgetDialogProps {
 }
 
 export function CreateBudgetDialog({ open, onOpenChange }: CreateBudgetDialogProps) {
-  const [categoryId, setCategoryId] = React.useState<string>("all");
-  const [amount, setAmount] = React.useState("");
-  const [period, setPeriod] = React.useState<BudgetPeriod>("MONTHLY");
-
   const { createMutation } = useBudgets();
   const { categories } = useCategories();
 
+  const form = useEntityForm<{ categoryId: string; amount: string; period: BudgetPeriod }>({
+    initialValues: { categoryId: "all", amount: "", period: "MONTHLY" },
+    validate: (values) => {
+      if (!values.amount || Number.isNaN(Number(values.amount)) || Number(values.amount) <= 0) {
+        return "Please enter a valid amount";
+      }
+      return null;
+    },
+    onSubmit: async (values) => {
+      createMutation.mutate(
+        {
+          category_id: values.categoryId === "all" ? undefined : values.categoryId,
+          amount: values.amount,
+          period: values.period,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Budget set!");
+            onOpenChange(false);
+          },
+          onError: (err) => {
+            toast.error(err.message || "Failed to set budget");
+          },
+        },
+      );
+    },
+  });
+
+  const { reset } = form;
+
   React.useEffect(() => {
     if (open) {
-      setCategoryId("all");
-      setAmount("");
-      setPeriod("MONTHLY");
+      reset();
     }
-  }, [open]);
-
-  const handleSubmit = () => {
-    if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    createMutation.mutate(
-      {
-        category_id: categoryId === "all" ? undefined : categoryId,
-        amount,
-        period,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Budget set!");
-          onOpenChange(false);
-        },
-        onError: (err) => {
-          toast.error(err.message || "Failed to set budget");
-        },
-      },
-    );
-  };
+  }, [open, reset]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,7 +74,7 @@ export function CreateBudgetDialog({ open, onOpenChange }: CreateBudgetDialogPro
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="category">Category</Label>
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v || "all")}>
+            <Select value={form.values.categoryId} onValueChange={(v) => form.handleChange("categoryId", v || "all")}>
               <SelectTrigger id="category">
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
@@ -97,15 +98,18 @@ export function CreateBudgetDialog({ open, onOpenChange }: CreateBudgetDialogPro
                 className="pl-7"
                 placeholder="0.00"
                 type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                value={form.values.amount}
+                onChange={(e) => form.handleChange("amount", e.target.value)}
               />
             </div>
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="period">Period</Label>
-            <Select value={period} onValueChange={(v) => setPeriod((v as BudgetPeriod) || "MONTHLY")}>
+            <Select
+              value={form.values.period}
+              onValueChange={(v) => form.handleChange("period", v || "MONTHLY")}
+            >
               <SelectTrigger id="period">
                 <SelectValue placeholder="Select Period" />
               </SelectTrigger>
@@ -122,7 +126,7 @@ export function CreateBudgetDialog({ open, onOpenChange }: CreateBudgetDialogPro
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={createMutation.isPending}>
+          <Button onClick={form.handleSubmit} disabled={createMutation.isPending}>
             {createMutation.isPending ? "Setting..." : "Set Budget"}
           </Button>
         </DialogFooter>

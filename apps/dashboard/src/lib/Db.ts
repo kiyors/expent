@@ -1,35 +1,65 @@
 import type { Budget, Category, Contact, PaginatedTransactions, Transaction, Wallet } from "@expent/types";
-import { BTreeIndex, createCollection, localStorageCollectionOptions } from "@tanstack/db";
+import {
+  BrowserCollectionCoordinator,
+  createBrowserWASQLitePersistence,
+  openBrowserWASQLiteOPFSDatabase,
+  persistedCollectionOptions,
+} from "@tanstack/browser-db-sqlite-persistence";
+import { BTreeIndex, createCollection } from "@tanstack/db";
 
 import { api } from "./ApiClient";
 
 // In @tanstack/db v0.6.5, we export an object with collections.
 // We use localStorageCollectionOptions to handle persistence and cross-tab sync.
 
-const walletOptions = localStorageCollectionOptions({
-  storageKey: "expent_wallets",
-  getKey: (wallet: Wallet) => wallet.id,
+// Initialize WA-SQLite persistence
+const database = await openBrowserWASQLiteOPFSDatabase({
+  databaseName: "expent_dashboard.sqlite",
 });
 
-const transactionsOptions = localStorageCollectionOptions({
-  storageKey: "expent_transactions",
+const coordinator = new BrowserCollectionCoordinator({
+  dbName: "expent_dashboard",
+});
+
+const persistence = createBrowserWASQLitePersistence({
+  database,
+  coordinator,
+});
+
+const walletOptions = persistedCollectionOptions({
+  id: "expent_wallets",
+  getKey: (wallet: Wallet) => wallet.id,
+  persistence,
+  schemaVersion: 1,
+});
+
+const transactionsOptions = persistedCollectionOptions({
+  id: "expent_transactions",
   getKey: (txn: Transaction) => txn.id,
   defaultIndexType: BTreeIndex,
+  persistence,
+  schemaVersion: 1,
 });
 
-const budgetOptions = localStorageCollectionOptions({
-  storageKey: "expent_budgets",
+const budgetOptions = persistedCollectionOptions({
+  id: "expent_budgets",
   getKey: (budget: Budget) => budget.id,
+  persistence,
+  schemaVersion: 1,
 });
 
-const categoryOptions = localStorageCollectionOptions({
-  storageKey: "expent_categories",
+const categoryOptions = persistedCollectionOptions({
+  id: "expent_categories",
   getKey: (cat: Category) => cat.id,
+  persistence,
+  schemaVersion: 1,
 });
 
-const contactOptions = localStorageCollectionOptions({
-  storageKey: "expent_contacts",
+const contactOptions = persistedCollectionOptions({
+  id: "expent_contacts",
   getKey: (contact: Contact) => contact.id,
+  persistence,
+  schemaVersion: 1,
 });
 
 export const db = {
@@ -58,7 +88,7 @@ export const db = {
       sync: (params) => {
         transactionsOptions.sync.sync(params);
         api
-          .get<PaginatedTransactions>("/api/transactions?limit=100")
+          .get<PaginatedTransactions>("/api/transactions?limit=30")
           .then((res) => {
             params.begin();
             for (const txn of res.items) {

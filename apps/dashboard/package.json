@@ -25,6 +25,7 @@
     "@hookform/resolvers": "^5.5.7",
     "@t3-oss/env-core": "^0.13.11",
     "@tailwindcss/vite": "catalog:",
+    "@tanstack/browser-db-sqlite-persistence": "^0.2.9",
     "@tanstack/db": "^0.6.17",
     "@tanstack/match-sorter-utils": "latest",
     "@tanstack/react-db": "^0.1.95",

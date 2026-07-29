@@ -8,11 +8,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@expent/ui/components/dropdown-menu";
+import { toast } from "@expent/ui/components/goey-toaster";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@expent/ui/components/sidebar";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon } from "lucide-react";
+import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
+import { useState } from "react";
 
+import { api } from "@/lib/ApiClient";
 import { signOut, useSession } from "@/lib/AuthClient";
 
 export function NavUser() {
@@ -29,6 +33,24 @@ export function NavUser() {
   const handleLogout = async () => {
     await signOut();
     window.location.href = "/sign-in";
+  };
+
+  const queryClient = useQueryClient();
+  const [isClearing, setIsClearing] = useState(false);
+  const handleClearDemoData = async () => {
+    setIsClearing(true);
+    try {
+      await api.post("/api/demo/clear", {});
+      toast.success("All demo data cleared.");
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      void queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      window.location.reload();
+    } catch {
+      toast.error("Failed to clear demo data.");
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   return (
@@ -118,6 +140,16 @@ export function NavUser() {
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleClearDemoData}
+              disabled={isClearing}
+              className="cursor-pointer"
+              variant="destructive"
+            >
+              <Trash2Icon />
+              {isClearing ? "Clearing..." : "Clear Demo Data"}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer" variant="destructive">
               <LogOutIcon />

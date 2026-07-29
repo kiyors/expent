@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // @vitest-environment jsdom
 import { toast } from "@expent/ui/components/goey-toaster";
 import { act, renderHook } from "@testing-library/react";

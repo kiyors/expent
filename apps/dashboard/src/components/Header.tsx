@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 import BetterAuthHeader from "@/components/auth/HeaderUser";
 
-import ThemeToggle from "./ThemeToggle";
+import { ModeToggle } from "./ModeToggle";
 
 export default function Header() {
   return (
@@ -99,7 +99,7 @@ export default function Header() {
           </a>
           <BetterAuthHeader />
 
-          <ThemeToggle />
+          <ModeToggle />
         </div>
       </nav>
     </header>

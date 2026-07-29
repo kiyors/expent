@@ -24,7 +24,7 @@ export function Overview() {
 
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={chartData}>
+      <BarChart data={chartData} role="img" aria-label="Monthly overview bar chart">
         <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
         <YAxis
           direction="ltr"

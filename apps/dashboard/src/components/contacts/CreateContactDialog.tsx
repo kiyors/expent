@@ -14,6 +14,7 @@ import { Label } from "@expent/ui/components/label";
 import * as React from "react";
 
 import { useContacts } from "@/hooks/UseContacts";
+import { useEntityForm } from "@/hooks/UseEntityForm";
 
 interface CreateContactDialogProps {
   open: boolean;
@@ -22,43 +23,40 @@ interface CreateContactDialogProps {
 }
 
 export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateContactDialogProps) {
-  const [name, setName] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-
   const { createMutation } = useContacts();
+
+  const form = useEntityForm({
+    initialValues: { name: "", phone: "" },
+    validate: (values) => (!values.name.trim() ? "Contact name is required" : null),
+    onSubmit: async (values) => {
+      createMutation.mutate(
+        {
+          name: values.name.trim(),
+          phone: values.phone.trim() || undefined,
+        },
+        {
+          onSuccess: (data: Contact) => {
+            toast.success("Contact created!");
+            onOpenChange(false);
+            if (onCreated && data?.id) {
+              onCreated(data.id);
+            }
+          },
+          onError: (err) => {
+            toast.error(err.message || "Failed to create contact");
+          },
+        },
+      );
+    },
+  });
+
+  const { reset } = form;
 
   React.useEffect(() => {
     if (open) {
-      setName("");
-      setPhone("");
+      reset();
     }
-  }, [open]);
-
-  const handleSubmit = () => {
-    if (!name.trim()) {
-      toast.error("Contact name is required");
-      return;
-    }
-
-    createMutation.mutate(
-      {
-        name: name.trim(),
-        phone: phone.trim() || undefined,
-      },
-      {
-        onSuccess: (data: Contact) => {
-          toast.success("Contact created!");
-          onOpenChange(false);
-          if (onCreated && data?.id) {
-            onCreated(data.id);
-          }
-        },
-        onError: (err) => {
-          toast.error(err.message || "Failed to create contact");
-        },
-      },
-    );
-  };
+  }, [open, reset]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,8 +72,8 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
             <Input
               id="contact-name"
               placeholder="e.g. John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={form.values.name}
+              onChange={(e) => form.handleChange("name", e.target.value)}
               autoComplete="off"
             />
           </div>
@@ -85,8 +83,8 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
               id="contact-phone"
               name="contact-phone"
               placeholder="+91..."
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              value={form.values.phone}
+              onChange={(e) => form.handleChange("phone", e.target.value)}
               autoComplete="tel"
             />
           </div>
@@ -96,7 +94,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!name.trim() || createMutation.isPending}>
+          <Button onClick={form.handleSubmit} disabled={!form.values.name.trim() || createMutation.isPending}>
             {createMutation.isPending ? "Adding..." : "Add Contact"}
           </Button>
         </DialogFooter>

@@ -61,22 +61,36 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
         </DialogHeader>
 
         {!processedOcr && !isUploading && (
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl p-12 transition-colors hover:border-primary/50 group cursor-pointer relative">
+          <label
+            className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl p-12 transition-colors hover:border-primary/50 group cursor-pointer relative"
+            aria-label="Upload receipt image"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const input = e.currentTarget.querySelector("input[type=file]") as HTMLInputElement;
+                if (input) input.click();
+              }
+            }}
+            tabIndex={0}
+          >
             <Input
               type="file"
               accept="image/*"
+              aria-label="Upload receipt image file"
+              title="Upload receipt image file"
               className="absolute inset-0 opacity-0 cursor-pointer z-10"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) void handleUpload(f);
               }}
+              tabIndex={-1}
             />
             <div className="bg-primary/5 size-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <CameraIcon className="size-8 text-primary" />
             </div>
             <p className="font-semibold text-foreground">Click or Drag to Upload</p>
             <p className="text-sm text-muted-foreground mt-1 text-center">Supports JPG, PNG and PDF receipts</p>
-          </div>
+          </label>
         )}
 
         {isUploading && (

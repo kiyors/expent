@@ -18,7 +18,7 @@ export function SignUp() {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { redirect?: string };
+  const search = useSearch({ strict: false });
   const redirectPath = search.redirect || "/";
   const { data: session, isPending: isSessionPending } = useSession();
   const [_isTransitionPending, startTransition] = useTransition();

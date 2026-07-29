@@ -1,6 +1,7 @@
 pub mod budgets;
 pub mod categories;
 pub mod contacts;
+pub mod demo;
 pub mod groups;
 pub mod health;
 pub mod ocr;

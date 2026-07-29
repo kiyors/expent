@@ -23,12 +23,16 @@ sea-orm.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 tracing.workspace = true
+serde_json.workspace = true
 transactions.workspace = true
 upload.workspace = true
 users.workspace = true
 wallets.workspace = true
 rayon = "1.12.0"
-
+fake = "5.1.0"
+chrono.workspace = true
+rust_decimal.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 chrono.workspace = true

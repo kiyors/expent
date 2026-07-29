@@ -74,8 +74,8 @@ export function CommandCenter() {
   }, []);
 
   // Fetch data for quick search
-  const { contacts } = useContacts();
-  const { wallets } = useWallets();
+  const { contacts } = useContacts({ enabled: open });
+  const { wallets } = useWallets({ enabled: open });
 
   // Toggle Command Palette
   useHotkey({ key: "K", mod: true }, (e) => {

@@ -8,7 +8,7 @@ import { api } from "@/lib/ApiClient";
 import { useSession } from "@/lib/AuthClient";
 import { db } from "@/lib/Db";
 
-export function useWallets() {
+export function useWallets(options?: { enabled?: boolean }) {
   const session = useSession();
 
   // Use TanStack DB for the live query
@@ -92,7 +92,7 @@ export function useWallets() {
   });
 
   return {
-    wallets: query.data as unknown as Wallet[],
+    wallets: (options?.enabled === false ? [] : query.data) as unknown as Wallet[],
     isLoading: query.isLoading,
     error: query.isError ? "Error loading wallets" : null,
     createMutation,

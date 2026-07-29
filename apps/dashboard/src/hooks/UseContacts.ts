@@ -29,7 +29,7 @@ async function assertValid(promise: Promise<unknown>): Promise<void> {
   }
 }
 
-export function useContacts() {
+export function useContacts(options?: { enabled?: boolean }) {
   const session = useSession();
 
   const query = useLiveQuery((q) => q.from({ contacts: db.contacts }), [session.data]);
@@ -104,7 +104,7 @@ export function useContacts() {
   });
 
   return {
-    contacts: query.data as unknown as Contact[],
+    contacts: (options?.enabled === false ? [] : query.data) as unknown as Contact[],
     isLoading: query.isLoading,
     error: query.isError ? "Error loading contacts" : null,
     createMutation,
@@ -125,8 +125,15 @@ export function useMergeContacts() {
 
   const mergeMutation = useMutation({
     mutationFn: (data: MergeContactsRequest) => api.post<Contact, MergeContactsRequest>("/api/contacts/merge", data),
-    onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: ["contacts"] });
+    onSuccess: async (_, variables) => {
+      try {
+        // Sync local DB
+        const primary = await api.get<ContactDetail>(`/api/contacts/${variables.primary_id}`);
+        db.contacts.update(variables.primary_id, (draft) => Object.assign(draft, primary));
+        db.contacts.delete(variables.secondary_id);
+      } catch (e) {
+        console.error("Failed to sync contacts after merge", e);
+      }
       void queryClient.invalidateQueries({ queryKey: ["contacts-suggestions"] });
       void queryClient.invalidateQueries({ queryKey: ["contact-detail", variables.primary_id] });
       toast.success("Contacts merged successfully");

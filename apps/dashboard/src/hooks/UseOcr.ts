@@ -1,7 +1,7 @@
 import type { OcrJob, OcrJobResponse, ProcessImageOcrRequest, TypedProcessedOcr } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/ApiClient";
 import { validatePdfPageCount } from "@/lib/PdfUtils";
@@ -20,13 +20,29 @@ export function useOcrUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSteps, setUploadSteps] = useState<UploadStep[]>([]);
   const [processedOcr, setProcessedOcr] = useState<TypedProcessedOcr | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
 
   const waitForJobCompletion = useCallback(async (jobId: string): Promise<TypedProcessedOcr> => {
     return new Promise((resolve, reject) => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
       const eventSource = new EventSource("/api/ocr/stream");
+      eventSourceRef.current = eventSource;
 
       const cleanup = () => {
         eventSource.close();
+        if (eventSourceRef.current === eventSource) {
+          eventSourceRef.current = null;
+        }
       };
 
       eventSource.onmessage = async (event) => {

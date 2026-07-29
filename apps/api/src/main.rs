@@ -198,6 +198,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .nest("/reconciliation", routes::reconciliation::router())
         .nest("/upload", routes::uploads::router())
         .nest("/ocr", routes::ocr::router())
+        .nest("/demo", routes::demo::router())
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::metrics::record_request,

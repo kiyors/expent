@@ -45,7 +45,7 @@ export function CategoryChart() {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
+      <PieChart role="img" aria-label="Category spending pie chart">
         <Pie
           data={data}
           cx="50%"

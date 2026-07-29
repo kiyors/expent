@@ -8,11 +8,13 @@ allowBuilds:
   sharp: true
   "@parcel/watcher": true
   "@swc/core": true
+  "@journeyapps/wa-sqlite": true
 nodeLinker: hoisted
 
 onlyBuiltDependencies:
   - esbuild
   - msw
+  - "@journeyapps/wa-sqlite"
 #patchedDependencies:
 #  mupdf: patches/mupdf.patch
 

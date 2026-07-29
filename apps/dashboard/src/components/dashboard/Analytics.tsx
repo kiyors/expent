@@ -57,7 +57,7 @@ export function Analytics() {
         </CardHeader>
         <CardContent className="px-6">
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={weeklyData}>
+            <AreaChart data={weeklyData} role="img" aria-label="Weekly trend area chart">
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />

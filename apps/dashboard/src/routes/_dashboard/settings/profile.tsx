@@ -101,19 +101,7 @@ function SettingsProfilePage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:7878";
-      const response = await fetch(`${API_BASE_URL}/api/users/avatar`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => "Upload failed");
-        throw new Error(errorText);
-      }
-
-      const result = (await response.json()) as { url: string; key: string };
+      const result = await api.post<{ url: string; key: string }>("/api/users/avatar", formData);
       dispatch({ type: "SET_FIELD", field: "avatarPreview", value: result.url });
 
       // Refetch session so the new avatar URL propagates to NavUser & everywhere else

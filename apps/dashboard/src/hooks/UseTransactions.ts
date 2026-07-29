@@ -1,6 +1,7 @@
 import type {
   DashboardSummary,
   PaginationParams,
+  PaginatedTransactions,
   Transaction,
   TransactionWithDetail,
   UpdateTransactionRequest,
@@ -8,7 +9,6 @@ import type {
 } from "@expent/types";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { useWasmWorker, validateTransactionWasm } from "@expent/wasm";
-import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useCategories } from "@/hooks/UseCategories";
@@ -21,16 +21,25 @@ export function useTransactions(params: PaginationParams = {}) {
   const session = useSession();
   const queryClient = useQueryClient();
 
-  // Use TanStack DB for the live query
-  const query = useLiveQuery(
-    (q) => {
-      let builder = q.from({ transactions: db.transactions }).orderBy(({ transactions }) => transactions.date, "desc");
-      if (params.limit) builder = builder.limit(params.limit);
-      if (params.offset) builder = builder.offset(params.offset);
-      return builder;
-    },
-    [params.limit, params.offset, session.data],
-  );
+  const query = useQuery({
+    queryKey: ["transactions", params.limit, params.offset],
+    queryFn: () =>
+      api.get<PaginatedTransactions>(`/api/transactions?limit=${params.limit || 30}&offset=${params.offset || 0}`),
+    enabled: !!session.data,
+  });
+
+  // Keep db.transactions synced with the current page for offline support/optimistic UI
+  if (query.data?.items) {
+    for (const txn of query.data.items) {
+      if (db.transactions.has(txn.id)) {
+        db.transactions.update(txn.id, (draft) => {
+          Object.assign(draft, txn);
+        });
+      } else {
+        db.transactions.insert(txn);
+      }
+    }
+  }
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateTransactionRequest }) => {
@@ -76,6 +85,7 @@ export function useTransactions(params: PaginationParams = {}) {
       db.transactions.update(id, (draft) => {
         Object.assign(draft, updatedTxn);
       });
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
       void queryClient.invalidateQueries({ queryKey: ["wallets"] });
       void queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
       toast.success("Transaction updated");
@@ -103,6 +113,7 @@ export function useTransactions(params: PaginationParams = {}) {
       toast.error(err.message);
     },
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
       void queryClient.invalidateQueries({ queryKey: ["wallets"] });
       void queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
       toast.success("Transaction deleted");
@@ -110,13 +121,10 @@ export function useTransactions(params: PaginationParams = {}) {
   });
 
   return {
-    transactions: query.data as unknown as TransactionWithDetail[],
-    // TanStack DB attaches `totalCount` to the live-query result, but it
-    // isn't part of the published react-query result type — read it through
-    // an `unknown` cast rather than a blanket `any`.
-    totalCount: (query as unknown as { totalCount?: number }).totalCount || 0,
+    transactions: (query.data?.items as unknown as TransactionWithDetail[]) || [],
+    totalCount: query.data?.total_count || 0,
     isLoading: query.isLoading,
-    isFetching: query.isLoading, // In DB mode, loading is fetching
+    isFetching: query.isFetching,
     error: query.isError ? "Error loading transactions" : null,
     updateMutation,
     deleteMutation,
@@ -149,7 +157,7 @@ export function useLocalSummary() {
   const { runTask } = useWasmWorker();
 
   const { data: localSummary, isLoading: isComputing } = useQuery({
-    queryKey: ["local-summary", transactions?.length, wallets?.length, categories?.length],
+    queryKey: ["local-summary", transactions, wallets, categories],
     queryFn: async () => {
       if (!transactions || transactions.length === 0) return null;
       return runTask<DashboardSummary>("GENERATE_SUMMARY", {

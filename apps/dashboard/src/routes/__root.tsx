@@ -1,8 +1,20 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import * as React from "react";
+
+const TanStackDevtools = import.meta.env.DEV
+  ? React.lazy(() => import("@tanstack/react-devtools").then((res) => ({ default: res.TanStackDevtools })))
+  : () => null;
+
+const TanStackRouterDevtoolsPanel = import.meta.env.DEV
+  ? React.lazy(() =>
+      import("@tanstack/react-router-devtools").then((res) => ({ default: res.TanStackRouterDevtoolsPanel })),
+    )
+  : () => null;
+
+const ReactQueryDevtoolsPanel = import.meta.env.DEV
+  ? React.lazy(() => import("@tanstack/react-query-devtools").then((res) => ({ default: res.ReactQueryDevtoolsPanel })))
+  : () => null;
 
 import { Providers } from "../providers/Providers";
 
@@ -55,21 +67,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="min-h-screen bg-background font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
         <Providers>{children}</Providers>
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "TanStack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            {
-              name: "TanStack Query",
-              render: <ReactQueryDevtoolsPanel />,
-            },
-          ]}
-        />
+        {import.meta.env.DEV && (
+          <React.Suspense fallback={null}>
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+              }}
+              plugins={[
+                {
+                  name: "TanStack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                {
+                  name: "TanStack Query",
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+              ]}
+            />
+          </React.Suspense>
+        )}
         <Scripts />
       </body>
     </html>

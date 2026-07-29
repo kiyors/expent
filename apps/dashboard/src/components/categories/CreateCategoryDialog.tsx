@@ -45,6 +45,7 @@ import {
 import * as React from "react";
 
 import { useCategories } from "@/hooks/UseCategories";
+import { useEntityForm } from "@/hooks/UseEntityForm";
 
 export const ICON_MAP: Record<string, React.ElementType> = {
   "shopping-cart": ShoppingCartIcon,
@@ -102,46 +103,41 @@ interface CreateCategoryDialogProps {
 }
 
 export function CreateCategoryDialog({ open, onOpenChange, onCreated }: CreateCategoryDialogProps) {
-  const [name, setName] = React.useState("");
-  const [selectedIcon, setSelectedIcon] = React.useState<string>("shopping-cart");
-  const [selectedColor, setSelectedColor] = React.useState<string>("#3b82f6");
-
   const { createMutation } = useCategories();
+
+  const form = useEntityForm({
+    initialValues: { name: "", selectedIcon: "shopping-cart", selectedColor: "#3b82f6" },
+    validate: (values) => (!values.name.trim() ? "Category name is required" : null),
+    onSubmit: async (values) => {
+      createMutation.mutate(
+        {
+          name: values.name.trim(),
+          icon: values.selectedIcon,
+          color: values.selectedColor,
+        },
+        {
+          onSuccess: (data: Category) => {
+            toast.success("Category created!");
+            onOpenChange(false);
+            if (onCreated && data?.id) {
+              onCreated(data.id);
+            }
+          },
+          onError: (err) => {
+            toast.error(err.message || "Failed to create category");
+          },
+        },
+      );
+    },
+  });
+
+  const { reset } = form;
 
   React.useEffect(() => {
     if (open) {
-      setName("");
-      setSelectedIcon("shopping-cart");
-      setSelectedColor("#3b82f6");
+      reset();
     }
-  }, [open]);
-
-  const handleSubmit = () => {
-    if (!name.trim()) {
-      toast.error("Category name is required");
-      return;
-    }
-
-    createMutation.mutate(
-      {
-        name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
-      },
-      {
-        onSuccess: (data: Category) => {
-          toast.success("Category created!");
-          onOpenChange(false);
-          if (onCreated && data?.id) {
-            onCreated(data.id);
-          }
-        },
-        onError: (err) => {
-          toast.error(err.message || "Failed to create category");
-        },
-      },
-    );
-  };
+  }, [open, reset]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -158,26 +154,26 @@ export function CreateCategoryDialog({ open, onOpenChange, onCreated }: CreateCa
             <Input
               id="cat-name"
               placeholder="e.g. Freelance, Pets, Gaming"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={form.values.name}
+              onChange={(e) => form.handleChange("name", e.target.value)}
               autoComplete="off"
             />
           </div>
 
           {/* Preview */}
-          {name.trim() && (
+          {form.values.name.trim() && (
             <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30">
               <div
                 className="flex size-10 items-center justify-center rounded-lg shrink-0"
-                style={{ backgroundColor: `${selectedColor}20`, color: selectedColor }}
+                style={{ backgroundColor: `${form.values.selectedColor}20`, color: form.values.selectedColor }}
               >
                 {(() => {
-                  const Icon = ICON_MAP[selectedIcon] || TagIcon;
+                  const Icon = ICON_MAP[form.values.selectedIcon] || TagIcon;
                   return <Icon className="size-5" />;
                 })()}
               </div>
               <div>
-                <p className="text-sm font-medium">{name.trim()}</p>
+                <p className="text-sm font-medium">{form.values.name.trim()}</p>
                 <p className="text-xs text-muted-foreground">Preview</p>
               </div>
             </div>
@@ -193,13 +189,13 @@ export function CreateCategoryDialog({ open, onOpenChange, onCreated }: CreateCa
                   type="button"
                   className={cn(
                     "flex size-7 cursor-pointer items-center justify-center rounded-full border-2 transition-all hover:scale-110",
-                    selectedColor === c.hex ? "border-foreground scale-110" : "border-transparent",
+                    form.values.selectedColor === c.hex ? "border-foreground scale-110" : "border-transparent",
                   )}
                   style={{ backgroundColor: c.hex }}
-                  onClick={() => setSelectedColor(c.hex)}
+                  onClick={() => form.handleChange("selectedColor", c.hex)}
                   aria-label={`Select ${c.id} color`}
                 >
-                  {selectedColor === c.hex && <CheckIcon className="size-3.5 text-white" />}
+                  {form.values.selectedColor === c.hex && <CheckIcon className="size-3.5 text-white" />}
                 </button>
               ))}
             </div>
@@ -215,11 +211,11 @@ export function CreateCategoryDialog({ open, onOpenChange, onCreated }: CreateCa
                   type="button"
                   className={cn(
                     "flex items-center justify-center rounded-md border p-2 transition-all hover:bg-muted",
-                    selectedIcon === key
+                    form.values.selectedIcon === key
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-transparent text-muted-foreground",
                   )}
-                  onClick={() => setSelectedIcon(key)}
+                  onClick={() => form.handleChange("selectedIcon", key)}
                   aria-label={`Select ${key} icon`}
                 >
                   <Icon className="size-4" />
@@ -233,7 +229,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onCreated }: CreateCa
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!name.trim() || createMutation.isPending}>
+          <Button onClick={form.handleSubmit} disabled={!form.values.name.trim() || createMutation.isPending}>
             {createMutation.isPending ? "Creating..." : "Create"}
           </Button>
         </DialogFooter>

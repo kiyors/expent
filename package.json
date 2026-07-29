@@ -31,6 +31,9 @@
     "db:seed": "uv run --with requests python scripts/seed.py",
     "skills:install": "pnpm dlx skills experimental_install"
   },
+  "dependencies": {
+    "fake": "^0.2.2"
+  },
   "devDependencies": {
     "dotenv-cli": "^11.0.0",
     "oxfmt": "catalog:",

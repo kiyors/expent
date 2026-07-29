@@ -4,6 +4,17 @@ const API_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (typeof window !== "undefined" ? "http://localhost:7878" : "http://127.0.0.1:7878");
 
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public statusText: string,
+    public body: unknown,
+  ) {
+    super(`API Error ${status}: ${statusText}`);
+    this.name = "ApiError";
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
 
@@ -21,8 +32,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Unknown error" }));
-    throw new Error(error.message || res.statusText);
+    const errorBody = await res.json().catch(() => ({ message: "Unknown error" }));
+    throw new ApiError(res.status, res.statusText, errorBody);
   }
 
   // Handle 204 No Content
@@ -36,10 +47,22 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   get: <T>(path: string, options?: RequestInit) => request<T>(path, { ...options, method: "GET" }),
   post: <T, B = unknown>(path: string, body?: B, options?: RequestInit) =>
-    request<T>(path, { ...options, method: "POST", body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      ...options,
+      method: "POST",
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+    }),
   put: <T, B = unknown>(path: string, body?: B, options?: RequestInit) =>
-    request<T>(path, { ...options, method: "PUT", body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      ...options,
+      method: "PUT",
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+    }),
   patch: <T, B = unknown>(path: string, body?: B, options?: RequestInit) =>
-    request<T>(path, { ...options, method: "PATCH", body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      ...options,
+      method: "PATCH",
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+    }),
   delete: <T>(path: string, options?: RequestInit) => request<T>(path, { ...options, method: "DELETE" }),
 };

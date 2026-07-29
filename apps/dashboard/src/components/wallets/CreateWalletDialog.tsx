@@ -14,6 +14,7 @@ import { Label } from "@expent/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
 import * as React from "react";
 
+import { useEntityForm } from "@/hooks/UseEntityForm";
 import { useWallets } from "@/hooks/UseWallets";
 
 interface CreateWalletDialogProps {
@@ -23,46 +24,41 @@ interface CreateWalletDialogProps {
 }
 
 export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWalletDialogProps) {
-  const [newName, setNewName] = React.useState("");
-  const [newType, setNewType] = React.useState<string>("CASH");
-  const [newBalance, setNewBalance] = React.useState("0");
-
   const { createMutation } = useWallets();
+
+  const form = useEntityForm({
+    initialValues: { name: "", type: "CASH", balance: "0" },
+    validate: (values) => (!values.name.trim() ? "Wallet name is required" : null),
+    onSubmit: async (values) => {
+      createMutation.mutate(
+        {
+          name: values.name.trim(),
+          type: values.type as WalletType,
+          initial_balance: values.balance,
+        },
+        {
+          onSuccess: (data: { id: string }) => {
+            toast.success("Wallet created!");
+            onOpenChange(false);
+            if (onCreated && data?.id) {
+              onCreated(data.id);
+            }
+          },
+          onError: (err: Error) => {
+            toast.error(err.message || "Failed to create wallet");
+          },
+        },
+      );
+    },
+  });
+
+  const { reset } = form;
 
   React.useEffect(() => {
     if (open) {
-      setNewName("");
-      setNewType("CASH");
-      setNewBalance("0");
+      reset();
     }
-  }, [open]);
-
-  const handleCreate = () => {
-    if (!newName.trim()) {
-      toast.error("Wallet name is required");
-      return;
-    }
-
-    createMutation.mutate(
-      {
-        name: newName.trim(),
-        type: newType as WalletType,
-        initial_balance: newBalance,
-      },
-      {
-        onSuccess: (data: { id: string }) => {
-          toast.success("Wallet created!");
-          onOpenChange(false);
-          if (onCreated && data?.id) {
-            onCreated(data.id);
-          }
-        },
-        onError: (err: Error) => {
-          toast.error(err.message || "Failed to create wallet");
-        },
-      },
-    );
-  };
+  }, [open, reset]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,8 +73,8 @@ export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWall
             <Label htmlFor="wallet-name">Wallet Name</Label>
             <Input
               id="wallet-name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              value={form.values.name}
+              onChange={(e) => form.handleChange("name", e.target.value)}
               placeholder="e.g. HDFC Bank, My Credit Card"
               autoComplete="off"
             />
@@ -87,7 +83,7 @@ export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWall
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="wallet-type">Type</Label>
-              <Select value={newType} onValueChange={(val) => setNewType(val || "CASH")}>
+              <Select value={form.values.type} onValueChange={(val) => form.handleChange("type", val || "CASH")}>
                 <SelectTrigger id="wallet-type">
                   <SelectValue />
                 </SelectTrigger>
@@ -106,8 +102,8 @@ export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWall
                 id="wallet-balance"
                 type="number"
                 step="0.01"
-                value={newBalance}
-                onChange={(e) => setNewBalance(e.target.value)}
+                value={form.values.balance}
+                onChange={(e) => form.handleChange("balance", e.target.value)}
               />
             </div>
           </div>
@@ -117,7 +113,7 @@ export function CreateWalletDialog({ open, onOpenChange, onCreated }: CreateWall
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={!newName.trim() || createMutation.isPending}>
+          <Button onClick={form.handleSubmit} disabled={!form.values.name.trim() || createMutation.isPending}>
             {createMutation.isPending ? "Creating..." : "Create Wallet"}
           </Button>
         </DialogFooter>
