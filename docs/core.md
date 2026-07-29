@@ -90,6 +90,14 @@ Located in `crates/groups` and `crates/transactions`, surfaced via the `expent_c
 - **Relational Integrity**: Transactions are linked to their originating `p2p_requests`, ensuring that settlement status is always accurately reflected across both users' ledgers.
 - **Group RBAC**: All collaborative actions are validated against the `user_groups` role system, preventing unauthorized members from modifying shared financial history.
 
+### Demo Onboarding Orchestration
+
+Located in `crates/expent_core/src/services/demo.rs`:
+
+- **Atomic Seeding**: Generates realistic mock data spanning all primary entities (3 Wallets, 8 Categories, 3 Budgets, 4 Contacts, 20 Transactions) inside a single SeaORM transaction.
+- **Atomic Teardown**: Reverts and clears all user data with relational integrity to provide users a fresh start.
+- **Metadata Flagging**: Manages the `demo_active` boolean within the `users.metadata` JSONB column to persist exploration state for the frontend.
+
 ---
 
 ## 5. Dependency Management

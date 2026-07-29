@@ -15,8 +15,7 @@ Identify and implement ONE surgical performance improvement that makes the appli
 Hunt for bottlenecks across the full stack:
 
 - **Frontend:** Missing `React.memo`/`useMemo`, N+1 render loops, heavy formatting in loops, large bundle sizes, unoptimized images.
-- **Backend (Rust/Axum):** N+1 database queries, missing indexes, synchronous I/O, expensive cloning (`.clone()`), inefficient serialization.
-- **Backend (Python/FastAPI):** Global Interpreter Lock (GIL) contention, blocking async loops, large memory allocations in OCR.
+- **Backend (Rust/Axum & OCR Worker):** N+1 database queries, missing indexes, synchronous I/O, expensive cloning (`.clone()`), inefficient serialization, large memory allocations in OCR.
 - **Database:** Unindexed joins, redundant selects, missing pagination.
 
 ### 2. Surgical Selection
@@ -30,7 +29,7 @@ Pick the **BEST** opportunity that:
 ### 3. Implementation & Verification
 
 - **Code:** Write clean, documented optimizations.
-- **Verify:** Run `pnpm fmt-all`, `pnpm test`, `cargo test`, and `uv run pytest`.
+- **Verify:** Run `pnpm fmt-all`, `pnpm test`, and `cargo test`.
 - **Measure:** Document expected impact (e.g., "Reduces time-to-interactive by 200ms").
 
 ---
@@ -51,11 +50,11 @@ Pick the **BEST** opportunity that:
 - Avoid object literals/arrow functions in props to prevent prop-drilling re-renders.
 - Prefer virtualization for lists > 100 items.
 
-### Python (Async-Optimized)
+### Rust Background Workers (OCR)
 
-- Ensure all I/O is awaited.
-- Use `ProcessPoolExecutor` for CPU-bound OCR tasks.
-- Audit `uv` dependencies for lightweight alternatives.
+- Ensure all I/O is async and non-blocking.
+- Use `tokio::spawn` and `TaskTracker` for safe concurrency.
+- Audit dependencies for lightweight, zero-copy parsing alternatives.
 
 ---
 

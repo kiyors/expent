@@ -172,3 +172,23 @@ Powered by `better-auth` re-exports.
 - `POST /api/auth/sign-up/email`
 - `GET /api/auth/get-session`
 - `POST /api/auth/sign-out`
+
+---
+
+## 9. Demo Data
+
+Managed by **`expent_core::services::demo`**.
+
+### `GET /api/demo/status`
+
+- **Purpose**: Check if the user is currently exploring with demo data.
+- **Response**: `{ "active": boolean }`.
+
+### `POST /api/demo/seed`
+
+- **Purpose**: Provisions realistic mock data (Wallets, Categories, Budgets, Contacts, and Transactions) for new users to explore the dashboard.
+- **Logic**: Operates within a single database transaction. Sets the `demo_active: true` flag in the user's metadata.
+
+### `POST /api/demo/clear`
+
+- **Purpose**: Instantly wipes all user data (transactions, wallets, categories, etc.) to provide a clean slate. Unsets the `demo_active` flag.

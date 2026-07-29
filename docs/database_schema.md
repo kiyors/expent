@@ -109,6 +109,7 @@ Shared enums are stored as `String(20)` in the database and serialized as `SCREA
 - **Purpose**: Identity representation managed by `better-auth` via `crates/auth`.
 - **UI Context**: Profile, Side Nav, Settings.
 - **Service Hub**: Managed by `expent_core::services::users`.
+- **State Flagging**: Stores arbitrary JSON configuration in the `metadata` column (e.g., `{"demo_active": true}` for the Onboarding system).
 
 ### `accounts`, `sessions`, `verifications`
 

@@ -7,11 +7,11 @@ Expent is an intelligent expense management platform. It leverages OCR for recei
 ### Tech Stack
 
 - **Backend (Rust):** Axum for the API layer (`apps/api`), with all business logic centralized in the "Bank Brain" hub (`crates/expent_core`).
-- **Frontend (Web):** Next.js App Router (`apps/dashboard`) using TanStack Query and Zustand.
-- **Mobile:** Expo/React Native (`apps/app`).
-- **OCR Engine (Python):** FastAPI (`apps/ocr`) using Gemini 2.5 Flash and EasyOCR.
+- **Frontend (Web):** TanStack Start / React Router (`apps/dashboard`) using TanStack Query, Vite, and Zustand.
+
+- **OCR Engine (Rust):** Native background worker (`crates/ocr`) using Gemini 2.5 Flash for deterministic JSON extraction.
 - **Database:** PostgreSQL managed via `sea-orm`.
-- **Infrastructure:** Monorepo managed with `pnpm` (JS/TS), `cargo` (Rust), and `uv` (Python).
+- **Infrastructure:** Monorepo managed with `pnpm` (JS/TS) and `cargo` (Rust).
 
 ---
 
@@ -84,7 +84,6 @@ Before submitting any code, run the relevant verification commands:
 | **Dashboard**   | `cd apps/dashboard && pnpm tsc && pnpm vitest run` |
 | **Rust Core**   | `cargo test -p expent_core`                        |
 | **Rust API**    | `cargo check -p api`                               |
-| **Python OCR**  | `uv run pytest apps/ocr/`                          |
 
 ### TDD (Test Driven Development)
 

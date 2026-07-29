@@ -1,13 +1,13 @@
 # Expent
 
-Expent is an intelligent expense management platform built with Rust, TypeScript, and Python. It features OCR-based receipt ingestion, automated subscription detection, and shared ledgers for group expense tracking.
+Expent is an intelligent expense management platform built with Rust and TypeScript. It features OCR-based receipt ingestion, automated subscription detection, and shared ledgers for group expense tracking.
 
 ## Architecture
 
 - **`apps/api` (Rust/Axum):** Lean entry point and HTTP routing layer.
 - **`crates/expent_core` (Rust):** The centralized logic hub ("Bank Brain") orchestrating database, auth, storage, and OCR services.
-- **`apps/dashboard` (Next.js):** Modern React dashboard using TanStack Query and Zustand.
-- **`apps/ocr` (Python/FastAPI):** OCR processing engine using Gemini 2.5 Flash and EasyOCR.
+- **`apps/dashboard` (TanStack Start / React Router):** Modern React dashboard using TanStack Query, Vite, and Zustand.
+- **`crates/ocr` (Rust):** Native background worker processing pipeline leveraging Gemini 2.5 Flash for deterministic JSON extraction.
 - **`packages/ui`:** Shared component library built with Tailwind CSS and Shadcn.
 - **`packages/types`:** Shared TypeScript types automatically generated from Rust models via `ts-rs`.
 
@@ -15,7 +15,6 @@ Expent is an intelligent expense management platform built with Rust, TypeScript
 
 - **Node.js:** v24 or higher (pnpm recommended)
 - **Rust:** Latest stable version
-- **Python:** v3.13 or higher (using `uv` for dependency management)
 - **Database:** PostgreSQL (recommended)
 - **Storage:** Cloudflare R2 or S3-compatible storage
 
@@ -25,7 +24,6 @@ Expent is an intelligent expense management platform built with Rust, TypeScript
 2. **Install dependencies:**
    ```bash
    pnpm install
-   uv sync
    ```
 3. **Configure environment variables:**
    Copy `.env.example` to `.env` in the root and fill in your credentials.
@@ -50,6 +48,8 @@ Expent is an intelligent expense management platform built with Rust, TypeScript
 - **Smart Merge**: Automatically deduplicates transactions by matching OCR results with existing bank records.
 - **Itemized Splits**: Automatically parse receipt line items and split them across shared ledgers.
 - **Subscription Engine**: Detects recurring payment patterns and alerts users of upcoming renewals.
+- **Local-First Speed**: Instant dashboard rendering powered by OPFS and `wa-sqlite` caching on the frontend.
+- **One-Click Demo Data**: Instantly provision a realistic mock environment (wallets, budgets, and transactions) to test drive the platform without manual data entry.
 - **Group Ledgers**: Collaborative spaces for tracking expenses with friends and family.
 
 ## Environment Variables
@@ -65,10 +65,4 @@ Expent is an intelligent expense management platform built with Rust, TypeScript
 | `GOOGLE_API_KEY`       | Google Gemini API Key for OCR                      |
 | `GEMINI_MODEL`         | Gemini model version (e.g. `gemini-2.0-flash-exp`) |
 
-<!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-
-<!-- END:nextjs-agent-rules -->
