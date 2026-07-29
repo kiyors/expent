@@ -64,7 +64,7 @@ impl MigrationTrait for Migration {
             r#"
             DROP TRIGGER IF EXISTS trigger_notify_background_job ON background_jobs;
             DROP FUNCTION IF EXISTS notify_background_job();
-            
+
             DROP TRIGGER IF EXISTS trigger_notify_ocr_job ON ocr_jobs;
             DROP FUNCTION IF EXISTS notify_ocr_job();
             "#,

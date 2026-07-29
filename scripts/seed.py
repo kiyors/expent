@@ -96,7 +96,7 @@ def seed_db():
             try:
                 c.execute(
                     """
-                    INSERT INTO wallets (id, user_id, name, type, balance, created_at, updated_at) 
+                    INSERT INTO wallets (id, user_id, name, type, balance, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                     w,
