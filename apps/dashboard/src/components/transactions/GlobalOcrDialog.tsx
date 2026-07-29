@@ -61,6 +61,7 @@ export function GlobalOCRDialog({ open, onOpenChange }: { open: boolean; onOpenC
         </DialogHeader>
 
         {!processedOcr && !isUploading && (
+          /* oxlint-disable jsx-a11y/label-has-associated-control, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */
           <label
             className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl p-12 transition-colors hover:border-primary/50 group cursor-pointer relative"
             aria-label="Upload receipt image"

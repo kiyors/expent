@@ -33,7 +33,7 @@ The codebase is logically split in the `src/` directory to handle complex React 
 
 ### `src/hooks/` & `src/lib/`
 
-- **Hooks**: 
+- **Hooks**:
   - `UseEntityForm.ts`: A unified, generic hook powering all creation and edit modals safely without boilerplate `useState` replication.
   - `UseTransactions.ts`: Handles data fetching and interfaces with the OPFS WA-SQLite database for sub-millisecond local reads.
   - `UseDemoData.ts`: Manages seamless backend seeding and clearing for new user onboarding.
@@ -65,6 +65,7 @@ The secure boundary wrapped in a global `route.tsx`, forcing authentication chec
   - **User Controls**: Profile management and theme preferences.
 
 ### 2. Public Routes
+
 - **`/sign-in`** & **`/sign-up`**
 
 ---

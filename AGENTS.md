@@ -87,7 +87,6 @@ When generating code or reviewing PRs, you must actively apply the loaded skills
 - **Data Fetching:** Use TanStack Query (via loaders and hooks).
 - **Styling:** Tailwind CSS v4 in Vite setup.
 
-
 ### 4. Frontend UI/UX Design
 
 - **Components:** Build accessible interfaces using `shadcn` patterns.

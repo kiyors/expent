@@ -106,10 +106,7 @@ export function CreateBudgetDialog({ open, onOpenChange }: CreateBudgetDialogPro
 
           <div className="grid gap-2">
             <Label htmlFor="period">Period</Label>
-            <Select
-              value={form.values.period}
-              onValueChange={(v) => form.handleChange("period", v || "MONTHLY")}
-            >
+            <Select value={form.values.period} onValueChange={(v) => form.handleChange("period", v || "MONTHLY")}>
               <SelectTrigger id="period">
                 <SelectValue placeholder="Select Period" />
               </SelectTrigger>

@@ -45,6 +45,7 @@ export function CategoryChart() {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
+      {/* oxlint-disable jsx-a11y/prefer-tag-over-role */}
       <PieChart role="img" aria-label="Category spending pie chart">
         <Pie
           data={data}

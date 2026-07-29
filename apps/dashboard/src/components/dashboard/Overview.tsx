@@ -24,6 +24,7 @@ export function Overview() {
 
   return (
     <ResponsiveContainer width="100%" height={350}>
+      {/* oxlint-disable jsx-a11y/prefer-tag-over-role */}
       <BarChart data={chartData} role="img" aria-label="Monthly overview bar chart">
         <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
         <YAxis

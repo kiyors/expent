@@ -1,5 +1,6 @@
 import { Button } from "@expent/ui/components/button";
 import { SparklesIcon, Trash2Icon } from "lucide-react";
+
 import { useDemoData } from "@/hooks/UseDemoData";
 
 export function DemoBanner() {
@@ -14,14 +15,14 @@ export function DemoBanner() {
         <span className="hidden sm:inline">You are currently exploring Expent with Demo Data.</span>
         <span className="sm:hidden">Demo Data Active</span>
       </div>
-      <Button 
-        variant="destructive" 
-        size="sm" 
-        className="h-7 text-xs" 
+      <Button
+        variant="destructive"
+        size="sm"
+        className="h-7 text-xs"
         onClick={() => {
-            if (confirm("Are you sure you want to clear all demo data? This will give you a completely fresh start.")) {
-                clearMutation.mutate();
-            }
+          if (confirm("Are you sure you want to clear all demo data? This will give you a completely fresh start.")) {
+            clearMutation.mutate();
+          }
         }}
         disabled={clearMutation.isPending}
       >

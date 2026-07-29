@@ -1,7 +1,8 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@expent/ui/components/dialog";
 import { Button } from "@expent/ui/components/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@expent/ui/components/dialog";
 import { SparklesIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
+
 import { useDemoData } from "@/hooks/UseDemoData";
 import { useTransactionSummary } from "@/hooks/UseTransactions";
 
@@ -33,9 +34,12 @@ export function WelcomeDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => {
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
         if (!val) handleDecline();
-    }}>
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -48,8 +52,8 @@ export function WelcomeDialog() {
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
           <p className="text-sm text-muted-foreground">
-            We will generate realistic wallets, budgets, categories, and transactions so you can see how everything works. 
-            You can clear this data at any time with a single click.
+            We will generate realistic wallets, budgets, categories, and transactions so you can see how everything
+            works. You can clear this data at any time with a single click.
           </p>
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" onClick={handleDecline} disabled={seedMutation.isPending}>
@@ -76,14 +80,14 @@ export function DemoBanner() {
         <SparklesIcon className="size-4 animate-pulse" />
         You are currently exploring Expent with Demo Data.
       </div>
-      <Button 
-        variant="destructive" 
-        size="sm" 
-        className="h-7 text-xs" 
+      <Button
+        variant="destructive"
+        size="sm"
+        className="h-7 text-xs"
         onClick={() => {
-            if (confirm("Are you sure you want to clear all demo data? This will give you a completely fresh start.")) {
-                clearMutation.mutate();
-            }
+          if (confirm("Are you sure you want to clear all demo data? This will give you a completely fresh start.")) {
+            clearMutation.mutate();
+          }
         }}
         disabled={clearMutation.isPending}
       >

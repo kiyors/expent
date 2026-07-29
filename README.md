@@ -64,5 +64,3 @@ Expent is an intelligent expense management platform built with Rust and TypeScr
 | `S3_BUCKET_NAME`       | Name of the bucket for uploads                     |
 | `GOOGLE_API_KEY`       | Google Gemini API Key for OCR                      |
 | `GEMINI_MODEL`         | Gemini model version (e.g. `gemini-2.0-flash-exp`) |
-
-

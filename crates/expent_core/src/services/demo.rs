@@ -7,6 +7,10 @@ use rust_decimal::Decimal;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, TransactionTrait};
 use std::str::FromStr;
 
+/// Gets the demo status for the user.
+///
+/// # Errors
+/// Returns an error if the database query fails.
 pub async fn get_demo_status(
     core: &Core,
     user_id: &str,
@@ -27,6 +31,14 @@ pub async fn get_demo_status(
     Ok(false)
 }
 
+/// Seeds demo data for the user.
+///
+/// # Errors
+/// Returns an error if any database operation fails.
+///
+/// # Panics
+/// Panics if the hardcoded decimal strings fail to parse.
+#[allow(clippy::too_many_lines)]
 pub async fn seed_demo_data(
     core: &Core,
     user_id: &str,
@@ -90,7 +102,6 @@ pub async fn seed_demo_data(
             name: Set(name.to_string()),
             icon: Set(Some("tag".to_string())),
             color: Set(Some("#3b82f6".to_string())),
-            ..Default::default()
         };
         inserted_categories.push(cat.id.as_ref().clone());
         category_models.push(cat);
@@ -118,7 +129,6 @@ pub async fn seed_demo_data(
             period: Set(BudgetPeriod::Monthly),
             created_at: Set(now_naive),
             updated_at: Set(now_naive),
-            ..Default::default()
         });
     }
     budgets::Entity::insert_many(budget_models)
@@ -140,7 +150,6 @@ pub async fn seed_demo_data(
         link_models.push(contact_links::ActiveModel {
             user_id: Set(user_id.to_string()),
             contact_id: Set(c_id),
-            ..Default::default()
         });
     }
     contacts::Entity::insert_many(contact_models)
@@ -162,7 +171,7 @@ pub async fn seed_demo_data(
         };
 
         let cat_idx = i % inserted_categories.len();
-        let wallet_idx = i % wallet_ids.len();
+        let w_index = i % wallet_ids.len();
 
         let mut txn_model = transactions::ActiveModel {
             id: Set(uuid::Uuid::now_v7().to_string()),
@@ -182,9 +191,9 @@ pub async fn seed_demo_data(
         };
 
         if is_income {
-            txn_model.destination_wallet_id = Set(Some(wallet_ids[wallet_idx].clone()));
+            txn_model.destination_wallet_id = Set(Some(wallet_ids[w_index].clone()));
         } else {
-            txn_model.source_wallet_id = Set(Some(wallet_ids[wallet_idx].clone()));
+            txn_model.source_wallet_id = Set(Some(wallet_ids[w_index].clone()));
         }
 
         txns.push(txn_model);
@@ -214,6 +223,10 @@ pub async fn seed_demo_data(
     Ok(())
 }
 
+/// Clears the demo data for the user.
+///
+/// # Errors
+/// Returns an error if any database operation fails.
 pub async fn clear_demo_data(
     core: &Core,
     user_id: &str,
