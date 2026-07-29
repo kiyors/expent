@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { toast } from "@expent/ui/components/goey-toaster";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,26 +21,41 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-vi.mock("@/lib/api-client", () => ({
+vi.mock("@/lib/ApiClient", () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
   },
 }));
 
-// Mock mupdf
-vi.mock("mupdf", () => ({
-  Document: {
-    openDocument: vi.fn(),
-  },
+// Mock pdfjs-dist
+vi.mock("pdfjs-dist", () => ({
+  getDocument: vi.fn(),
+  GlobalWorkerOptions: { workerSrc: "" },
 }));
 
+// Shape of the SSE payload the shared MockEventSource fires; declared here
 // Shape of the SSE payload the shared MockEventSource fires; declared here
 // so tests can populate `globalThis.__MOCK_SSE_PAYLOAD__` without `as any`.
 declare global {
   // eslint-disable-next-line no-var
   var __MOCK_SSE_PAYLOAD__: Record<string, unknown> | undefined;
 }
+
+class MockEventSource {
+  onmessage: ((event: any) => void) | null = null;
+  onerror: ((event: any) => void) | null = null;
+  close = vi.fn();
+
+  constructor() {
+    setTimeout(() => {
+      if (this.onmessage && globalThis.__MOCK_SSE_PAYLOAD__) {
+        this.onmessage({ data: JSON.stringify(globalThis.__MOCK_SSE_PAYLOAD__) });
+      }
+    }, 0);
+  }
+}
+globalThis.EventSource = MockEventSource as any;
 
 // Helper to create a mock File
 const createMockFile = (name: string, type: string) => {
@@ -64,10 +80,10 @@ describe("useOcrUpload", () => {
   it("should block PDF upload if it has more than 5 pages", async () => {
     const mockFile = createMockFile("large.pdf", "application/pdf");
 
-    const mupdf = await import("mupdf");
-    vi.mocked(mupdf.Document.openDocument).mockReturnValue({
-      countPages: () => 10,
-    } as unknown as ReturnType<typeof mupdf.Document.openDocument>);
+    const pdfjsLib = await import("pdfjs-dist");
+    vi.mocked(pdfjsLib.getDocument).mockReturnValue({
+      promise: Promise.resolve({ numPages: 10 }),
+    } as any);
 
     const { result } = renderHook(() => useOcrUpload());
 
@@ -83,11 +99,10 @@ describe("useOcrUpload", () => {
   it("should allow PDF upload if it has 5 or fewer pages", async () => {
     const mockFile = createMockFile("small.pdf", "application/pdf");
 
-    // Mock mupdf to return 3 pages
-    const mupdf = await import("mupdf");
-    vi.mocked(mupdf.Document.openDocument).mockReturnValue({
-      countPages: () => 3,
-    } as unknown as ReturnType<typeof mupdf.Document.openDocument>);
+    const pdfjsLib = await import("pdfjs-dist");
+    vi.mocked(pdfjsLib.getDocument).mockReturnValue({
+      promise: Promise.resolve({ numPages: 3 }),
+    } as any);
 
     // Mock successful upload and process
     vi.mocked(global.fetch).mockResolvedValue({

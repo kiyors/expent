@@ -5,11 +5,11 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import wasm from "vite-plugin-wasm";
 
-import { mockNodeBuiltins, requestLogger } from "./plugins";
+import { requestLogger } from "./plugins";
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact(), wasm(), requestLogger(), mockNodeBuiltins()],
+  plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact(), wasm(), requestLogger()],
   worker: {
     format: "es",
     plugins: () => [wasm()],

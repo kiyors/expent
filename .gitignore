@@ -33,6 +33,7 @@ dist
 .nitro
 .tanstack
 .vinxi
+build
 
 # Debug
 pnpm-debug.log*

@@ -1,7 +1,7 @@
 import { toast } from "@expent/ui/components/goey-toaster";
 
 /**
- * Validates a PDF file's page count using WebAssembly (mupdf).
+ * Validates a PDF file's page count using Mozilla's pdfjs-dist.
  * Returns true if valid, false if invalid (or if validation should be skipped).
  * @param file The PDF file to validate
  * @param maxPages Maximum allowed pages
@@ -10,10 +10,14 @@ export async function validatePdfPageCount(file: File, maxPages: number = 5): Pr
   if (file.type !== "application/pdf") return true;
 
   try {
-    const mupdf = await import("mupdf");
+    const pdfjsLib = await import("pdfjs-dist");
+
+    // Configure worker for Vite
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.mjs", import.meta.url).toString();
+
     const pdfData = await file.arrayBuffer();
-    const doc = mupdf.Document.openDocument(pdfData, "application/pdf");
-    const numPages = doc.countPages();
+    const doc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+    const numPages = doc.numPages;
 
     if (numPages > maxPages) {
       toast.error(`PDF too long (${numPages} pages). Max ${maxPages} pages allowed for OCR.`);
@@ -21,8 +25,8 @@ export async function validatePdfPageCount(file: File, maxPages: number = 5): Pr
     }
     return true;
   } catch (err) {
-    console.warn("WASM PDF validation skipped:", err);
-    // Return true to avoid blocking users if WASM fails to load or run
+    console.warn("PDF validation skipped:", err);
+    // Return true to avoid blocking users if parsing fails
     return true;
   }
 }
