@@ -1,6 +1,6 @@
-import { Button } from "@expent/ui/components/button";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@expent/ui/components/input-group";
+import { Button } from "@tameio/ui/components/button";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@tameio/ui/components/input-group";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon, Loader2Icon, UserIcon } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";

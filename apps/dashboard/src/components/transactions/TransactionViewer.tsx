@@ -1,6 +1,6 @@
-import type { Category, TransactionStatus, TransactionWithDetail, UpdateTransactionRequest } from "@expent/types";
-import { Badge } from "@expent/ui/components/badge";
-import { Button } from "@expent/ui/components/button";
+import type { Category, TransactionStatus, TransactionWithDetail, UpdateTransactionRequest } from "@tameio/types";
+import { Badge } from "@tameio/ui/components/badge";
+import { Button } from "@tameio/ui/components/button";
 import {
   Drawer,
   DrawerClose,
@@ -10,12 +10,12 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@expent/ui/components/drawer";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
-import { Separator } from "@expent/ui/components/separator";
-import { useIsMobile } from "@expent/ui/hooks/use-mobile";
+} from "@tameio/ui/components/drawer";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
+import { Separator } from "@tameio/ui/components/separator";
+import { useIsMobile } from "@tameio/ui/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { UserIcon, WalletIcon } from "lucide-react";
 import * as React from "react";

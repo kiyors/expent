@@ -1,5 +1,5 @@
-import type { DetectedSubscription } from "@expent/types";
-import { useWasmWorker } from "@expent/wasm";
+import type { DetectedSubscription } from "@tameio/types";
+import { useWasmWorker } from "@tameio/wasm";
 import { useQuery } from "@tanstack/react-query";
 
 import { useTransactions } from "@/hooks/UseTransactions";

@@ -1,4 +1,4 @@
-import { SidebarInset, SidebarProvider } from "@expent/ui/components/sidebar";
+import { SidebarInset, SidebarProvider } from "@tameio/ui/components/sidebar";
 
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { AppNavbar } from "@/components/layout/AppNavbar";

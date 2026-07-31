@@ -1,4 +1,4 @@
-import { cn } from "@expent/ui/lib/utils";
+import { cn } from "@tameio/ui/lib/utils";
 
 function AspectRatio({ ratio, className, ...props }: React.ComponentProps<"div"> & { ratio: number }) {
   return (

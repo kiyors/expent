@@ -1,16 +1,16 @@
-# Expent Core Hub (`crates/expent_core`)
+# Tameio Core Hub (`crates/tameio_core`)
 
-This document defines the architecture and implementation patterns of the **Expent Core Hub**. As the "Brain" of the ecosystem, this crate orchestrates cross-crate services and ensures financial integrity.
+This document defines the architecture and implementation patterns of the **Tameio Core Hub**. As the "Brain" of the ecosystem, this crate orchestrates cross-crate services and ensures financial integrity.
 
-> **Status — target vs. current.** This document describes the **target** architecture, where business logic is consolidated under `expent_core/src/services/`. **Currently**, that logic lives in the domain crates (`crates/wallets`, `crates/transactions`, `crates/budgets`, `crates/subscriptions`, `crates/groups`, `crates/ocr`, …) and is surfaced through the `expent_core` facade as `expent_core::<domain>` (e.g. `expent_core::budgets`, `expent_core::ocr`). Where this doc says `expent_core::services::<x>` or `src/services/`, read it as the goal; the working path today is `expent_core::<x>`.
+> **Status — target vs. current.** This document describes the **target** architecture, where business logic is consolidated under `tameio_core/src/services/`. **Currently**, that logic lives in the domain crates (`crates/wallets`, `crates/transactions`, `crates/budgets`, `crates/subscriptions`, `crates/groups`, `crates/ocr`, …) and is surfaced through the `tameio_core` facade as `tameio_core::<domain>` (e.g. `tameio_core::budgets`, `tameio_core::ocr`). Where this doc says `tameio_core::services::<x>` or `src/services/`, read it as the goal; the working path today is `tameio_core::<x>`.
 
 ## 1. Architectural Role
 
-`expent_core` sits between the raw data layer (`crates/db`) and the interface layer (`apps/api`).
+`tameio_core` sits between the raw data layer (`crates/db`) and the interface layer (`apps/api`).
 
 - **Logic Isolation**: No business rules (e.g., "how much a wallet balance should change") exist in the DB or API layers. They reside in the domain crates and are orchestrated/exposed here (target: consolidated under `src/services/`).
 - **Service Orchestration**: It manages the lifecycle of the Database connection, Authentication adapter, S3/R2 storage clients, and the OCR microservice.
-- **Unified Interface**: It re-exports essential types and crates so that the `api` app only needs to depend on `expent_core` to function.
+- **Unified Interface**: It re-exports essential types and crates so that the `api` app only needs to depend on `tameio_core` to function.
 
 ---
 
@@ -36,7 +36,7 @@ This single call:
 
 ## 3. Service Structure (The "Granular" Rule)
 
-Following strict maintainability standards, logic is broken down into small, specialized files. _Target:_ under `expent_core/src/services/`. _Current:_ within the corresponding domain crate (e.g. `crates/transactions/src/`).
+Following strict maintainability standards, logic is broken down into small, specialized files. _Target:_ under `tameio_core/src/services/`. _Current:_ within the corresponding domain crate (e.g. `crates/transactions/src/`).
 
 ### Example: transactions (`crates/transactions/src/`; target `services/transactions/`)
 
@@ -59,7 +59,7 @@ Every ledger entry must be reflected in a physical wallet balance.
 
 ### Budget Health Calculation
 
-Located in `crates/budgets`, surfaced via `expent_core::budgets` (target: `expent_core::services::budgets`):
+Located in `crates/budgets`, surfaced via `tameio_core::budgets` (target: `tameio_core::services::budgets`):
 
 - **Real-time Tracking**: Aggregates all `OUT` transactions within a specific `BudgetPeriod` (Weekly, Monthly, Yearly).
 - **Category Granularity**: Supports both category-specific limits and "All Categories" global limits.
@@ -84,7 +84,7 @@ The core doesn't just "read text"; it orchestrates a pipeline natively in Rust (
 
 ### P2P Mirroring & State Machine
 
-Located in `crates/groups` and `crates/transactions`, surfaced via the `expent_core` facade (target: `expent_core::services::p2p`):
+Located in `crates/groups` and `crates/transactions`, surfaced via the `tameio_core` facade (target: `tameio_core::services::p2p`):
 
 - **Mirrored Entries**: When a user accepts a P2P request, the core automatically generates an identical transaction for the recipient (with inverse direction).
 - **Relational Integrity**: Transactions are linked to their originating `p2p_requests`, ensuring that settlement status is always accurately reflected across both users' ledgers.
@@ -92,7 +92,7 @@ Located in `crates/groups` and `crates/transactions`, surfaced via the `expent_c
 
 ### Demo Onboarding Orchestration
 
-Located in `crates/expent_core/src/services/demo.rs`:
+Located in `crates/tameio_core/src/services/demo.rs`:
 
 - **Atomic Seeding**: Generates realistic mock data spanning all primary entities (3 Wallets, 8 Categories, 3 Budgets, 4 Contacts, 20 Transactions) inside a single SeaORM transaction.
 - **Atomic Teardown**: Reverts and clears all user data with relational integrity to provide users a fresh start.
@@ -102,12 +102,12 @@ Located in `crates/expent_core/src/services/demo.rs`:
 
 ## 5. Dependency Management
 
-To simplify the workspace, `expent_core` re-exports common crates:
+To simplify the workspace, `tameio_core` re-exports common crates:
 
-- `expent_core::sea_orm`
-- `expent_core::better_auth`
-- `expent_core::auth`
-- `expent_core::upload`
-- `expent_core::budgets`
+- `tameio_core::sea_orm`
+- `tameio_core::better_auth`
+- `tameio_core::auth`
+- `tameio_core::upload`
+- `tameio_core::budgets`
 
-This allows the `api` routes to use `expent_core` as a single source of truth for types and traits.
+This allows the `api` routes to use `tameio_core` as a single source of truth for types and traits.

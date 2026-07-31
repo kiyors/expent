@@ -1,4 +1,4 @@
-export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@expent/ui/components/accordion";
-export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
-export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@expent/ui/components/collapsible";
-export { cn } from "@expent/ui/lib/utils";
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@tameio/ui/components/accordion";
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@tameio/ui/components/card";
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@tameio/ui/components/collapsible";
+export { cn } from "@tameio/ui/lib/utils";

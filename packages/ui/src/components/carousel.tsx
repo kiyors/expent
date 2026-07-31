@@ -1,5 +1,5 @@
-import { Button } from "@expent/ui/components/button";
-import { cn } from "@expent/ui/lib/utils";
+import { Button } from "@tameio/ui/components/button";
+import { cn } from "@tameio/ui/lib/utils";
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";

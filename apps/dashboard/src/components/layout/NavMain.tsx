@@ -1,4 +1,4 @@
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@expent/ui/components/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@tameio/ui/components/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -9,7 +9,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@expent/ui/components/sidebar";
+} from "@tameio/ui/components/sidebar";
 import { Link } from "@tanstack/react-router";
 import { ChevronRightIcon } from "lucide-react";
 

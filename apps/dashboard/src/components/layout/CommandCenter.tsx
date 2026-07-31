@@ -7,8 +7,8 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@expent/ui/components/command";
-import { cn } from "@expent/ui/lib/utils";
+} from "@tameio/ui/components/command";
+import { cn } from "@tameio/ui/lib/utils";
 import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
 import { useNavigate } from "@tanstack/react-router";
 import {

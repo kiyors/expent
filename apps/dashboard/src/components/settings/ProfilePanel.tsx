@@ -1,11 +1,11 @@
-import type { User } from "@expent/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@expent/ui/components/avatar";
-import { Badge } from "@expent/ui/components/badge";
-import { Button } from "@expent/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
+import type { User } from "@tameio/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@tameio/ui/components/avatar";
+import { Badge } from "@tameio/ui/components/badge";
+import { Button } from "@tameio/ui/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@tameio/ui/components/card";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, Loader2Icon, UploadIcon, UserIcon } from "lucide-react";
 import * as React from "react";
@@ -48,7 +48,7 @@ export function ProfilePanel({ user }: { user: User }) {
       const { key } = await uploadRes.json();
 
       // Update profile with new image key/url
-      const bucketName = "expent-uploads"; // Should match backend
+      const bucketName = "tameio-uploads"; // Should match backend
       const imageUrl = `https://${bucketName}.r2.cloudflarestorage.com/${key}`;
 
       await updateMutation.mutateAsync({ image: imageUrl });

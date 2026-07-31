@@ -1,7 +1,7 @@
-import type { LedgerTab } from "@expent/types";
-import { Badge } from "@expent/ui/components/badge";
-import { Button } from "@expent/ui/components/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
+import type { LedgerTab } from "@tameio/types";
+import { Badge } from "@tameio/ui/components/badge";
+import { Button } from "@tameio/ui/components/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@tameio/ui/components/card";
 import {
   Dialog,
   DialogContent,
@@ -10,10 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@expent/ui/components/dialog";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+} from "@tameio/ui/components/dialog";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowDownLeftIcon,

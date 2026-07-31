@@ -1,5 +1,5 @@
 [package]
-name = "expent_core"
+name = "tameio_core"
 version.workspace = true
 edition.workspace = true
 

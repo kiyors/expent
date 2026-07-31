@@ -1,4 +1,4 @@
-import { Separator } from "@expent/ui/components/separator";
+import { Separator } from "@tameio/ui/components/separator";
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { BellIcon, MonitorIcon, PaletteIcon, TagIcon, UserCogIcon, WrenchIcon } from "lucide-react";
 

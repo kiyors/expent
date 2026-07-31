@@ -4,7 +4,7 @@ import type React from "react";
 
 export const LogoIcon = ({ className, style, ...props }: React.ComponentProps<"span">) => (
   <span
-    aria-label="Expent Icon"
+    aria-label="Tameio Icon"
     role="img"
     className={className}
     style={{
@@ -26,7 +26,7 @@ export const LogoIcon = ({ className, style, ...props }: React.ComponentProps<"s
 
 export const Logo = ({ className, style, ...props }: React.ComponentProps<"span">) => (
   <span
-    aria-label="Expent Logo"
+    aria-label="Tameio Logo"
     role="img"
     className={className}
     style={{

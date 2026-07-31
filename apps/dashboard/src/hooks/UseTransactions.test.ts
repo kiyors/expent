@@ -1,4 +1,4 @@
-import { toast } from "@expent/ui/components/goey-toaster";
+import { toast } from "@tameio/ui/components/goey-toaster";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -51,10 +51,10 @@ vi.mock("@tanstack/react-db", () => ({
   useLiveQuery: vi.fn(() => ({ data: [], isLoading: false })),
 }));
 
-// @expent/wasm dynamically imports the .wasm binary, which jsdom can't
+// @tameio/wasm dynamically imports the .wasm binary, which jsdom can't
 // instantiate. Stub the surface the hook actually uses with always-valid
 // responses so the production code path runs end-to-end.
-vi.mock("@expent/wasm", () => ({
+vi.mock("@tameio/wasm", () => ({
   validateTransactionWasm: vi.fn(async () => ({ is_valid: true, errors: [] })),
   aggregateTransactionsWasm: vi.fn(async () => ({})),
   generateDashboardSummaryWasm: vi.fn(async () => ({})),

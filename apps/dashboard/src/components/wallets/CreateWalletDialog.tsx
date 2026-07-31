@@ -1,5 +1,5 @@
-import type { WalletType } from "@expent/types";
-import { Button } from "@expent/ui/components/button";
+import type { WalletType } from "@tameio/types";
+import { Button } from "@tameio/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -7,11 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@expent/ui/components/dialog";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
+} from "@tameio/ui/components/dialog";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
 import * as React from "react";
 
 import { useEntityForm } from "@/hooks/UseEntityForm";

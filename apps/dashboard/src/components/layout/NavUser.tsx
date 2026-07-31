@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@expent/ui/components/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@tameio/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,9 +7,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@expent/ui/components/dropdown-menu";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@expent/ui/components/sidebar";
+} from "@tameio/ui/components/dropdown-menu";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@tameio/ui/components/sidebar";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { BellIcon, LogOutIcon, MoreVerticalIcon, SettingsIcon, UserCogIcon, Trash2Icon } from "lucide-react";

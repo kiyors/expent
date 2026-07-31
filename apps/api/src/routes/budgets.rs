@@ -4,7 +4,7 @@ use axum::{
     routing::{get, patch},
 };
 use db::dto::{CreateBudgetRequest, UpdateBudgetRequest};
-use expent_core::auth::AuthSession;
+use tameio_core::auth::AuthSession;
 
 use crate::AppState;
 use crate::extractors::ValidatedJson;
@@ -72,7 +72,7 @@ async fn delete_budget_handler(
 async fn get_budgets_health_handler(
     State(state): State<AppState>,
     session: AuthSession,
-) -> Result<Json<Vec<expent_core::budgets::BudgetHealth>>, ApiError> {
+) -> Result<Json<Vec<tameio_core::budgets::BudgetHealth>>, ApiError> {
     let health = state
         .core
         .budgets

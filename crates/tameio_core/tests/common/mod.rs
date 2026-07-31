@@ -1,4 +1,4 @@
-use expent_core::{Core, CoreConfig};
+use tameio_core::{Core, CoreConfig};
 use migration::{Migrator, MigratorTrait};
 
 pub async fn setup_test_core() -> Core {

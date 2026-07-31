@@ -5,10 +5,10 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@expent/ui/components/breadcrumb";
-import { Button } from "@expent/ui/components/button";
-import { Separator } from "@expent/ui/components/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@expent/ui/components/tooltip";
+} from "@tameio/ui/components/breadcrumb";
+import { Button } from "@tameio/ui/components/button";
+import { Separator } from "@tameio/ui/components/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tameio/ui/components/tooltip";
 import { Link, useLocation } from "@tanstack/react-router";
 import { BellIcon, SearchIcon, SendIcon } from "lucide-react";
 import * as React from "react";

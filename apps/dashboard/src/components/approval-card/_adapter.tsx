@@ -1,2 +1,2 @@
-export { Separator } from "@expent/ui/components/separator";
-export { cn } from "@expent/ui/lib/utils";
+export { Separator } from "@tameio/ui/components/separator";
+export { cn } from "@tameio/ui/lib/utils";

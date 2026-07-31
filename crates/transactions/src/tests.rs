@@ -13,7 +13,7 @@ async fn setup_test_db() -> DatabaseConnection {
     let now = chrono::Utc::now().into();
     let system_user = entities::users::ActiveModel {
         id: Set("system".to_string()),
-        email: Set("system@expent.app".to_string()),
+        email: Set("system@tameio.app".to_string()),
         name: Set("System".to_string()),
         created_at: Set(now),
         updated_at: Set(now),

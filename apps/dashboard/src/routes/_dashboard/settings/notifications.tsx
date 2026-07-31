@@ -1,8 +1,8 @@
-import { Button } from "@expent/ui/components/button";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Label } from "@expent/ui/components/label";
-import { Separator } from "@expent/ui/components/separator";
-import { Switch } from "@expent/ui/components/switch";
+import { Button } from "@tameio/ui/components/button";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Label } from "@tameio/ui/components/label";
+import { Separator } from "@tameio/ui/components/separator";
+import { Switch } from "@tameio/ui/components/switch";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard/settings/notifications")({

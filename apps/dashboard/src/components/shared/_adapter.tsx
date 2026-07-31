@@ -1,2 +1,2 @@
-export { Button } from "@expent/ui/components/button";
-export { cn } from "@expent/ui/lib/utils";
+export { Button } from "@tameio/ui/components/button";
+export { cn } from "@tameio/ui/lib/utils";

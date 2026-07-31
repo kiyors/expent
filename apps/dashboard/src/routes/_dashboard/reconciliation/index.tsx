@@ -1,12 +1,12 @@
-import type { BankStatementRow, TypedProcessedOcr } from "@expent/types";
-import { Badge } from "@expent/ui/components/badge";
-import { Button } from "@expent/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Progress } from "@expent/ui/components/Progress";
-import { matchStatementBatchWasm } from "@expent/wasm";
+import type { BankStatementRow, TypedProcessedOcr } from "@tameio/types";
+import { Badge } from "@tameio/ui/components/badge";
+import { Button } from "@tameio/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@tameio/ui/components/card";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Progress } from "@tameio/ui/components/Progress";
+import { matchStatementBatchWasm } from "@tameio/wasm";
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -195,7 +195,7 @@ function ReconciliationPage() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold">0</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">No transaction found in Expent</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">No transaction found in Tameio</p>
                 </CardContent>
               </Card>
             </div>

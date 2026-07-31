@@ -44,7 +44,7 @@ pnpm-debug.log*
 .content-collections
 .DS_Store
 *.pem
-expent.db
+tameio.db
 
 # MemPalace per-project files (issue #185)
 mempalace.yaml

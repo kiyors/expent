@@ -1,7 +1,7 @@
-import type { Group, TransactionWithDetail } from "@expent/types";
-import { Badge } from "@expent/ui/components/badge";
-import { Button } from "@expent/ui/components/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@expent/ui/components/card";
+import type { Group, TransactionWithDetail } from "@tameio/types";
+import { Badge } from "@tameio/ui/components/badge";
+import { Button } from "@tameio/ui/components/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@tameio/ui/components/card";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@expent/ui/components/dialog";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@expent/ui/components/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@expent/ui/components/tooltip";
+} from "@tameio/ui/components/dialog";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tameio/ui/components/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tameio/ui/components/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronRightIcon, InfoIcon, PlusIcon, ReceiptIcon, Trash2Icon, UserPlusIcon, UsersIcon } from "lucide-react";

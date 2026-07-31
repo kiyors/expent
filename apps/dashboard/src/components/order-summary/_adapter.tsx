@@ -1,4 +1,4 @@
-export { Button } from "@expent/ui/components/button";
-export { Separator } from "@expent/ui/components/separator";
-export { Skeleton } from "@expent/ui/components/skeleton";
-export { cn } from "@expent/ui/lib/utils";
+export { Button } from "@tameio/ui/components/button";
+export { Separator } from "@tameio/ui/components/separator";
+export { Skeleton } from "@tameio/ui/components/skeleton";
+export { cn } from "@tameio/ui/lib/utils";

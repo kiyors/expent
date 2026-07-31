@@ -1,5 +1,5 @@
-import { Button } from "@expent/ui/components/button";
-import { cn } from "@expent/ui/lib/utils";
+import { Button } from "@tameio/ui/components/button";
+import { cn } from "@tameio/ui/lib/utils";
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import type * as React from "react";
 

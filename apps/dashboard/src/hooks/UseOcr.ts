@@ -1,5 +1,5 @@
-import type { OcrJob, OcrJobResponse, ProcessImageOcrRequest, TypedProcessedOcr } from "@expent/types";
-import { toast } from "@expent/ui/components/goey-toaster";
+import type { OcrJob, OcrJobResponse, ProcessImageOcrRequest, TypedProcessedOcr } from "@tameio/types";
+import { toast } from "@tameio/ui/components/goey-toaster";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 

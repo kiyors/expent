@@ -1,4 +1,4 @@
-import { cn } from "@expent/ui/lib/utils";
+import { cn } from "@tameio/ui/lib/utils";
 
 function Kbd({ className, ...props }: React.ComponentProps<"kbd">) {
   return (

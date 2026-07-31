@@ -1,4 +1,4 @@
-import type { Category, CreateCategoryRequest } from "@expent/types";
+import type { Category, CreateCategoryRequest } from "@tameio/types";
 import { useLiveQuery } from "@tanstack/react-db";
 import { useMutation } from "@tanstack/react-query";
 

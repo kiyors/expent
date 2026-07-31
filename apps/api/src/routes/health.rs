@@ -34,7 +34,7 @@ struct ProbeCheck {
 /// respond; otherwise 503 with a per-check breakdown so the operator can see
 /// which dependency is down.
 pub async fn ready_handler(State(state): State<AppState>) -> impl IntoResponse {
-    use expent_core::sea_orm::ConnectionTrait;
+    use tameio_core::sea_orm::ConnectionTrait;
 
     // DB: cheapest possible round-trip; `SELECT 1` against the configured
     // backend. SeaORM's `ping` would also work but goes through the connection
@@ -43,7 +43,7 @@ pub async fn ready_handler(State(state): State<AppState>) -> impl IntoResponse {
     let db_check = state
         .core
         .db
-        .execute(expent_core::sea_orm::Statement::from_string(
+        .execute(tameio_core::sea_orm::Statement::from_string(
             db_backend,
             "SELECT 1".to_string(),
         ))

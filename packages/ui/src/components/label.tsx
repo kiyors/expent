@@ -1,4 +1,4 @@
-import { cn } from "@expent/ui/lib/utils";
+import { cn } from "@tameio/ui/lib/utils";
 import type * as React from "react";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {

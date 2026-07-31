@@ -1,5 +1,5 @@
-import type { Category } from "@expent/types";
-import { Button } from "@expent/ui/components/button";
+import type { Category } from "@tameio/types";
+import { Button } from "@tameio/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -7,11 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@expent/ui/components/dialog";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { cn } from "@expent/ui/lib/utils";
+} from "@tameio/ui/components/dialog";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { cn } from "@tameio/ui/lib/utils";
 import {
   ActivityIcon,
   BabyIcon,

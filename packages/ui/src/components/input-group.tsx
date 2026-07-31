@@ -1,7 +1,7 @@
-import { Button } from "@expent/ui/components/button";
-import { Input } from "@expent/ui/components/input";
-import { Textarea } from "@expent/ui/components/textarea";
-import { cn } from "@expent/ui/lib/utils";
+import { Button } from "@tameio/ui/components/button";
+import { Input } from "@tameio/ui/components/input";
+import { Textarea } from "@tameio/ui/components/textarea";
+import { cn } from "@tameio/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 

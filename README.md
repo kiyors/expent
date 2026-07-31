@@ -1,11 +1,13 @@
-# Expent
+# Tameio (ταμείο)
 
-Expent is an intelligent expense management platform built with Rust and TypeScript. It features OCR-based receipt ingestion, automated subscription detection, and shared ledgers for group expense tracking.
+**Tameio (ταμείο)**: Derived from ancient Greek, it means the place where money is kept, counted, and exchanged. It acts as both a "till" for your everyday receipts and a "treasury" for shared funds and subscriptions.
+
+Tameio is an intelligent expense management platform built with Rust and TypeScript. It features OCR-based receipt ingestion, automated subscription detection, and shared ledgers for group expense tracking.
 
 ## Architecture
 
 - **`apps/api` (Rust/Axum):** Lean entry point and HTTP routing layer.
-- **`crates/expent_core` (Rust):** The centralized logic hub ("Bank Brain") orchestrating database, auth, storage, and OCR services.
+- **`crates/tameio_core` (Rust):** The centralized logic hub ("Bank Brain") orchestrating database, auth, storage, and OCR services.
 - **`apps/dashboard` (TanStack Start / React Router):** Modern React dashboard using TanStack Query, Vite, and Zustand.
 - **`crates/ocr` (Rust):** Native background worker processing pipeline leveraging Gemini 2.5 Flash for deterministic JSON extraction.
 - **`packages/ui`:** Shared component library built with Tailwind CSS and Shadcn.
@@ -44,7 +46,7 @@ Expent is an intelligent expense management platform built with Rust and TypeScr
 
 ## Key Features
 
-- **Centralized Core**: All business logic is strictly decoupled from the API and DB layers within `expent_core`.
+- **Centralized Core**: All business logic is strictly decoupled from the API and DB layers within `tameio_core`.
 - **Smart Merge**: Automatically deduplicates transactions by matching OCR results with existing bank records.
 - **Itemized Splits**: Automatically parse receipt line items and split them across shared ledgers.
 - **Subscription Engine**: Detects recurring payment patterns and alerts users of upcoming renewals.

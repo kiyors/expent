@@ -4,9 +4,9 @@ use axum::{
     http::{HeaderValue, Method},
     routing::get,
 };
-pub use expent_core::auth::AuthSession;
-use expent_core::better_auth::AxumIntegration;
-use expent_core::{Core, CoreConfig, sea_orm::DatabaseConnection};
+pub use tameio_core::auth::AuthSession;
+use tameio_core::better_auth::AxumIntegration;
+use tameio_core::{Core, CoreConfig, sea_orm::DatabaseConnection};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
@@ -42,7 +42,7 @@ impl FromRef<AppState> for Arc<DatabaseConnection> {
 }
 
 impl FromRef<AppState>
-    for Arc<expent_core::better_auth::BetterAuth<expent_core::auth::adapter::PostgresAdapter>>
+    for Arc<tameio_core::better_auth::BetterAuth<tameio_core::auth::adapter::PostgresAdapter>>
 {
     fn from_ref(state: &AppState) -> Self {
         state.core.auth.clone()

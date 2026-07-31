@@ -1,5 +1,5 @@
 {
-  "name": "@expent/dashboard",
+  "name": "@tameio/dashboard",
   "private": true,
   "type": "module",
   "imports": {
@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
-    "prebuild": "pnpm --filter @expent/wasm build",
+    "prebuild": "pnpm --filter @tameio/wasm build",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",
@@ -18,9 +18,9 @@
   },
   "dependencies": {
     "@better-auth/passkey": "^1.6.25",
-    "@expent/types": "workspace:*",
-    "@expent/ui": "workspace:*",
-    "@expent/wasm": "workspace:*",
+    "@tameio/types": "workspace:*",
+    "@tameio/ui": "workspace:*",
+    "@tameio/wasm": "workspace:*",
     "@faker-js/faker": "^10.5.0",
     "@hookform/resolvers": "^5.5.7",
     "@t3-oss/env-core": "^0.13.11",

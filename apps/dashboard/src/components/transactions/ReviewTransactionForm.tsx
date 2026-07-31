@@ -1,11 +1,11 @@
-import type { BankTransaction, TypedProcessedOcr } from "@expent/types";
-import { Button } from "@expent/ui/components/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@expent/ui/components/card";
-import { Checkbox } from "@expent/ui/components/checkbox";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
-import { cn } from "@expent/ui/lib/utils";
+import type { BankTransaction, TypedProcessedOcr } from "@tameio/types";
+import { Button } from "@tameio/ui/components/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@tameio/ui/components/card";
+import { Checkbox } from "@tameio/ui/components/checkbox";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
+import { cn } from "@tameio/ui/lib/utils";
 import { CheckIcon, FilterIcon, ReceiptIcon, Trash2Icon, UserIcon, WalletIcon } from "lucide-react";
 import * as React from "react";
 

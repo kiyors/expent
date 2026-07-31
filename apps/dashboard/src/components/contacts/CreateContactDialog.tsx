@@ -1,5 +1,5 @@
-import type { Contact } from "@expent/types";
-import { Button } from "@expent/ui/components/button";
+import type { Contact } from "@tameio/types";
+import { Button } from "@tameio/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@expent/ui/components/dialog";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
+} from "@tameio/ui/components/dialog";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
 import * as React from "react";
 
 import { useContacts } from "@/hooks/UseContacts";

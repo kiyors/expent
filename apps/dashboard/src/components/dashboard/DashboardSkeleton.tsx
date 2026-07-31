@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@expent/ui/components/card";
-import { Skeleton } from "@expent/ui/components/skeleton";
+import { Card, CardContent, CardHeader } from "@tameio/ui/components/card";
+import { Skeleton } from "@tameio/ui/components/skeleton";
 
 export function StatsCardSkeleton() {
   return (

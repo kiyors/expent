@@ -200,7 +200,6 @@ dependencies = [
  "dashmap",
  "db",
  "dotenvy",
- "expent_core",
  "futures",
  "governor",
  "jobs",
@@ -211,6 +210,7 @@ dependencies = [
  "rust_decimal",
  "serde",
  "serde_json",
+ "tameio_core",
  "thiserror 2.0.18",
  "tokio",
  "tokio-util",
@@ -2348,44 +2348,6 @@ checksum = "8be9f3dfaaffdae2972880079a491a1a8bb7cbed0b8dd7a347f668b4150a3b93"
 dependencies = [
  "event-listener 5.4.1",
  "pin-project-lite",
-]
-
-[[package]]
-name = "expent_core"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "auth",
- "aws-config",
- "aws-sdk-s3",
- "better-auth",
- "budgets",
- "categories",
- "chrono",
- "contacts",
- "db",
- "env_logger",
- "fake",
- "groups",
- "jobs",
- "migration",
- "ocr",
- "rayon",
- "reconciliation",
- "rstest",
- "rust_decimal",
- "sea-orm",
- "serde_json",
- "subscriptions",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-test",
- "transactions",
- "upload",
- "users",
- "uuid",
- "wallets",
 ]
 
 [[package]]
@@ -6384,6 +6346,44 @@ name = "tagptr"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b2093cf4c8eb1e67749a6762251bc9cd836b6fc171623bd0a9d324d37af2417"
+
+[[package]]
+name = "tameio_core"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "auth",
+ "aws-config",
+ "aws-sdk-s3",
+ "better-auth",
+ "budgets",
+ "categories",
+ "chrono",
+ "contacts",
+ "db",
+ "env_logger",
+ "fake",
+ "groups",
+ "jobs",
+ "migration",
+ "ocr",
+ "rayon",
+ "reconciliation",
+ "rstest",
+ "rust_decimal",
+ "sea-orm",
+ "serde_json",
+ "subscriptions",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-test",
+ "transactions",
+ "upload",
+ "users",
+ "uuid",
+ "wallets",
+]
 
 [[package]]
 name = "tap"

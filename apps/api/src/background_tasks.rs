@@ -1,7 +1,7 @@
 use ::anyhow::Result;
 use ::async_trait::async_trait;
 use ::jobs::{Handler, Job};
-use expent_core::Core;
+use tameio_core::Core;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 

@@ -7,7 +7,7 @@ use db::dto::{
     BulkConfirmOcrRequest, ConfirmOcrRequest, OcrJobResponse, ProcessImageOcrRequest,
     ResolveContactRequest,
 };
-use expent_core::ocr;
+use tameio_core::ocr;
 use futures::stream::Stream;
 use std::convert::Infallible;
 use std::sync::Arc;

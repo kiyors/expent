@@ -1,7 +1,7 @@
-import type { TypedProcessedOcr } from "@expent/types";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@expent/ui/components/dialog";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
+import type { TypedProcessedOcr } from "@tameio/types";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@tameio/ui/components/dialog";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
 import { useQueryClient } from "@tanstack/react-query";
 import { CameraIcon, Loader2Icon, SparklesIcon } from "lucide-react";
 import * as React from "react";

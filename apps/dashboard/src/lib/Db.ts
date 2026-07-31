@@ -1,4 +1,4 @@
-import type { Budget, Category, Contact, PaginatedTransactions, Transaction, Wallet } from "@expent/types";
+import type { Budget, Category, Contact, PaginatedTransactions, Transaction, Wallet } from "@tameio/types";
 import {
   BrowserCollectionCoordinator,
   createBrowserWASQLitePersistence,
@@ -14,11 +14,11 @@ import { api } from "./ApiClient";
 
 // Initialize WA-SQLite persistence
 const database = await openBrowserWASQLiteOPFSDatabase({
-  databaseName: "expent_dashboard.sqlite",
+  databaseName: "tameio_dashboard.sqlite",
 });
 
 const coordinator = new BrowserCollectionCoordinator({
-  dbName: "expent_dashboard",
+  dbName: "tameio_dashboard",
 });
 
 const persistence = createBrowserWASQLitePersistence({
@@ -27,14 +27,14 @@ const persistence = createBrowserWASQLitePersistence({
 });
 
 const walletOptions = persistedCollectionOptions({
-  id: "expent_wallets",
+  id: "tameio_wallets",
   getKey: (wallet: Wallet) => wallet.id,
   persistence,
   schemaVersion: 1,
 });
 
 const transactionsOptions = persistedCollectionOptions({
-  id: "expent_transactions",
+  id: "tameio_transactions",
   getKey: (txn: Transaction) => txn.id,
   defaultIndexType: BTreeIndex,
   persistence,
@@ -42,21 +42,21 @@ const transactionsOptions = persistedCollectionOptions({
 });
 
 const budgetOptions = persistedCollectionOptions({
-  id: "expent_budgets",
+  id: "tameio_budgets",
   getKey: (budget: Budget) => budget.id,
   persistence,
   schemaVersion: 1,
 });
 
 const categoryOptions = persistedCollectionOptions({
-  id: "expent_categories",
+  id: "tameio_categories",
   getKey: (cat: Category) => cat.id,
   persistence,
   schemaVersion: 1,
 });
 
 const contactOptions = persistedCollectionOptions({
-  id: "expent_contacts",
+  id: "tameio_contacts",
   getKey: (contact: Contact) => contact.id,
   persistence,
   schemaVersion: 1,

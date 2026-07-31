@@ -1,4 +1,4 @@
-use expent_core::{Core, CoreConfig};
+use tameio_core::{Core, CoreConfig};
 use rstest::*;
 use std::sync::Arc;
 use tracing_test::traced_test;

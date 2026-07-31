@@ -1,8 +1,8 @@
-import type { OcrTransactionResponse, TransactionWithDetail, TypedProcessedOcr } from "@expent/types";
-import { Badge } from "@expent/ui/components/badge";
-import { Button } from "@expent/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@expent/ui/components/card";
-import { Checkbox } from "@expent/ui/components/checkbox";
+import type { OcrTransactionResponse, TransactionWithDetail, TypedProcessedOcr } from "@tameio/types";
+import { Badge } from "@tameio/ui/components/badge";
+import { Button } from "@tameio/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@tameio/ui/components/card";
+import { Checkbox } from "@tameio/ui/components/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,14 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@expent/ui/components/dropdown-menu";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Input } from "@expent/ui/components/input";
-import { Label } from "@expent/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@expent/ui/components/select";
-import { Skeleton } from "@expent/ui/components/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@expent/ui/components/table";
-import { Tabs, TabsList, TabsTrigger } from "@expent/ui/components/tabs";
+} from "@tameio/ui/components/dropdown-menu";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Input } from "@tameio/ui/components/input";
+import { Label } from "@tameio/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
+import { Skeleton } from "@tameio/ui/components/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@tameio/ui/components/table";
+import { Tabs, TabsList, TabsTrigger } from "@tameio/ui/components/tabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState } from "@tanstack/react-table";

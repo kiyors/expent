@@ -1,6 +1,6 @@
-import type { P2pRequestWithSender } from "@expent/types";
-import { toast } from "@expent/ui/components/goey-toaster";
-import { Skeleton } from "@expent/ui/components/skeleton";
+import type { P2pRequestWithSender } from "@tameio/types";
+import { toast } from "@tameio/ui/components/goey-toaster";
+import { Skeleton } from "@tameio/ui/components/skeleton";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
