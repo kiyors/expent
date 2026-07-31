@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@tameio/ui/components/button";
 import {
   Dialog,
@@ -11,7 +12,6 @@ import { toast } from "@tameio/ui/components/goey-toaster";
 import { Input } from "@tameio/ui/components/input";
 import { Label } from "@tameio/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@tameio/ui/components/select";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InfoIcon, PlusIcon, TagIcon, WalletIcon } from "lucide-react";
 import { m } from "motion/react";

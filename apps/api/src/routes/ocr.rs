@@ -7,10 +7,10 @@ use db::dto::{
     BulkConfirmOcrRequest, ConfirmOcrRequest, OcrJobResponse, ProcessImageOcrRequest,
     ResolveContactRequest,
 };
-use tameio_core::ocr;
 use futures::stream::Stream;
 use std::convert::Infallible;
 use std::sync::Arc;
+use tameio_core::ocr;
 
 use crate::middleware::error::ApiError;
 use crate::{AppState, AuthSession};
