@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "dotenv -- turbo dev",
     "build": "dotenv -- turbo build",
+    "dev:web": "turbo --filter @tameio/web dev",
+    "dev:build": "turbo --filter @tameio/web build",
     "dev:api": "dotenv -- turbo dev --filter @tameio/api",
     "build:api": "dotenv -- turbo build --filter @tameio/api",
     "dev:dashboard": "dotenv -- turbo dev --filter @tameio/dashboard",

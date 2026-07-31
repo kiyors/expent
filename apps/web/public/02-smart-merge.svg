@@ -1,0 +1,11 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Smart Merge</title>
+  <desc id="desc">Two transaction streams reconcile into one verified record.</desc>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 31h15c14 0 11 19 26 19h21" stroke-width="6"/>
+    <path d="M19 69h15c14 0 11-19 26-19" stroke-width="6"/>
+  </g>
+  <circle cx="19" cy="31" r="5" fill="currentColor"/>
+  <circle cx="19" cy="69" r="5" fill="currentColor"/>
+  <rect x="74" y="43" width="12" height="14" rx="6" fill="currentColor"/>
+</svg>

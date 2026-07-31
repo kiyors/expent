@@ -1,0 +1,12 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Tally Matrix</title>
+  <desc id="desc">Rounded ledger cells form a compact tau monogram.</desc>
+  <g fill="currentColor">
+    <rect x="20" y="24" width="18" height="12" rx="6"/>
+    <rect x="41" y="24" width="18" height="12" rx="6"/>
+    <rect x="62" y="24" width="18" height="12" rx="6"/>
+    <rect x="44" y="41" width="12" height="16" rx="6"/>
+    <rect x="44" y="60" width="12" height="16" rx="6"/>
+    <circle cx="70" cy="66" r="4" opacity=".42"/>
+  </g>
+</svg>

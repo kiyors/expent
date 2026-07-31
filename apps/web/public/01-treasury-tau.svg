@@ -1,0 +1,9 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Treasury Tau</title>
+  <desc id="desc">A Greek tau held inside a rounded treasury arch.</desc>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 77V49c0-18 12.8-32 29-32s29 14 29 32v28" stroke-width="7"/>
+    <path d="M28 79h44" stroke-width="7"/>
+    <path d="M35 42h30M50 43v25" stroke-width="8"/>
+  </g>
+</svg>

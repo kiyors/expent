@@ -183,6 +183,12 @@
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
       "computedHash": "66e8a50c83c3c724fcfe0769701b665c56cec220cc4f49cc1aee8bdfc07de94a"
     },
+    "logo-generator": {
+      "source": "op7418/logo-generator-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "d949329c11df3efa25bc1cc387c92fc8b86077883fcd737803675e42e2da75eb"
+    },
     "loop-me": {
       "source": "kiyors/skills",
       "sourceType": "github",

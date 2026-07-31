@@ -1,0 +1,9 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Local Orbit</title>
+  <desc id="desc">Fast local data orbits a stable financial core.</desc>
+  <g fill="none" stroke="currentColor" stroke-linecap="round">
+    <path d="M50 17a33 33 0 0 1 29 17M79 66a33 33 0 0 1-29 17M21 66a33 33 0 0 1 0-32" stroke-width="5"/>
+    <path d="M50 31a19 19 0 0 1 16 9M66 60a19 19 0 0 1-16 9M34 60a19 19 0 0 1 0-20" stroke-width="4"/>
+  </g>
+  <rect x="43" y="43" width="14" height="14" rx="4" fill="currentColor"/>
+</svg>

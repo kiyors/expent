@@ -1,0 +1,11 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Shared Settlement</title>
+  <desc id="desc">Three participants settle through one balanced shared ledger.</desc>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 43c8 0 11 8 18 8s10-16 19-16 10 8 19 8" stroke-width="4"/>
+    <path d="M31 63c12 12 26 12 38 0" stroke-width="6"/>
+  </g>
+  <circle cx="22" cy="43" r="6" fill="currentColor"/>
+  <circle cx="59" cy="35" r="6" fill="currentColor"/>
+  <circle cx="78" cy="43" r="6" fill="currentColor"/>
+</svg>

@@ -1,0 +1,33 @@
+{
+  "name": "@tameio/web",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "oxlint -c ../../.oxlintrc.json --type-aware --type-check . && oxfmt --check",
+    "lint": "oxlint -c ../../.oxlintrc.json --type-aware --fix .",
+    "fmt": "oxfmt",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.2.1",
+    "@fontsource-variable/geist": "^5.3.0",
+    "astro": "^7.1.6",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "catalog:"
+  }
+}
