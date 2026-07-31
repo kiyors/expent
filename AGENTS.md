@@ -113,3 +113,17 @@ When generating code or reviewing PRs, you must actively apply the loaded skills
 1. **Refactoring:** Consider UI/UX, database transaction safety, and Rust compiler guarantees first.
 2. **Code Style:** Keep functions pure, use declarative patterns, prioritize readability.
 3. **Documentation:** Comment on complex server-side logic, OCR processing steps, and Rust trait implementations.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs for this repo live as GitHub issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Uses the default five canonical triage roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Multi-context layout (a root `CONTEXT-MAP.md` pointing to per-context `CONTEXT.md` files). See `docs/agents/domain.md`.
