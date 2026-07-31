@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expent Architecture Map</title>
+<style>
+:root {
+  --bg:       #0F0F0F;
+  --panel:    #161616;
+  --panel-2:  #1c1c1c;
+  --border:   #2a2a2a;
+  --text:     #e8e8e8;
+  --muted:    #8a8a8a;
+  --client:   #4ea1ff;
+  --route:    #7bd389;
+  --service:  #c792ea;
+  --db:       #ffb86b;
+  --external: #ff6b9d;
+  --critical: #ff3860;
+  --accent:   #f5b942;
+  --accent-2: #ff7a45;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+#controls {
+  position: fixed; top: 0; left: 0; right: 320px;
+  z-index: 100; padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+#controls .chip {
+  padding: 5px 14px; border-radius: 16px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 12px;
+  transition: all 0.15s;
+  user-select: none;
+}
+#controls .chip:hover { border-color: var(--accent); color: var(--text); }
+#controls .chip.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+#controls .zoom-btn {
+  width: 30px; height: 30px; border-radius: 6px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  color: var(--text); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin-left: auto;
+}
+#controls .zoom-btn:first-of-type { margin-left: auto; }
+#controls .zoom-btn:hover { border-color: var(--accent); }
+#canvas-wrap {
+  position: fixed; top: 0; left: 0; right: 320px; bottom: 0;
+  overflow: hidden; cursor: grab;
+}
+#canvas-wrap.dragging { cursor: grabbing; }
+svg { width: 100%; height: 100%; }
+#sidebar {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 320px;
+  background: var(--panel); border-left: 1px solid var(--border);
+  overflow-y: auto; padding: 16px; z-index: 100;
+  font-size: 13px; line-height: 1.55;
+}
+#sidebar h2 { font-size: 15px; color: var(--accent); margin-bottom: 8px; }
+#sidebar h3 { font-size: 13px; color: var(--text); margin: 12px 0 4px; }
+#sidebar .path { color: var(--muted); font-size: 11px; font-family: monospace; word-break: break-all; }
+#sidebar .role { color: var(--text); margin: 6px 0; }
+#sidebar .plain { color: var(--muted); font-style: italic; margin: 4px 0 8px; }
+#sidebar .notes { list-style: none; padding: 0; }
+#sidebar .notes li { color: var(--muted); font-size: 12px; margin: 2px 0; }
+#sidebar .notes li::before { content: '- '; color: var(--accent); }
+#sidebar .edge-list { margin: 4px 0; }
+#sidebar .edge-item { font-size: 12px; color: var(--muted); margin: 2px 0; }
+#sidebar .edge-item .label { color: var(--text); }
+#sidebar .finding { margin: 8px 0; padding: 8px; background: var(--panel-2); border-radius: 6px; border-left: 3px solid var(--accent); }
+#sidebar .finding .title { color: var(--accent); font-weight: 600; font-size: 12px; }
+#sidebar .finding .desc { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <span class="chip active" data-filter="overview">Overview</span>
+  <span class="chip" data-filter="transactions">Transactions</span>
+  <span class="chip" data-filter="ocr">OCR Pipeline</span>
+  <span class="chip" data-filter="auth">Auth</span>
+  <span class="chip" data-filter="p2p">P2P / Groups</span>
+  <span class="chip" data-filter="budgets">Budgets</span>
+  <span class="chip" data-filter="reconciliation">Reconciliation</span>
+  <span class="chip" data-filter="critical">Critical Path</span>
+  <span class="chip" data-filter="all">Show All Wires</span>
+  <button class="zoom-btn" id="btn-fit" title="Fit to view">Fit</button>
+  <button class="zoom-btn" id="btn-zin" title="Zoom in">+</button>
+  <button class="zoom-btn" id="btn-zout" title="Zoom out">-</button>
+</div>
+
+<div id="canvas-wrap">
+  <svg id="svg"></svg>
+</div>
+
+<div id="sidebar">
+  <div id="sidebar-content"></div>
+</div>
+
+<script>
+// ─── CLUSTERS ──────────────────────────────────────────
+const clusters = [
+  { id: 'client',   label: 'Client (Dashboard)',  x: 20,   y: 60,  w: 230, h: 960, color: '#4ea1ff' },
+  { id: 'entry',    label: 'Server Entry',         x: 280,  y: 60,  w: 230, h: 960, color: '#ff7a45' },
+  { id: 'routes',   label: 'API Routes',           x: 540,  y: 60,  w: 230, h: 960, color: '#7bd389' },
+  { id: 'services', label: 'Services (Core Hub)',   x: 800,  y: 60,  w: 250, h: 960, color: '#c792ea' },
+  { id: 'data',     label: 'Data Layer',            x: 1080, y: 60,  w: 250, h: 960, color: '#ffb86b' },
+  { id: 'external', label: 'External',              x: 1360, y: 60,  w: 220, h: 960, color: '#ff6b9d' },
+];
+
+// ─── NODE HELPER ───────────────────────────────────────
+const N = (id, cluster, label, sub, x, y, w, h, color, opts = {}) => ({
+  id, cluster, label, sub, x, y, w, h, color, ...opts
+});
+
+// ─── NODES ─────────────────────────────────────────────
+const nodes = [
+  // ── CLIENT ──
+  N('dashboard', 'client', 'Dashboard', 'TanStack Start + React 19', 40, 90, 190, 44, 'client', {
+    role: 'Main SPA shell with TanStack Router file-based routing, React Query, and Zustand global state.',
+    plain: 'The web app you open in your browser. It manages all the pages and navigation.',
+    path: 'apps/dashboard/app/app.tsx',
+    notes: ['Vite + TanStack Start', 'React 19 with Tailwind CSS v4', 'better-auth/react for session cookies'],
+    tag: ['overview','transactions','ocr','auth','p2p','budgets','reconciliation','all'],
+  }),
+  N('fe-routes', 'client', 'Route Pages', '/, /transactions, /settings', 40, 152, 190, 44, 'client', {
+    role: 'File-based route pages: dashboard home, transactions list, settings.',
+    plain: 'The individual screens you see: home dashboard, transaction list, and settings.',
+    path: 'apps/dashboard/app/routes/',
+    notes: ['beforeLoad auth guard via loaders', 'React Query loaders prefetch data', 'TanStack React Table for grids'],
+    tag: ['overview','transactions','budgets','all'],
+  }),
+  N('fe-hooks', 'client', 'Hooks & State', 'useEntityForm, useTransactions', 40, 214, 190, 44, 'client', {
+    role: 'Custom hooks for data fetching, OPFS/wa-sqlite local cache, and entity modals.',
+    plain: 'Reusable logic for fetching data and managing forms across the app.',
+    path: 'apps/dashboard/app/hooks/',
+    notes: ['UseTransactions.ts: OPFS wa-sqlite reads', 'UseEntityForm.ts: generic modal driver', 'UseDemoData.ts: demo seed/clear'],
+    tag: ['overview','transactions','all'],
+  }),
+  N('fe-api', 'client', 'ApiClient', 'Axios + QueryKeys', 40, 276, 190, 44, 'client', {
+    role: 'Pre-configured Axios instance targeting VITE_API_URL with credentials:include.',
+    plain: 'The HTTP client that talks to the Rust backend with your login cookies attached.',
+    path: 'apps/dashboard/app/lib/ApiClient.ts',
+    notes: ['Defaults to http://localhost:7878', 'React Query cache keys in QueryKeys.ts'],
+    tag: ['overview','transactions','ocr','auth','p2p','budgets','reconciliation','all'],
+    critical: true,
+  }),
+  N('fe-auth', 'client', 'Auth Client', 'better-auth/react', 40, 338, 190, 44, 'client', {
+    role: 'BetterAuth TypeScript client with passkey and username plugins for sign-in/sign-up.',
+    plain: 'The login and signup system on the frontend, using secure cookies.',
+    path: 'apps/dashboard/app/lib/auth-client.ts',
+    notes: ['passkeyClient() plugin', 'usernameClient() plugin', 'Cookie: better-auth.session_token'],
+    tag: ['overview','auth','all'],
+    critical: true,
+  }),
+  N('fe-opfs', 'client', 'OPFS Cache', 'wa-sqlite + TanStack Store', 40, 400, 190, 44, 'client', {
+    role: 'Local-first persistence using WA-SQLite over OPFS for sub-millisecond reads.',
+    plain: 'A local database in your browser for instant data loading without waiting for the server.',
+    path: 'apps/dashboard/app/lib/',
+    notes: ['@journeyapps/wa-sqlite', 'Mounted inside TanStack Store', 'Enables offline-first UX'],
+    tag: ['overview','transactions','all'],
+  }),
+  N('pkg-ui', 'client', '@expent/ui', 'Shared Shadcn components', 40, 462, 190, 44, 'client', {
+    role: 'Shared component library built with Tailwind CSS and Shadcn patterns.',
+    plain: 'Reusable buttons, dialogs, and form components shared across the whole app.',
+    path: 'packages/ui/',
+    notes: ['goey-toaster for notifications', 'Tailwind CSS v4', 'Shadcn accessibility patterns'],
+    tag: ['overview','all'],
+  }),
+  N('pkg-types', 'client', '@expent/types', 'ts-rs generated types', 40, 524, 190, 44, 'client', {
+    role: 'TypeScript types auto-generated from Rust models via ts-rs for perfect sync.',
+    plain: 'Type definitions shared between frontend and backend, generated automatically from Rust code.',
+    path: 'packages/types/',
+    notes: ['cargo type-generate command', 'Mirrors db::entities models', 'Ensures API contract safety'],
+    tag: ['overview','all'],
+  }),
+
+  // ── SERVER ENTRY ──
+  N('main-rs', 'entry', 'main.rs', 'Axum server + bootstrap', 300, 90, 190, 44, 'entry', {
+    role: 'Entry point: initializes Core, runs migrations, spawns OCR workers, binds :7878.',
+    plain: 'The starting point of the server. Sets everything up and starts listening for requests.',
+    path: 'apps/api/src/main.rs',
+    notes: ['line:52, #[tokio::main]', 'line:127, Core::init()', 'line:132, auto-migrations', 'line:141, OCR worker spawn'],
+    tag: ['overview','transactions','ocr','auth','all'],
+    critical: true,
+  }),
+  N('app-state', 'entry', 'AppState', 'Core + rate limiter + metrics', 300, 152, 190, 44, 'entry', {
+    role: 'Axum shared state holding Core instance, per-user OCR rate limiter, and metrics registry.',
+    plain: 'The shared data bag that every request handler can access for database, auth, etc.',
+    path: 'apps/api/src/main.rs:28',
+    notes: ['line:28, struct AppState', 'Implements FromRef for DB + Auth', 'Thread-safe via Arc'],
+    tag: ['overview','all'],
+    critical: true,
+  }),
+  N('middleware', 'entry', 'Middleware Stack', 'CORS, Compression, Auth', 300, 214, 190, 44, 'entry', {
+    role: 'Tower middleware layers: CORS, gzip/brotli compression, 10MB body limit, tracing.',
+    plain: 'Security and optimization layers that process every request before it reaches your code.',
+    path: 'apps/api/src/main.rs:208',
+    notes: ['CorsLayer with ALLOWED_ORIGINS', 'CompressionLayer (gzip + brotli)', 'TraceLayer with ms latency'],
+    tag: ['overview','auth','all'],
+  }),
+  N('rate-limit', 'entry', 'Rate Limiting', 'Governor + per-user buckets', 300, 276, 190, 44, 'entry', {
+    role: 'IP-based GovernorLayer (1/s burst 10) plus per-user token-bucket limiter for OCR/upload.',
+    plain: 'Prevents abuse by limiting how many requests any user or IP can make per second.',
+    path: 'apps/api/src/middleware/rate_limit.rs',
+    notes: ['Global: 1 req/sec, burst 10', 'Per-user: 10 rpm OCR, burst 20', 'DashMap for concurrent access'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('auth-session', 'entry', 'AuthSession', 'Axum extractor guard', 300, 338, 190, 44, 'entry', {
+    role: 'Axum extractor that validates BetterAuth session cookies and injects authenticated User.',
+    plain: 'The security guard that checks your login cookie and blocks unauthenticated requests.',
+    path: 'crates/auth/src/lib.rs',
+    notes: ['Extracts raw headers', 'Mocks internal GET /get-session', 'Returns 401 on failure'],
+    tag: ['overview','auth','all'],
+    critical: true,
+  }),
+  N('metrics', 'entry', 'Metrics', 'Prometheus /metrics endpoint', 300, 400, 190, 44, 'entry', {
+    role: 'Per-route latency histograms and status counters exposed as Prometheus text at /metrics.',
+    plain: 'Internal performance monitoring that tracks how fast each API endpoint responds.',
+    path: 'apps/api/src/middleware/metrics.rs',
+    notes: ['DashMap-backed RouteMetrics', 'Histogram buckets in microseconds', 'Atomic counters, zero deps'],
+    tag: ['overview','all'],
+  }),
+  N('extractors', 'entry', 'ValidatedJson', 'Request validation extractor', 300, 462, 190, 44, 'entry', {
+    role: 'Custom Axum extractor wrapping Json<T> with automatic validator::Validate enforcement.',
+    plain: 'Automatically checks that incoming data meets all validation rules before processing.',
+    path: 'apps/api/src/extractors.rs',
+    notes: ['Uses validator crate', 'Returns ApiError::BadRequest', 'Reused across all POST handlers'],
+    tag: ['overview','all'],
+  }),
+  N('bg-tasks', 'entry', 'Background Tasks', 'WorkerPool + job handlers', 300, 524, 190, 44, 'entry', {
+    role: 'Generic background worker pool (10 slots) with BulkConfirmOcrJobHandler registered.',
+    plain: 'A pool of workers that process slow tasks in the background, like bulk OCR confirmation.',
+    path: 'apps/api/src/background_tasks.rs',
+    notes: ['jobs::WorkerPool with 10 concurrency', 'BulkConfirmOcrJob handler', 'buffer_unordered(5) parallelism'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('api-error', 'entry', 'ApiError', 'Centralized error responses', 300, 586, 190, 44, 'entry', {
+    role: 'Enum-based error type producing structured JSON + HTTP status codes (401, 404, 429, 500).',
+    plain: 'A standardized way to return error messages to the frontend with proper status codes.',
+    path: 'apps/api/src/middleware/error.rs',
+    notes: ['Variants: Internal, NotFound, BadRequest, Unauthorized, RateLimited', 'From<DbErr> conversion'],
+    tag: ['overview','all'],
+  }),
+
+  // ── ROUTES ──
+  N('r-txn', 'routes', 'transactions.rs', 'CRUD + split + summary', 560, 90, 190, 44, 'route', {
+    role: 'Routes: GET list, POST manual, POST from-ocr, PATCH update, DELETE, POST split, GET summary.',
+    plain: 'All the endpoints for creating, editing, listing, and splitting expense transactions.',
+    path: 'apps/api/src/routes/transactions.rs',
+    notes: ['7 endpoints', 'Delegates to core.transactions.*', 'ValidatedJson for POST/PATCH'],
+    tag: ['overview','transactions','critical','all'],
+    critical: true,
+  }),
+  N('r-wallets', 'routes', 'wallets.rs', 'CRUD wallets', 560, 152, 190, 44, 'route', {
+    role: 'Routes: GET list, POST create, PUT update, DELETE wallet.',
+    plain: 'Endpoints for managing your bank accounts, credit cards, and cash wallets.',
+    path: 'apps/api/src/routes/wallets.rs',
+    notes: ['4 endpoints', 'Delegates to core.wallets.*'],
+    tag: ['overview','transactions','all'],
+    critical: true,
+  }),
+  N('r-ocr', 'routes', 'ocr.rs', 'Process + stream + confirm', 560, 214, 190, 44, 'route', {
+    role: 'Routes: POST process, GET stream (SSE), GET status, GET pending, POST confirm, POST bulk-confirm, POST resolve.',
+    plain: 'Endpoints for uploading receipts, tracking OCR progress in real-time, and confirming results.',
+    path: 'apps/api/src/routes/ocr.rs',
+    notes: ['7 endpoints', 'SSE stream for live updates', 'x-idempotency-key header', 'Per-user rate limited'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('r-budgets', 'routes', 'budgets.rs', 'CRUD + health', 560, 276, 190, 44, 'route', {
+    role: 'Routes: GET list, POST create, PATCH update, DELETE, GET health.',
+    plain: 'Endpoints for setting spending limits and checking how much of your budget is used.',
+    path: 'apps/api/src/routes/budgets.rs',
+    notes: ['5 endpoints', 'Budget health calculates consumption %'],
+    tag: ['overview','budgets','all'],
+  }),
+  N('r-groups', 'routes', 'groups.rs', 'Groups + members + invite', 560, 338, 190, 44, 'route', {
+    role: 'Routes: GET list, POST create, POST invite, GET transactions, GET members, DELETE member, PATCH role.',
+    plain: 'Endpoints for creating shared expense groups and managing who belongs to them.',
+    path: 'apps/api/src/routes/groups.rs',
+    notes: ['7 endpoints', 'RBAC via user_groups role', 'Delegates to core.groups.*'],
+    tag: ['overview','p2p','all'],
+  }),
+  N('r-p2p', 'routes', 'p2p.rs', 'P2P requests + ledger tabs', 560, 400, 190, 44, 'route', {
+    role: 'Routes: GET pending, POST create/accept/reject, GET/POST ledger-tabs, POST repayment.',
+    plain: 'Endpoints for sending and settling money requests between friends.',
+    path: 'apps/api/src/routes/p2p.rs',
+    notes: ['7 endpoints', 'Mirrored transactions on accept', 'Ledger tab status machine'],
+    tag: ['overview','p2p','all'],
+  }),
+  N('r-contacts', 'routes', 'contacts.rs', 'CRUD + merge + identifiers', 560, 462, 190, 44, 'route', {
+    role: 'Routes: GET list, POST create, GET/PUT/DELETE by id, POST identifiers, GET suggestions, POST merge.',
+    plain: 'Endpoints for managing your address book of people you transact with.',
+    path: 'apps/api/src/routes/contacts.rs',
+    notes: ['8 endpoints', 'Phonetic merge suggestions', 'Multi-identifier support (UPI, phone)'],
+    tag: ['overview','transactions','ocr','all'],
+  }),
+  N('r-subs', 'routes', 'subscriptions.rs', 'Detect + confirm + alerts', 560, 524, 190, 44, 'route', {
+    role: 'Routes: GET list confirmed, GET detect, POST confirm, DELETE stop, POST configure alert.',
+    plain: 'Endpoints for discovering recurring subscriptions and setting up renewal reminders.',
+    path: 'apps/api/src/routes/subscriptions.rs',
+    notes: ['5 endpoints', 'Heuristic detection algorithm', 'Alert channel: EMAIL or PUSH'],
+    tag: ['overview','all'],
+  }),
+  N('r-recon', 'routes', 'reconciliation.rs', 'Statement matching', 560, 586, 190, 44, 'route', {
+    role: 'Routes: GET unmatched rows, GET matches, POST confirm, POST upload statement.',
+    plain: 'Endpoints for uploading bank statements and matching them against your recorded transactions.',
+    path: 'apps/api/src/routes/reconciliation.rs',
+    notes: ['4 endpoints', 'Fuzzy matching with weighted scoring', 'Batch CSV upload'],
+    tag: ['overview','reconciliation','all'],
+  }),
+  N('r-upload', 'routes', 'uploads.rs', 'Presigned URL + direct upload', 560, 648, 190, 44, 'route', {
+    role: 'Routes: POST presigned URL, POST direct upload with image compression.',
+    plain: 'Endpoints for uploading files (receipts, avatars) to cloud storage.',
+    path: 'apps/api/src/routes/uploads.rs',
+    notes: ['2 endpoints', 'Per-user rate limited', 'Image compression to WebP'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('r-users', 'routes', 'users.rs', 'Profile + avatar + UPI', 560, 710, 190, 44, 'route', {
+    role: 'Routes: PUT profile, POST avatar, GET/POST UPI IDs, PUT make-primary.',
+    plain: 'Endpoints for managing your profile, uploading avatars, and storing UPI IDs.',
+    path: 'apps/api/src/routes/users.rs',
+    notes: ['5 endpoints', 'Avatar compressed to 512x512 WebP', 'UPI ID primary flag management'],
+    tag: ['overview','auth','all'],
+  }),
+  N('r-cats', 'routes', 'categories.rs', 'List + create + delete', 560, 772, 190, 44, 'route', {
+    role: 'Routes: GET list, POST create, DELETE by id.',
+    plain: 'Endpoints for managing expense categories like Food, Transport, Shopping.',
+    path: 'apps/api/src/routes/categories.rs',
+    notes: ['3 endpoints', 'System categories auto-seeded on init'],
+    tag: ['overview','budgets','all'],
+  }),
+  N('r-demo', 'routes', 'demo.rs', 'Seed + clear + status', 560, 834, 190, 44, 'route', {
+    role: 'Routes: GET status, POST seed, POST clear.',
+    plain: 'Endpoints for the one-click demo experience that fills the app with realistic sample data.',
+    path: 'apps/api/src/routes/demo.rs',
+    notes: ['3 endpoints', 'Atomic seed: 3 wallets, 8 categories, 20 txns', 'demo_active metadata flag'],
+    tag: ['overview','all'],
+  }),
+  N('r-health', 'routes', 'health.rs', 'Liveness + readiness', 560, 896, 190, 44, 'route', {
+    role: 'Routes: GET /live (shallow), GET /ready (checks DB + S3).',
+    plain: 'Health check endpoints that infrastructure uses to know if the server is alive and ready.',
+    path: 'apps/api/src/routes/health.rs',
+    notes: ['2 endpoints', '/ready checks Postgres + S3', 'Returns 503 on failure'],
+    tag: ['overview','all'],
+  }),
+  N('r-auth', 'routes', 'Auth Router', 'BetterAuth /api/auth/*', 560, 958, 190, 44, 'route', {
+    role: 'BetterAuth auto-generated router: sign-in, sign-up, get-session, sign-out.',
+    plain: 'Login and registration endpoints powered by the BetterAuth library.',
+    path: 'apps/api/src/main.rs:215',
+    notes: ['Mounted at /api/auth', 'JWT session cookies', 'Email + password plugin'],
+    tag: ['overview','auth','all'],
+    critical: true,
+  }),
+
+  // ── SERVICES (Core Hub) ──
+  N('core', 'services', 'Core struct', 'expent_core hub', 820, 90, 210, 44, 'service', {
+    role: 'Central orchestrator holding Arc<DB>, Auth, S3, OCR, and all domain managers.',
+    plain: 'The brain of the system. Every request eventually flows through this central hub.',
+    path: 'crates/expent_core/src/lib.rs:76',
+    notes: ['line:76, struct Core', 'line:162, Core::init()', '14 Arc<Manager> fields', 'Implements OcrProcessor trait'],
+    tag: ['overview','transactions','ocr','auth','p2p','budgets','reconciliation','critical','all'],
+    critical: true,
+  }),
+  N('s-txn', 'services', 'TransactionsManager', 'create/update/delete/split', 820, 152, 210, 44, 'service', {
+    role: 'Manages transaction CRUD with atomic wallet rebalancing via adjust_transaction_wallets.',
+    plain: 'The service that creates, edits, and deletes transactions while keeping wallet balances correct.',
+    path: 'crates/transactions/src/lib.rs:18',
+    notes: ['line:35, create()', 'line:88, update()', 'line:125, delete()', 'line:134, split()'],
+    tag: ['overview','transactions','critical','all'],
+    critical: true,
+  }),
+  N('s-txn-ops', 'services', 'transactions/ops.rs', 'Atomic ops + wallet adjust', 820, 214, 210, 44, 'service', {
+    role: 'Core transaction operations: create, update, delete, split, and adjust_transaction_wallets.',
+    plain: 'The actual database logic that inserts transactions and adjusts wallet balances atomically.',
+    path: 'crates/transactions/src/ops.rs',
+    notes: ['line:25, create_transaction()', 'line:458, adjust_transaction_wallets()', 'All inside db.transaction()', '18KB of bank logic'],
+    tag: ['overview','transactions','critical','all'],
+    critical: true,
+  }),
+  N('s-wallets', 'services', 'WalletsManager', 'CRUD + adjust_balance', 820, 276, 210, 44, 'service', {
+    role: 'Wallet lifecycle management with atomic adjust_balance for financial integrity.',
+    plain: 'Manages your bank accounts and their balances, ensuring every penny is accounted for.',
+    path: 'crates/wallets/src/lib.rs',
+    notes: ['adjust_balance: balance += delta', 'In-transaction SQL update', 'Used by TransactionsManager'],
+    tag: ['overview','transactions','critical','all'],
+    critical: true,
+  }),
+  N('s-ocr-svc', 'services', 'OcrManager', 'Worker + Gemini pipeline', 820, 338, 210, 44, 'service', {
+    role: 'OCR background worker pool: spawns Tokio tasks, listens on Postgres NOTIFY, processes receipts.',
+    plain: 'The receipt scanning engine that downloads your photo, sends it to Google AI, and extracts data.',
+    path: 'crates/ocr/src/lib.rs',
+    notes: ['Postgres LISTEN/NOTIFY', 'CancellationToken for graceful shutdown', 'TaskTracker for worker lifecycle'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('s-ocr-core', 'services', 'services/ocr.rs', 'process_ocr + enrich_ocr', 820, 400, 210, 44, 'service', {
+    role: 'Orchestrates OCR result processing: idempotency check, strategy dispatch, contact auto-creation.',
+    plain: 'Takes the raw OCR data and turns it into a real transaction with contacts auto-linked.',
+    path: 'crates/expent_core/src/services/ocr.rs',
+    notes: ['line:10, enrich_ocr()', 'line:24, process_ocr()', 'Idempotency via transaction_sources', 'Strategy pattern: GPAY vs GENERIC'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('s-ocr-worker', 'services', 'ocr/worker.rs', 'Background job processor', 820, 462, 210, 44, 'service', {
+    role: 'Tokio-spawned worker: downloads from R2, classifies doc type, calls Gemini, saves structured JSON.',
+    plain: 'The actual worker thread that picks up receipt jobs and processes them one by one.',
+    path: 'crates/ocr/src/worker.rs',
+    notes: ['Downloads bytes via UploadClient', 'Classifies as GPAY or GENERIC', 'Gemini schema-conforming extraction'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('s-gemini', 'services', 'ocr/gemini.rs', 'Gemini 2.5 Flash client', 820, 524, 210, 44, 'service', {
+    role: 'HTTP client for Google Gemini generativeLanguage API: sends image bytes, receives structured JSON.',
+    plain: 'The code that talks to Google AI to read text from your receipt photos.',
+    path: 'crates/ocr/src/gemini.rs',
+    notes: ['reqwest HTTP client', 'Schema-conforming JSON output', 'GOOGLE_API_KEY env var'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('s-groups', 'services', 'GroupsManager', 'Groups + P2P + ledger tabs', 820, 586, 210, 44, 'service', {
+    role: 'Manages group CRUD, P2P request lifecycle, ledger tabs, mirrored transactions, and RBAC.',
+    plain: 'The service for shared expenses: creating groups, sending payment requests, and settling debts.',
+    path: 'crates/groups/src/lib.rs',
+    notes: ['Depends on WalletsManager + TransactionsManager', 'Mirrored txn on P2P accept', 'RBAC via user_groups.role'],
+    tag: ['overview','p2p','all'],
+  }),
+  N('s-budgets', 'services', 'BudgetsManager', 'CRUD + health engine', 820, 648, 210, 44, 'service', {
+    role: 'Budget CRUD plus real-time consumption velocity calculation across categories and periods.',
+    plain: 'Tracks your spending limits and calculates what percentage of your budget you have used.',
+    path: 'crates/budgets/src/lib.rs',
+    notes: ['BudgetHealth struct with consumption %', 'Aggregates OUT txns per period', 'Category-specific or global'],
+    tag: ['overview','budgets','all'],
+  }),
+  N('s-contacts', 'services', 'ContactsManager', 'CRUD + merge + auto-create', 820, 710, 210, 44, 'service', {
+    role: 'Contact address book: CRUD, multi-identifier, phonetic merge suggestions, OCR auto-creation.',
+    plain: 'Your address book of people. Detects duplicates and auto-creates contacts from scanned receipts.',
+    path: 'crates/contacts/src/lib.rs',
+    notes: ['rphonetic for fuzzy matching', 'contact_links for privacy isolation', 'Auto-create from OCR UPI IDs'],
+    tag: ['overview','transactions','ocr','all'],
+  }),
+  N('s-subs', 'services', 'SubscriptionsManager', 'Detection + tracking', 820, 772, 210, 44, 'service', {
+    role: 'Scans 90 days of history, groups by amount+vendor, calculates day-variance for cycle detection.',
+    plain: 'Automatically finds recurring payments like Netflix or Spotify in your transaction history.',
+    path: 'crates/subscriptions/src/lib.rs',
+    notes: ['90-day history scan', 'Day-variance for Weekly/Monthly/Yearly', 'Predicts next_charge_date'],
+    tag: ['overview','all'],
+  }),
+  N('s-recon', 'services', 'ReconciliationManager', 'Fuzzy match + confirm', 820, 834, 210, 44, 'service', {
+    role: 'Three-step pipeline: statement ingestion, weighted fuzzy matching (base 70 + bonuses), confirmation.',
+    plain: 'Compares your bank statement rows against recorded transactions to find matches.',
+    path: 'crates/reconciliation/src/lib.rs',
+    notes: ['Base score 70 for amount+date range', '+10 exact amount, +10 exact date, +10 description', 'Atomic confirmation in db.transaction'],
+    tag: ['overview','reconciliation','all'],
+  }),
+  N('s-demo', 'services', 'services/demo.rs', 'Atomic seed + teardown', 820, 896, 210, 44, 'service', {
+    role: 'Seeds 3 wallets, 8 categories, 3 budgets, 4 contacts, 20 transactions atomically; and clears them.',
+    plain: 'Creates realistic sample data so new users can try the app, and cleans it up when done.',
+    path: 'crates/expent_core/src/services/demo.rs',
+    notes: ['line:42, seed_demo_data()', 'line:230, clear_demo_data()', 'Single db.transaction', 'demo_active metadata flag'],
+    tag: ['overview','all'],
+  }),
+  N('s-upload', 'services', 'UploadClient', 'S3/R2 storage client', 820, 958, 210, 44, 'service', {
+    role: 'AWS SDK S3 wrapper: upload_direct, get_presigned_url, get_file, with path sanitization.',
+    plain: 'Handles putting files into cloud storage and generating download links.',
+    path: 'crates/upload/src/lib.rs',
+    notes: ['Key format: {user_id}/{uuid}-{filename}', 'Path traversal mitigation', 'Image compression via image crate'],
+    tag: ['overview','ocr','all'],
+  }),
+
+  // ── DATA LAYER ──
+  N('d-db', 'data', 'SeaORM Pool', 'PostgreSQL connection', 1100, 90, 210, 44, 'db', {
+    role: 'Arc<DatabaseConnection> with configurable pool sizing (max 100, min 5, 3s acquire timeout).',
+    plain: 'The database connection pool that all services share to talk to PostgreSQL.',
+    path: 'crates/expent_core/src/lib.rs:173',
+    notes: ['max_connections: 100 (env override)', 'Retry 3x on connect failure', 'idle_timeout: 600s'],
+    tag: ['overview','transactions','ocr','p2p','budgets','reconciliation','critical','all'],
+    critical: true,
+  }),
+  N('d-entities', 'data', 'Entities (36 models)', 'Pure SeaORM models', 1100, 152, 210, 44, 'db', {
+    role: 'Pure data definitions: 36 SeaORM entity files covering all tables. No business logic.',
+    plain: 'The database table definitions. Each file describes one table and its columns.',
+    path: 'crates/db/src/entities/',
+    notes: ['36 entity files', 'No business logic allowed here', 'Enums in enums.rs (12 shared enums)'],
+    tag: ['overview','transactions','all'],
+    critical: true,
+  }),
+  N('d-txns', 'data', 'transactions table', 'Core ledger entries', 1100, 214, 210, 44, 'db', {
+    role: 'Primary ledger: id, user_id, amount, direction(IN/OUT), date, source, status, wallet FKs.',
+    plain: 'The main table storing every income and expense entry with amounts and dates.',
+    path: 'crates/db/src/entities/transactions.rs',
+    notes: ['TransactionDirection: IN, OUT', 'TransactionSource: MANUAL, OCR, STATEMENT, P2P', 'Soft-delete via is_deleted flag'],
+    tag: ['overview','transactions','critical','all'],
+    critical: true,
+  }),
+  N('d-wallets', 'data', 'wallets table', 'Balance tracking', 1100, 276, 210, 44, 'db', {
+    role: 'Tracks wallet balances: id, user_id, name, wallet_type(CASH/BANK/CREDIT_CARD/UPI_WALLET), balance.',
+    plain: 'Stores your wallet balances. Updated atomically every time a transaction is created or changed.',
+    path: 'crates/db/src/entities/wallets.rs',
+    notes: ['WalletType enum: 4 variants', 'balance: Decimal', 'Updated inside db.transaction'],
+    tag: ['overview','transactions','critical','all'],
+    critical: true,
+  }),
+  N('d-parties', 'data', 'txn_parties table', 'Counterparty links', 1100, 338, 210, 44, 'db', {
+    role: 'Links transactions to contacts with roles: SENDER, RECEIVER, COUNTERPARTY.',
+    plain: 'Records who was on the other side of each transaction.',
+    path: 'crates/db/src/entities/txn_parties.rs',
+    notes: ['TxnPartyRole: 3 variants', 'FK to transactions + contacts'],
+    tag: ['overview','transactions','all'],
+  }),
+  N('d-ocr-jobs', 'data', 'ocr_jobs table', 'Job state tracking', 1100, 400, 210, 44, 'db', {
+    role: 'Persists OCR job state: PENDING, PROCESSING, COMPLETED, FAILED with result JSON.',
+    plain: 'Tracks the status of each receipt scanning job from start to finish.',
+    path: 'crates/db/src/entities/ocr_jobs.rs',
+    notes: ['result_json: JSONB', 'Triggers Postgres NOTIFY', 'Linked to transaction_sources'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('d-purchases', 'data', 'purchases + items', 'Receipt itemization', 1100, 462, 210, 44, 'db', {
+    role: 'Stores parsed receipt data: purchases linked to transactions, purchase_items for line items.',
+    plain: 'Detailed receipt data: each item you bought, its price, and what receipt it came from.',
+    path: 'crates/db/src/entities/purchases.rs',
+    notes: ['purchases: receipt-level', 'purchase_items: line-item level', 'purchase_imports: batch tracking'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('d-budgets', 'data', 'budgets table', 'Spending limits', 1100, 524, 210, 44, 'db', {
+    role: 'User-defined spending ceilings: category_id (nullable for global), amount, period.',
+    plain: 'Your spending limit settings: how much you want to spend on each category per month.',
+    path: 'crates/db/src/entities/budgets.rs',
+    notes: ['BudgetPeriod: WEEKLY, MONTHLY, YEARLY', 'Nullable category_id = global budget'],
+    tag: ['overview','budgets','all'],
+  }),
+  N('d-p2p', 'data', 'P2P tables', 'p2p_requests + ledger_tabs', 1100, 586, 210, 44, 'db', {
+    role: 'P2P request state machine (PENDING/MAPPED/REJECTED/APPROVED/GROUP_INVITE) and ledger tabs.',
+    plain: 'Tracks money requests between friends and running tabs with their settlement status.',
+    path: 'crates/db/src/entities/p2p_requests.rs',
+    notes: ['P2pRequestStatus: 5 states', 'LedgerTabStatus: OPEN, PARTIALLY_PAID, SETTLED', 'p2p_transfers for details'],
+    tag: ['overview','p2p','all'],
+  }),
+  N('d-contacts', 'data', 'contacts + identifiers', 'Address book', 1100, 648, 210, 44, 'db', {
+    role: 'Contact entities with multi-identifier support (UPI, PHONE, BANK_ACC) and privacy links.',
+    plain: 'Your address book stored in the database, with each person having multiple payment IDs.',
+    path: 'crates/db/src/entities/contacts.rs',
+    notes: ['contact_links for user-scoped privacy', 'contact_identifiers: UPI, PHONE, BANK_ACC', 'contact_staging for OCR auto-create'],
+    tag: ['overview','transactions','ocr','all'],
+  }),
+  N('d-subs', 'data', 'subscriptions tables', 'Recurring payments', 1100, 710, 210, 44, 'db', {
+    role: 'Subscription tracking: subscriptions, subscription_charges, sub_alerts for reminders.',
+    plain: 'Stores detected recurring payments and reminder settings for upcoming charges.',
+    path: 'crates/db/src/entities/subscriptions.rs',
+    notes: ['SubscriptionCycle: WEEKLY, MONTHLY, YEARLY', 'sub_alerts: EMAIL or PUSH', 'subscription_charges: payment history'],
+    tag: ['overview','all'],
+  }),
+  N('d-recon', 'data', 'reconciliation tables', 'Statement rows + matches', 1100, 772, 210, 44, 'db', {
+    role: 'bank_statement_rows (raw CSV data) and statement_txn_matches (confirmed matches with confidence).',
+    plain: 'Raw bank statement data and the matches linking statement lines to your recorded transactions.',
+    path: 'crates/db/src/entities/bank_statement_rows.rs',
+    notes: ['is_matched boolean flag', 'confidence: Decimal score', 'matched_at timestamp for audit'],
+    tag: ['overview','reconciliation','all'],
+  }),
+  N('d-users', 'data', 'users + auth tables', 'Identity + sessions', 1100, 834, 210, 44, 'db', {
+    role: 'User identity (users), OAuth bindings (accounts), sessions, verifications, user_upi_ids.',
+    plain: 'Your user account, login sessions, and saved UPI IDs.',
+    path: 'crates/db/src/entities/users.rs',
+    notes: ['metadata: JSONB for demo_active flag', 'sessions: IP-bound tokens', 'two_factor_enabled field (stub)'],
+    tag: ['overview','auth','all'],
+    critical: true,
+  }),
+  N('d-migration', 'data', 'Migration crate', 'sea-orm-migration', 1100, 896, 210, 44, 'db', {
+    role: 'SeaORM migration definitions. Auto-run on server startup in main.rs.',
+    plain: 'Database migration scripts that create and update tables when the server starts.',
+    path: 'crates/migration/',
+    notes: ['Auto-run in main.rs:132', 'sea-orm-migration crate'],
+    tag: ['overview','all'],
+  }),
+  N('d-dto', 'data', 'db/dto.rs', 'Shared response types', 1100, 958, 210, 44, 'db', {
+    role: 'Shared DTOs: TransactionWithDetail, PaginatedTransactions, DashboardSummary, ProcessedOcr, etc.',
+    plain: 'Data shapes shared between the API and services, like the detailed transaction view.',
+    path: 'crates/db/src/dto.rs',
+    notes: ['TransactionWithDetail: enriched response', 'DashboardSummary: analytics data', 'SplitDetail: P2P split amounts'],
+    tag: ['overview','transactions','all'],
+  }),
+
+  // ── EXTERNAL ──
+  N('e-pg', 'external', 'PostgreSQL', 'Primary database', 1380, 90, 180, 44, 'external', {
+    role: 'Primary data store via SeaORM. Also used for LISTEN/NOTIFY channels for OCR job dispatch.',
+    plain: 'The main database that stores all your financial data, user accounts, and job queues.',
+    path: 'docker-compose.yml',
+    notes: ['ocr_jobs_channel NOTIFY', 'Connection pool max 100', 'SQLx for raw queries'],
+    tag: ['overview','transactions','ocr','p2p','budgets','reconciliation','critical','all'],
+    critical: true,
+  }),
+  N('e-r2', 'external', 'Cloudflare R2', 'S3-compatible object store', 1380, 170, 180, 44, 'external', {
+    role: 'S3-compatible blob storage for receipt images, avatars, and uploaded files.',
+    plain: 'Cloud storage where your uploaded receipt photos and profile pictures are saved.',
+    path: '.env: S3_ENDPOINT',
+    notes: ['aws-sdk-s3 client', 'Presigned URLs for client uploads', 'Key: {user_id}/{uuid}-{name}'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('e-gemini', 'external', 'Google Gemini', 'Gemini 2.5 Flash AI', 1380, 250, 180, 44, 'external', {
+    role: 'Google generativeLanguage API for structured OCR extraction from receipt images.',
+    plain: 'Google AI that reads your receipt photos and extracts the merchant, amount, and items.',
+    path: '.env: GOOGLE_API_KEY',
+    notes: ['Gemini 2.5 Flash model', 'Schema-conforming JSON output', 'Classifies GPAY vs GENERIC'],
+    tag: ['overview','ocr','all'],
+  }),
+  N('e-betterauth', 'external', 'BetterAuth', 'Auth framework', 1380, 330, 180, 44, 'external', {
+    role: 'Authentication framework providing JWT sessions, email/password, passkeys, and OAuth.',
+    plain: 'The authentication library that handles your login, signup, and session management.',
+    path: 'crates/auth/',
+    notes: ['Rust crate: better-auth 0.10', 'Custom PostgresAdapter', 'Email + password plugin'],
+    tag: ['overview','auth','all'],
+    critical: true,
+  }),
+];
+
+// ─── EDGES ─────────────────────────────────────────────
+const edges = [
+  // Client -> Entry
+  { from: 'fe-api', to: 'main-rs', kind: 'critical', label: 'HTTP :7878', tag: ['overview','transactions','ocr','critical','all'] },
+  { from: 'fe-auth', to: 'r-auth', kind: 'critical', label: 'POST /api/auth/*', tag: ['overview','auth','critical','all'] },
+
+  // Entry -> Routes (mount edges)
+  { from: 'main-rs', to: 'app-state', kind: 'mount', label: 'Core::init()', tag: ['overview','all'] },
+  { from: 'app-state', to: 'r-txn', kind: 'mount', label: 'nest /transactions', tag: ['overview','transactions','all'] },
+  { from: 'app-state', to: 'r-wallets', kind: 'mount', label: 'nest /wallets', tag: ['overview','transactions','all'] },
+  { from: 'app-state', to: 'r-ocr', kind: 'mount', label: 'nest /ocr', tag: ['overview','ocr','all'] },
+  { from: 'app-state', to: 'r-budgets', kind: 'mount', label: 'nest /budgets', tag: ['overview','budgets','all'] },
+  { from: 'app-state', to: 'r-groups', kind: 'mount', label: 'nest /groups', tag: ['overview','p2p','all'] },
+  { from: 'app-state', to: 'r-p2p', kind: 'mount', label: 'nest /p2p', tag: ['overview','p2p','all'] },
+  { from: 'app-state', to: 'r-contacts', kind: 'mount', label: 'nest /contacts', tag: ['overview','all'] },
+  { from: 'app-state', to: 'r-subs', kind: 'mount', label: 'nest /subscriptions', tag: ['overview','all'] },
+  { from: 'app-state', to: 'r-recon', kind: 'mount', label: 'nest /reconciliation', tag: ['overview','reconciliation','all'] },
+  { from: 'app-state', to: 'r-upload', kind: 'mount', label: 'nest /upload', tag: ['overview','ocr','all'] },
+  { from: 'app-state', to: 'r-demo', kind: 'mount', label: 'nest /demo', tag: ['overview','all'] },
+
+  // Routes -> Services (critical path)
+  { from: 'r-txn', to: 's-txn', kind: 'critical', label: 'core.transactions.*', tag: ['overview','transactions','critical','all'] },
+  { from: 'r-wallets', to: 's-wallets', kind: 'critical', label: 'core.wallets.*', tag: ['overview','transactions','critical','all'] },
+  { from: 'r-ocr', to: 's-ocr-svc', kind: 'normal', label: 'core.ocr_manager.*', tag: ['overview','ocr','all'] },
+  { from: 'r-budgets', to: 's-budgets', kind: 'normal', label: 'core.budgets.*', tag: ['overview','budgets','all'] },
+  { from: 'r-groups', to: 's-groups', kind: 'normal', label: 'core.groups.*', tag: ['overview','p2p','all'] },
+  { from: 'r-p2p', to: 's-groups', kind: 'normal', label: 'core.groups.p2p*', tag: ['overview','p2p','all'] },
+  { from: 'r-contacts', to: 's-contacts', kind: 'normal', label: 'core.contacts.*', tag: ['overview','all'] },
+  { from: 'r-subs', to: 's-subs', kind: 'normal', label: 'core.subscriptions.*', tag: ['overview','all'] },
+  { from: 'r-recon', to: 's-recon', kind: 'normal', label: 'core.reconciliation.*', tag: ['overview','reconciliation','all'] },
+  { from: 'r-upload', to: 's-upload', kind: 'normal', label: 'core.upload_client.*', tag: ['overview','ocr','all'] },
+  { from: 'r-demo', to: 's-demo', kind: 'normal', label: 'demo::seed/clear', tag: ['overview','all'] },
+  { from: 'r-auth', to: 'e-betterauth', kind: 'normal', label: 'BetterAuth engine', tag: ['overview','auth','all'] },
+
+  // Service internal delegation (critical path)
+  { from: 's-txn', to: 's-txn-ops', kind: 'critical', label: 'ops::create_transaction', tag: ['overview','transactions','critical','all'] },
+  { from: 's-txn-ops', to: 's-wallets', kind: 'critical', label: 'adjust_transaction_wallets', tag: ['overview','transactions','critical','all'] },
+
+  // Service dependencies
+  { from: 's-groups', to: 's-txn', kind: 'normal', label: 'Mirrored txn on accept', tag: ['overview','p2p','all'] },
+  { from: 's-groups', to: 's-wallets', kind: 'normal', label: 'Balance adjustment', tag: ['overview','p2p','all'] },
+  { from: 's-ocr-svc', to: 's-ocr-worker', kind: 'normal', label: 'spawn worker', tag: ['overview','ocr','all'] },
+  { from: 's-ocr-worker', to: 's-gemini', kind: 'api', label: 'Gemini extraction', tag: ['overview','ocr','all'] },
+  { from: 's-ocr-worker', to: 's-upload', kind: 'normal', label: 'get_file (download)', tag: ['overview','ocr','all'] },
+  { from: 's-ocr-core', to: 's-contacts', kind: 'normal', label: 'Auto-create contact', tag: ['overview','ocr','all'] },
+  { from: 's-ocr-core', to: 's-wallets', kind: 'normal', label: 'Wallet lookup', tag: ['overview','ocr','all'] },
+
+  // Services -> Data (DB operations)
+  { from: 's-txn-ops', to: 'd-txns', kind: 'db', label: 'DB write (transaction)', tag: ['overview','transactions','critical','all'] },
+  { from: 's-txn-ops', to: 'd-parties', kind: 'db', label: 'DB write (txn_parties)', tag: ['overview','transactions','all'] },
+  { from: 's-wallets', to: 'd-wallets', kind: 'db', label: 'DB write (balance)', tag: ['overview','transactions','critical','all'] },
+  { from: 's-ocr-svc', to: 'd-ocr-jobs', kind: 'db', label: 'DB read/write (ocr_jobs)', tag: ['overview','ocr','all'] },
+  { from: 's-budgets', to: 'd-budgets', kind: 'db', label: 'DB read/write', tag: ['overview','budgets','all'] },
+  { from: 's-groups', to: 'd-p2p', kind: 'db', label: 'DB read/write (p2p)', tag: ['overview','p2p','all'] },
+  { from: 's-contacts', to: 'd-contacts', kind: 'db', label: 'DB read/write', tag: ['overview','all'] },
+  { from: 's-subs', to: 'd-subs', kind: 'db', label: 'DB read/write', tag: ['overview','all'] },
+  { from: 's-recon', to: 'd-recon', kind: 'db', label: 'DB read/write', tag: ['overview','reconciliation','all'] },
+  { from: 's-demo', to: 'd-entities', kind: 'db', label: 'DB seed/clear all', tag: ['overview','all'] },
+  { from: 'core', to: 'd-db', kind: 'critical', label: 'Arc<DatabaseConnection>', tag: ['overview','transactions','critical','all'] },
+
+  // Data -> External
+  { from: 'd-db', to: 'e-pg', kind: 'db', label: 'SeaORM queries', tag: ['overview','transactions','critical','all'] },
+  { from: 'd-ocr-jobs', to: 'e-pg', kind: 'db', label: 'LISTEN/NOTIFY', tag: ['overview','ocr','all'] },
+
+  // Services -> External
+  { from: 's-upload', to: 'e-r2', kind: 'api', label: 'aws-sdk-s3', tag: ['overview','ocr','all'] },
+  { from: 's-gemini', to: 'e-gemini', kind: 'api', label: 'generativeLanguage API', tag: ['overview','ocr','all'] },
+
+  // Auth wiring
+  { from: 'auth-session', to: 'core', kind: 'normal', label: 'User context injection', tag: ['overview','auth','all'] },
+  { from: 'core', to: 'e-betterauth', kind: 'normal', label: 'BetterAuth init', tag: ['overview','auth','all'] },
+  { from: 'e-betterauth', to: 'd-users', kind: 'db', label: 'DB read/write (sessions)', tag: ['overview','auth','all'] },
+];
+
+const FIXES = {};
+const KNOWN_BUGS = {};
+
+// ─── COLOR MAP ─────────────────────────────────────────
+const colorMap = {
+  client:   '#4ea1ff',
+  route:    '#7bd389',
+  service:  '#c792ea',
+  db:       '#ffb86b',
+  external: '#ff6b9d',
+  entry:    '#ff7a45',
+};
+const edgeColors = {
+  critical: '#ff3860',
+  api:      '#ff7a45',
+  db:       '#ffb86b',
+  mount:    '#4ea1ff',
+  normal:   '#555555',
+};
+
+// ─── STATE ─────────────────────────────────────────────
+let activeFilter = 'overview';
+let selectedNode = null;
+let transform = { x: 0, y: 0, s: 1 };
+let dragging = false;
+let dragStart = { x: 0, y: 0 };
+
+// ─── RENDER ────────────────────────────────────────────
+const svg = document.getElementById('svg');
+const wrap = document.getElementById('canvas-wrap');
+
+function render() {
+  const visibleNodes = new Set();
+  const visibleEdges = [];
+
+  nodes.forEach(n => {
+    if (n.tag && n.tag.includes(activeFilter)) visibleNodes.add(n.id);
+  });
+  edges.forEach(e => {
+    if (e.tag && e.tag.includes(activeFilter)) visibleEdges.push(e);
+  });
+
+  // If filtering, also include connected nodes
+  if (activeFilter !== 'all') {
+    visibleEdges.forEach(e => {
+      visibleNodes.add(e.from);
+      visibleNodes.add(e.to);
+    });
+  }
+
+  let html = '';
+  html += `<defs>`;
+  Object.entries(edgeColors).forEach(([kind, color]) => {
+    html += `<marker id="arrow-${kind}" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse"><polygon points="0 0, 10 3.5, 0 7" fill="${color}"/></marker>`;
+  });
+  html += `</defs>`;
+
+  html += `<g id="world" transform="translate(${transform.x},${transform.y}) scale(${transform.s})">`;
+
+  // Clusters
+  clusters.forEach(c => {
+    const fill = c.color + '08';
+    const stroke = c.color + '30';
+    html += `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
+    html += `<text x="${c.x + c.w/2}" y="${c.y + 20}" text-anchor="middle" fill="${c.color}80" font-size="11" font-weight="600" letter-spacing="1">${c.label.toUpperCase()}</text>`;
+  });
+
+  // Edges
+  visibleEdges.forEach(e => {
+    const from = nodes.find(n => n.id === e.from);
+    const to = nodes.find(n => n.id === e.to);
+    if (!from || !to) return;
+
+    const x1 = from.x + from.w;
+    const y1 = from.y + from.h / 2;
+    const x2 = to.x;
+    const y2 = to.y + to.h / 2;
+    const cx1 = x1 + (x2 - x1) * 0.4;
+    const cy1 = y1;
+    const cx2 = x1 + (x2 - x1) * 0.6;
+    const cy2 = y2;
+
+    const color = edgeColors[e.kind] || edgeColors.normal;
+    const opacity = (selectedNode && selectedNode !== e.from && selectedNode !== e.to) ? 0.12 : (e.kind === 'critical' ? 0.9 : 0.5);
+    const width = e.kind === 'critical' ? 2 : 1.2;
+
+    html += `<path d="M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}" fill="none" stroke="${color}" stroke-width="${width}" opacity="${opacity}" marker-end="url(#arrow-${e.kind})"/>`;
+
+    if (e.label && opacity > 0.12) {
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2 - 6;
+      html += `<text x="${mx}" y="${my}" text-anchor="middle" fill="${color}" font-size="8" opacity="0.7">${e.label}</text>`;
+    }
+  });
+
+  // Nodes
+  nodes.forEach(n => {
+    const visible = visibleNodes.has(n.id);
+    const opacity = visible ? 1 : 0.15;
+    const dimmed = selectedNode && selectedNode !== n.id && !edges.some(e =>
+      (e.from === selectedNode && e.to === n.id) || (e.to === selectedNode && e.from === n.id)
+    );
+
+    const nodeOpacity = dimmed ? 0.2 : opacity;
+    const color = colorMap[n.color] || '#888';
+    const strokeW = n.critical ? 2.2 : 1.2;
+
+    html += `<g class="node" data-id="${n.id}" opacity="${nodeOpacity}" style="cursor:pointer">`;
+    html += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="6" fill="#1a1a1a" stroke="${color}" stroke-width="${strokeW}"/>`;
+    html += `<text x="${n.x + 10}" y="${n.y + 17}" fill="${color}" font-size="11" font-weight="600">${n.label}</text>`;
+    html += `<text x="${n.x + 10}" y="${n.y + 32}" fill="#666" font-size="9">${n.sub}</text>`;
+
+    // Fix/bug badges
+    const fixes = FIXES[n.id];
+    const bugs = KNOWN_BUGS[n.id];
+    if (fixes) {
+      html += `<circle cx="${n.x + n.w - 12}" cy="${n.y + 10}" r="8" fill="#22c55e"/>`;
+      html += `<text x="${n.x + n.w - 12}" y="${n.y + 14}" text-anchor="middle" fill="#000" font-size="9" font-weight="700">${fixes.length}</text>`;
+    }
+    if (bugs) {
+      const bx = fixes ? n.x + n.w - 30 : n.x + n.w - 12;
+      html += `<circle cx="${bx}" cy="${n.y + 10}" r="8" fill="#ff3860"/>`;
+      html += `<text x="${bx}" y="${n.y + 14}" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">${bugs.length}</text>`;
+    }
+
+    html += `</g>`;
+  });
+
+  html += '</g>';
+  svg.innerHTML = html;
+
+  // Attach node click/hover listeners
+  document.querySelectorAll('.node').forEach(el => {
+    el.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      selectedNode = el.dataset.id;
+      render();
+      renderSidebar(el.dataset.id);
+    });
+    el.addEventListener('mouseenter', () => {
+      if (!selectedNode) renderSidebar(el.dataset.id);
+    });
+    el.addEventListener('mouseleave', () => {
+      if (!selectedNode) renderDefaultSidebar();
+    });
+  });
+}
+
+function renderSidebar(nodeId) {
+  const n = nodes.find(nd => nd.id === nodeId);
+  if (!n) return;
+
+  const incoming = edges.filter(e => e.to === nodeId && e.tag && e.tag.includes(activeFilter === 'all' ? 'all' : activeFilter));
+  const outgoing = edges.filter(e => e.from === nodeId && e.tag && e.tag.includes(activeFilter === 'all' ? 'all' : activeFilter));
+
+  let html = `<h2>${n.label}</h2>`;
+  if (n.path) html += `<div class="path">${n.path}</div>`;
+  if (n.role) html += `<div class="role">${n.role}</div>`;
+  if (n.plain) html += `<div class="plain">${n.plain}</div>`;
+
+  if (n.notes && n.notes.length) {
+    html += `<h3>Notes</h3><ul class="notes">`;
+    n.notes.forEach(note => { html += `<li>${note}</li>`; });
+    html += `</ul>`;
+  }
+
+  if (incoming.length) {
+    html += `<h3>Incoming (${incoming.length})</h3><div class="edge-list">`;
+    incoming.forEach(e => {
+      const src = nodes.find(nd => nd.id === e.from);
+      html += `<div class="edge-item"><span class="label">${src ? src.label : e.from}</span> -> <span style="color:${edgeColors[e.kind]}">${e.label || e.kind}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (outgoing.length) {
+    html += `<h3>Outgoing (${outgoing.length})</h3><div class="edge-list">`;
+    outgoing.forEach(e => {
+      const tgt = nodes.find(nd => nd.id === e.to);
+      html += `<div class="edge-item"><span style="color:${edgeColors[e.kind]}">${e.label || e.kind}</span> -> <span class="label">${tgt ? tgt.label : e.to}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  const fixes = FIXES[nodeId];
+  const bugs = KNOWN_BUGS[nodeId];
+  if (fixes) {
+    html += `<h3>Fixes (${fixes.length})</h3>`;
+    fixes.forEach(f => { html += `<div class="finding"><div class="title">#${f.n}</div><div class="desc">${f.t}</div></div>`; });
+  }
+  if (bugs) {
+    html += `<h3>Known Bugs (${bugs.length})</h3>`;
+    bugs.forEach(b => { html += `<div class="finding"><div class="title">[${b.sev}]${b.ref ? ' ' + b.ref : ''}</div><div class="desc">${b.t}</div></div>`; });
+  }
+
+  document.getElementById('sidebar-content').innerHTML = html;
+}
+
+function renderDefaultSidebar() {
+  let html = `<h2>Expent Architecture Map</h2>`;
+  html += `<div style="color:var(--muted);margin:8px 0">Click a node to inspect it. Use chips above to filter by feature.</div>`;
+
+  html += `<h3>Notable Findings From This Map</h3>`;
+
+  html += `<div class="finding"><div class="title">Heavy Hot Path: Transaction Create</div><div class="desc">Every transaction write triggers atomic wallet rebalancing inside a DB transaction (ops.rs:458). The 18KB ops.rs file is the densest logic concentration in the codebase.</div></div>`;
+
+  html += `<div class="finding"><div class="title">TransactionsManager depends on WalletsManager</div><div class="desc">TransactionsManager takes Arc&lt;WalletsManager&gt; at construction. GroupsManager takes both. This creates a diamond dependency through Core, manageable but worth watching as the crate graph grows.</div></div>`;
+
+  html += `<div class="finding"><div class="title">P2P route delegates to GroupsManager, not a P2P manager</div><div class="desc">The /api/p2p/* routes all delegate to core.groups.* methods (create_p2p_request, accept_p2p_request, etc.), meaning P2P logic lives inside the groups crate despite having its own route file.</div></div>`;
+
+  html += `<div class="finding"><div class="title">OCR Pipeline: 3 Layers Deep</div><div class="desc">Receipt processing flows: OcrManager (pool) -> worker.rs (Tokio task) -> gemini.rs (HTTP) -> services/ocr.rs (DB save). The strategy pattern (GPAY vs GENERIC) adds another dispatch layer.</div></div>`;
+
+  html += `<div class="finding"><div class="title">UserRateLimiter::tracked_count appears unused</div><div class="desc">The tracked_count() method in rate_limit.rs is defined with #[must_use] but has zero callers in the codebase. Likely intended for /metrics but never wired up.</div></div>`;
+
+  html += `<div class="finding"><div class="title">Frontend OPFS Cache: Local-First Architecture</div><div class="desc">The dashboard uses wa-sqlite over OPFS (Origin Private File System) for sub-millisecond local reads. This is an unusual and sophisticated choice that enables offline-first UX with near-instant data rendering.</div></div>`;
+
+  html += `<div class="finding"><div class="title">Auth Stub Surface</div><div class="desc">crates/auth implements OrganizationOps, TwoFactorOps, ApiKeyOps, PasskeyOps as NotImplemented stubs. The users table has two_factor_enabled and the frontend has passkeyClient() - but the backend logic is stubbed out.</div></div>`;
+
+  html += `<h3>Legend</h3>`;
+  html += `<div class="legend">`;
+  html += `<div class="legend-item"><div class="legend-dot" style="background:#ff3860"></div>Critical path</div>`;
+  html += `<div class="legend-item"><div class="legend-dot" style="background:#ff7a45"></div>External API</div>`;
+  html += `<div class="legend-item"><div class="legend-dot" style="background:#ffb86b"></div>DB read/write</div>`;
+  html += `<div class="legend-item"><div class="legend-dot" style="background:#4ea1ff"></div>Route mount</div>`;
+  html += `<div class="legend-item"><div class="legend-dot" style="background:#555555"></div>Internal call</div>`;
+  html += `</div>`;
+
+  html += `<h3 style="margin-top:16px">Stats</h3>`;
+  html += `<div style="color:var(--muted);font-size:12px">${nodes.length} nodes, ${edges.length} edges<br>6 clusters: Client, Entry, Routes, Services, Data, External</div>`;
+
+  document.getElementById('sidebar-content').innerHTML = html;
+}
+
+// ─── PAN / ZOOM ────────────────────────────────────────
+wrap.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.node')) return;
+  dragging = true;
+  dragStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+  wrap.classList.add('dragging');
+});
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  transform.x = e.clientX - dragStart.x;
+  transform.y = e.clientY - dragStart.y;
+  const world = document.getElementById('world');
+  if (world) world.setAttribute('transform', `translate(${transform.x},${transform.y}) scale(${transform.s})`);
+});
+window.addEventListener('mouseup', () => {
+  dragging = false;
+  wrap.classList.remove('dragging');
+});
+
+wrap.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = wrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const ns = Math.max(0.15, Math.min(4, transform.s * delta));
+  const ratio = ns / transform.s;
+  transform.x = mx - (mx - transform.x) * ratio;
+  transform.y = my - (my - transform.y) * ratio;
+  transform.s = ns;
+  const world = document.getElementById('world');
+  if (world) world.setAttribute('transform', `translate(${transform.x},${transform.y}) scale(${transform.s})`);
+}, { passive: false });
+
+// Click background to deselect
+wrap.addEventListener('click', (e) => {
+  if (!e.target.closest('.node')) {
+    selectedNode = null;
+    render();
+    renderDefaultSidebar();
+  }
+});
+
+// ─── FILTER CHIPS ──────────────────────────────────────
+document.querySelectorAll('#controls .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#controls .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter = chip.dataset.filter;
+    selectedNode = null;
+    render();
+    renderDefaultSidebar();
+  });
+});
+
+// ─── ZOOM BUTTONS ──────────────────────────────────────
+document.getElementById('btn-zin').addEventListener('click', () => {
+  transform.s = Math.min(4, transform.s * 1.2);
+  render();
+});
+document.getElementById('btn-zout').addEventListener('click', () => {
+  transform.s = Math.max(0.15, transform.s * 0.8);
+  render();
+});
+document.getElementById('btn-fit').addEventListener('click', () => {
+  const rect = wrap.getBoundingClientRect();
+  const padding = 60;
+  const contentW = 1580;
+  const contentH = 1040;
+  const scaleX = (rect.width - padding * 2) / contentW;
+  const scaleY = (rect.height - padding * 2) / contentH;
+  transform.s = Math.min(scaleX, scaleY, 1.5);
+  transform.x = (rect.width - contentW * transform.s) / 2;
+  transform.y = (rect.height - contentH * transform.s) / 2 + 20;
+  render();
+});
+
+// ─── INIT ──────────────────────────────────────────────
+document.getElementById('btn-fit').click();
+renderDefaultSidebar();
+</script>
+</body>
+</html>

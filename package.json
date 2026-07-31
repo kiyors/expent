@@ -29,7 +29,8 @@
     "app:android": "pnpm --filter @expent/app android",
     "app:emulator": "pnpm --filter @expent/app emulator",
     "db:seed": "uv run --with requests python scripts/seed.py",
-    "skills:install": "pnpm dlx skills experimental_install"
+    "skills:install": "pnpm dlx skills@latest experimental_install",
+    "skills:update": "pnpm dlx skills@latest update"
   },
   "dependencies": {
     "fake": "^0.2.2"
