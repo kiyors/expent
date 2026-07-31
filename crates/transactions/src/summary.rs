@@ -290,7 +290,7 @@ async fn get_monthly_trends(
         }
     }
 
-    let mut result = Vec::new();
+    let mut result = Vec::with_capacity(trends_map.len());
     for (&(_, month_num), (inc, exp)) in &trends_map {
         let month_name = match month_num {
             1 => "Jan",
