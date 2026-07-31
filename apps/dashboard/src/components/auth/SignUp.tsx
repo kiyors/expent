@@ -2,7 +2,7 @@ import { Button } from "@expent/ui/components/button";
 import { toast } from "@expent/ui/components/goey-toaster";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@expent/ui/components/input-group";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon, UserIcon } from "lucide-react";
+import { AtSignIcon, ChevronLeftIcon, KeyRoundIcon, Loader2Icon, UserIcon } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 
 import { AuthDivider } from "@/components/auth/AuthDivider";
@@ -123,6 +123,7 @@ export function SignUp() {
           </div>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
+            {isLoading && <Loader2Icon className="animate-spin" data-icon="inline-start" />}
             {isLoading ? "Creating account..." : "Create account"}
           </Button>
         </form>
