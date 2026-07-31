@@ -2,7 +2,7 @@
 
 **Tameio (ταμείο)**: Derived from ancient Greek, it means the place where money is kept, counted, and exchanged. It acts as both a "till" for your everyday receipts and a "treasury" for shared funds and subscriptions.
 
-Tameio is an intelligent expense management platform built with Rust and TypeScript. It features OCR-based receipt ingestion, automated subscription detection, and shared ledgers for group expense tracking.
+Tameio is an intelligent expense management platform built with Rust and TypeScript. It is designed to eliminate the friction of personal and group finance by automating data entry through AI-powered OCR, intelligently reconciling bank data, and providing a local-first, lightning-fast user experience.
 
 ## Architecture
 
@@ -47,12 +47,12 @@ Tameio is an intelligent expense management platform built with Rust and TypeScr
 ## Key Features
 
 - **Centralized Core**: All business logic is strictly decoupled from the API and DB layers within `tameio_core`.
-- **Smart Merge**: Automatically deduplicates transactions by matching OCR results with existing bank records.
-- **Itemized Splits**: Automatically parse receipt line items and split them across shared ledgers.
-- **Subscription Engine**: Detects recurring payment patterns and alerts users of upcoming renewals.
-- **Local-First Speed**: Instant dashboard rendering powered by OPFS and `wa-sqlite` caching on the frontend.
-- **One-Click Demo Data**: Instantly provision a realistic mock environment (wallets, budgets, and transactions) to test drive the platform without manual data entry.
-- **Group Ledgers**: Collaborative spaces for tracking expenses with friends and family.
+- **Smart Merge**: Automatically deduplicates transactions by intelligently matching highly detailed OCR receipt data with cryptic bank records, linking physical receipts to digital transactions without manual intervention.
+- **Itemized Splits**: The OCR pipeline doesn't just read the total; it parses individual line items, allowing users to split specific items (e.g., splitting a dinner bill item-by-item) across shared ledgers seamlessly.
+- **Subscription Engine**: Detects recurring payment patterns and alerts users of upcoming renewals, helping identify forgotten subscriptions and manage cash flow.
+- **Local-First Speed**: Instant dashboard rendering powered by OPFS and `wa-sqlite` caching on the frontend, ensuring navigation through thousands of transactions is completely instantaneous.
+- **One-Click Demo Data**: Instantly provision a realistic mock environment (wallets, budgets, transactions, and contacts) to test-drive the platform without manual data entry.
+- **Group Ledgers & P2P Tracking**: Collaborative spaces for tracking expenses with friends and family. Tracks who paid for what and calculates optimal settlement paths to clear debts.
 
 ## Environment Variables
 
