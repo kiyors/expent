@@ -22,10 +22,8 @@ impl OcrExtractionStrategy for BankStatementStrategy {
         user_id: &str,
         mut processed: ProcessedOcr,
     ) -> Result<ProcessedOcr, AppError> {
-        let mut bank_result: BankExtractionResult =
-            serde_json::from_value(processed.data.0.take()).map_err(|e| {
-                AppError::Ocr(format!("Failed to parse bank statement data: {}", e))
-            })?;
+        let mut bank_result: BankExtractionResult = serde_json::from_value(processed.data.0.take())
+            .map_err(|e| AppError::Ocr(format!("Failed to parse bank statement data: {}", e)))?;
 
         let wallet = wallets_manager
             .resolve(
