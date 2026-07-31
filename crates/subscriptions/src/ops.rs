@@ -55,7 +55,8 @@ pub async fn detect_subscriptions(
         }
 
         if !found_group {
-            groups.push((txn.clone(), vec![txn.date]));
+            let date = txn.date;
+            groups.push((txn, vec![date]));
         }
     }
 
@@ -143,7 +144,7 @@ pub async fn confirm_subscription(
     // Idempotency check: don't create duplicate subscriptions
     let existing = entities::subscriptions::Entity::find()
         .filter(entities::subscriptions::Column::UserId.eq(&params.user_id))
-        .filter(entities::subscriptions::Column::Name.eq(params.name.clone()))
+        .filter(entities::subscriptions::Column::Name.eq(&params.name))
         .filter(entities::subscriptions::Column::Cycle.eq(params.cycle))
         .one(db)
         .await?;

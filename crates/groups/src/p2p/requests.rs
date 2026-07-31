@@ -83,7 +83,7 @@ pub async fn accept_p2p_request(
         let receiver_email = receiver_email.clone();
         let request_id = request_id.clone();
         Box::pin(async move {
-            let request = entities::p2p_requests::Entity::find_by_id(request_id)
+            let mut request = entities::p2p_requests::Entity::find_by_id(request_id)
                 .one(txn_db)
                 .await?
                 .ok_or_else(|| AppError::not_found("Request not found"))?;
@@ -102,7 +102,7 @@ pub async fn accept_p2p_request(
 
             if request.status == P2pRequestStatus::GroupInvite {
                 let metadata: serde_json::Value =
-                    serde_json::from_value(request.transaction_data.clone()).map_err(|e| {
+                    serde_json::from_value(request.transaction_data.take()).map_err(|e| {
                         AppError::Generic(format!("Failed to parse invite data: {e}"))
                     })?;
 
@@ -123,7 +123,7 @@ pub async fn accept_p2p_request(
             }
 
             let original_txn: serde_json::Value =
-                serde_json::from_value(request.transaction_data.clone()).map_err(|e| {
+                serde_json::from_value(request.transaction_data.take()).map_err(|e| {
                     AppError::Generic(format!("Failed to parse transaction data: {e}"))
                 })?;
 
