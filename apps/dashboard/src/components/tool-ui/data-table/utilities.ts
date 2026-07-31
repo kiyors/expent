@@ -1,3 +1,5 @@
+const collatorCache = new Map<string, Intl.Collator>();
+
 export function sortData<T, K extends Extract<keyof T, string>>(
   data: T[],
   key: K,
@@ -5,10 +7,17 @@ export function sortData<T, K extends Extract<keyof T, string>>(
   locale?: string,
 ): T[] {
   const get = (obj: T, k: K): unknown => (obj as Record<string, unknown>)[k];
-  const collator = new Intl.Collator(locale, {
-    numeric: true,
-    sensitivity: "base",
-  });
+
+  const collatorKey = `${locale ?? "default"}`;
+  let collator = collatorCache.get(collatorKey);
+  if (!collator) {
+    collator = new Intl.Collator(locale, {
+      numeric: true,
+      sensitivity: "base",
+    });
+    collatorCache.set(collatorKey, collator);
+  }
+
   return [...data].sort((a, b) => {
     const aVal = get(a, key);
     const bVal = get(b, key);
@@ -58,7 +67,8 @@ export function sortData<T, K extends Extract<keyof T, string>>(
     // Fallback: locale-aware string compare with numeric collation
     const aStr = String(aVal);
     const bStr = String(bVal);
-    const comparison = collator.compare(aStr, bStr);
+    // TypeScript check: collator is guaranteed to be initialized above
+    const comparison = collator!.compare(aStr, bStr);
     return direction === "asc" ? comparison : -comparison;
   });
 }

@@ -21,7 +21,7 @@ impl OcrExtractionStrategy for GenericStrategy {
         user_id: &str,
         mut processed: ProcessedOcr,
     ) -> Result<ProcessedOcr, AppError> {
-        let mut generic: OcrResult = serde_json::from_value(processed.data.0.clone())
+        let mut generic: OcrResult = serde_json::from_value(processed.data.0.take())
             .map_err(|e| AppError::Ocr(format!("Failed to parse generic data: {}", e)))?;
 
         if let Some(vendor) = &generic.vendor {
@@ -54,14 +54,14 @@ impl OcrExtractionStrategy for GenericStrategy {
         contacts_manager: Arc<ContactsManager>,
         _wallets_manager: Arc<WalletsManager>,
         user_id: &str,
-        processed: ProcessedOcr,
+        mut processed: ProcessedOcr,
     ) -> Result<OcrTransactionResponse, AppError> {
-        let generic: OcrResult = serde_json::from_value(processed.data.0.clone())
+        let generic: OcrResult = serde_json::from_value(processed.data.0.take())
             .map_err(|e| AppError::Ocr(format!("Failed to parse generic data: {}", e)))?;
 
-        let mut contact_id = generic.contact_id.clone();
-        let wallet_id = generic.wallet_id.clone();
-        let category_id = generic.category_id.clone();
+        let mut contact_id = generic.contact_id;
+        let wallet_id = generic.wallet_id;
+        let category_id = generic.category_id;
 
         if contact_id.is_none() && generic.vendor.is_some() {
             let resolution = contacts_manager

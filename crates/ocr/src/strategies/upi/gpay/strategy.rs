@@ -20,7 +20,7 @@ impl OcrExtractionStrategy for GPayStrategy {
         user_id: &str,
         mut processed: ProcessedOcr,
     ) -> Result<ProcessedOcr, AppError> {
-        let mut gpay: GPayExtraction = serde_json::from_value(processed.data.0.clone())
+        let mut gpay: GPayExtraction = serde_json::from_value(processed.data.0.take())
             .map_err(|e| AppError::Ocr(format!("Failed to parse GPAY data: {}", e)))?;
 
         let resolution = contacts_manager
@@ -51,15 +51,15 @@ impl OcrExtractionStrategy for GPayStrategy {
         contacts_manager: Arc<ContactsManager>,
         _wallets_manager: Arc<WalletsManager>,
         user_id: &str,
-        processed: ProcessedOcr,
+        mut processed: ProcessedOcr,
     ) -> Result<OcrTransactionResponse, AppError> {
-        let gpay: GPayExtraction = serde_json::from_value(processed.data.0.clone())
+        let gpay: GPayExtraction = serde_json::from_value(processed.data.0.take())
             .map_err(|e| AppError::Ocr(format!("Failed to parse GPAY data: {}", e)))?;
 
-        let mut contact_id = gpay.contact_id.clone();
+        let mut contact_id = gpay.contact_id;
         let mut contact_created = false;
-        let wallet_id = gpay.wallet_id.clone();
-        let category_id = gpay.category_id.clone();
+        let wallet_id = gpay.wallet_id;
+        let category_id = gpay.category_id;
 
         if contact_id.is_none() {
             let resolution = contacts_manager
