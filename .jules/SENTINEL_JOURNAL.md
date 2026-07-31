@@ -17,3 +17,4 @@
 - **Fix Applied:** Added an authorization check (`if txn.user_id != sender_id`) to ensure the transaction belongs to the sender before creating the P2P requests.
 - **Learning:** Even inside core domain operations, fetching an entity by its primary ID must always be followed by an authorization check against the acting user's ID to prevent IDOR and data leakage.
 - **Missing IDOR Verification in Handlers:** OCR job status (`get_ocr_job_status_handler`) and listing (`list_pending_ocr_jobs_handler`) previously failed to verify that the job being accessed belonged to the authenticated user. This allowed unauthorized users to view the status of other users' OCR jobs by simply knowing or iterating through `job_id`s, and potentially list all pending jobs. Fixed by ensuring `job.user_id` matches `session.user.id`.
+- Learned that rejecting unknown file types in the upload crate is a critical security fix to prevent arbitrary file upload vulnerabilities.
